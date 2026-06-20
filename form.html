@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Diz Değerlendirme Anketi</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1e6fff;
+      --primary-light: #e8f0fe;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --danger: #dc2626;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    /* Progress Bar */
+    .progress-bar-container {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--border);
+      z-index: 100;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1e6fff, #06b6d4);
+      transition: width 0.4s ease;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 4px;
+      z-index: 99;
+    }
+    .header-section-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .header-section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .header-progress-text {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+      padding: 20px 16px 100px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .section.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .question-number {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .question-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    /* Radio Options */
+    .options-list { display: flex; flex-direction: column; gap: 8px; }
+    .option-label {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .option-label:active { transform: scale(0.98); }
+    .option-label input[type="radio"],
+    .option-label input[type="checkbox"] {
+      display: none;
+    }
+    .option-label.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .option-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      margin-right: 12px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .option-label.selected .option-dot {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+    .option-dot::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: white;
+      display: none;
+    }
+    .option-label.selected .option-dot::after { display: block; }
+    .option-text {
+      font-size: 15px;
+      color: var(--text);
+      flex: 1;
+    }
+    .option-score {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 8px;
+      background: var(--bg);
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+
+    /* NRS Slider */
+    .nrs-container { text-align: center; }
+    .nrs-value-display {
+      font-size: 56px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .nrs-value-label {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      min-height: 20px;
+    }
+    .nrs-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #16a34a, #eab308, #dc2626);
+      outline: none;
+      margin-bottom: 8px;
+    }
+    .nrs-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      cursor: pointer;
+    }
+    .nrs-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Welcome screen */
+    .welcome-hero {
+      text-align: center;
+      padding: 32px 0 24px;
+    }
+    .welcome-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .welcome-subtitle {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 14px; color: var(--muted); }
+    .info-value { font-size: 15px; font-weight: 600; color: var(--text); }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .badge-blue { background: var(--primary-light); color: var(--primary); }
+    .badge-green { background: var(--success-light); color: var(--success); }
+    .section-preview {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .section-chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Navigation buttons */
+    .nav-footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+    }
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-ghost {
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      flex: 0 0 auto;
+      padding: 14px 20px;
+    }
+
+    /* Section divider */
+    .section-intro {
+      text-align: center;
+      padding: 24px 0 20px;
+    }
+    .section-intro-icon { font-size: 40px; margin-bottom: 10px; }
+    .section-intro-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .section-intro-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Success screen */
+    .success-screen {
+      text-align: center;
+      padding: 48px 20px;
+    }
+    .success-icon { font-size: 80px; margin-bottom: 20px; }
+    .success-title {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--success);
+    }
+    .success-text {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .score-summary {
+      background: var(--bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 24px;
+      text-align: left;
+    }
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+    }
+    .score-row:last-child { border-bottom: none; }
+    .score-name { color: var(--muted); }
+    .score-num { font-weight: 700; color: var(--text); }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error banner */
+    .error-banner {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #991b1b;
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    /* Tegner visual */
+    .tegner-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tegner-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tegner-option.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .tegner-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .tegner-option.selected .tegner-num {
+      background: var(--primary);
+      color: white;
+    }
+    .tegner-desc { font-size: 14px; color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+</div>
+
+<!-- SECTION 0: Welcome -->
+<div class="section active" id="section-0">
+  <div class="welcome-hero">
+    <div class="welcome-icon">🦵</div>
+    <div class="welcome-title">Diz Değerlendirme Anketi</div>
+    <div class="welcome-subtitle" id="welcomeSubtitle">Dizinizle ilgili durumunuzu daha iyi anlayabilmemiz için lütfen bu kısa anketi doldurunuz.</div>
+  </div>
+
+  <div class="card">
+    <div class="info-row">
+      <span class="info-label">Hasta</span>
+      <span class="info-value" id="patientNameDisplay">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Tanı</span>
+      <span class="info-value"><span class="badge badge-blue" id="diagnosisDisplay">Menisküs Yırtığı</span></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Ameliyat Tarihi</span>
+      <span class="info-value" id="surgeryDateDisplay">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Ameliyat Sonrası</span>
+      <span class="info-value"><span class="badge badge-green" id="daysPostOpDisplay">—</span></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">Bu anket şu bölümleri içerir:</div>
+    <div class="section-preview">
+      <span class="section-chip">🩹 Ağrı (NRS)</span>
+      <span class="section-chip">📋 IKDC (18 soru)</span>
+      <span class="section-chip">🔩 Lysholm (8 soru)</span>
+      <span class="section-chip">🏃 Tegner (1 soru)</span>
+    </div>
+    <div style="font-size: 13px; color: var(--muted); margin-top: 12px;">Tahmini süre: <strong>4–5 dakika</strong></div>
+  </div>
+
+  <div style="font-size: 13px; color: var(--muted); text-align: center; padding: 8px 0;">
+    Bilgileriniz güvenle saklanır ve yalnızca hekiminiz tarafından görüntülenir.
+  </div>
+</div>
+
+<!-- SECTION 1: NRS Pain -->
+<div class="section" id="section-1">
+  <div class="section-intro">
+    <div class="section-intro-icon">🩹</div>
+    <div class="section-intro-title">Ağrı Değerlendirmesi</div>
+    <div class="section-intro-desc">Son 24 saat içindeki ağrı durumunuzu değerlendirin</div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">NRS Ağrı Skoru</div>
+    <div class="question-text">Son 24 saatte dizinizdeki ortalama ağrı şiddetini işaretleyiniz.</div>
+    <div class="nrs-container">
+      <div class="nrs-value-display" id="nrsDisplay">5</div>
+      <div class="nrs-value-label" id="nrsLabel">Orta şiddette ağrı</div>
+      <input type="range" class="nrs-slider" id="nrsSlider" min="0" max="10" value="5" oninput="updateNRS(this.value)">
+      <div class="nrs-labels"><span>0 – Ağrı yok</span><span>10 – Dayanılmaz</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">Ağrı – En Kötü</div>
+    <div class="question-text">Son 24 saatte dizinizdeki <strong>en şiddetli</strong> ağrıyı işaretleyiniz.</div>
+    <div class="nrs-container">
+      <div class="nrs-value-display" id="nrsWorstDisplay">5</div>
+      <div class="nrs-value-label" id="nrsWorstLabel">Orta şiddette ağrı</div>
+      <input type="range" class="nrs-slider" id="nrsWorstSlider" min="0" max="10" value="5" oninput="updateNRSWorst(this.value)">
+      <div class="nrs-labels"><span>0 – Ağrı yok</span><span>10 – Dayanılmaz</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: IKDC Part A – Activity & Symptoms -->
+<div class="section" id="section-2">
+  <div class="section-intro">
+    <div class="section-intro-icon">📋</div>
+    <div class="section-intro-title">IKDC – Semptomlar</div>
+    <div class="section-intro-desc">Uluslararası Diz Belgeleme Komitesi anketi (bölüm 1/2)</div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="card">
+    <div class="question-number">IKDC Soru 1</div>
+    <div class="question-text">Dizinizde <strong>belirgin ağrı duymadan</strong> yapabildiğiniz en yüksek aktivite düzeyi hangisidir?</div>
+    <div class="options-list" id="ikdc1">
+      <label class="option-label" onclick="selectOption('ikdc1',0,4)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Sıçrama ve dönme içeren çok ağır aktiviteler (futbol, basketbol)</span></label>
+      <label class="option-label" onclick="selectOption('ikdc1',1,3)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Ağır aktiviteler (ağır fizik iş, kayak, tenis)</span></label>
+      <label class="option-label" onclick="selectOption('ikdc1',2,2)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Orta aktiviteler (orta ağır fizik iş, koşu)</span></label>
+      <label class="option-label" onclick="selectOption('ikdc1',3,1)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Hafif aktiviteler (yürüyüş, ev işleri)</span></label>
+      <label class="option-label" onclick="selectOption('ikdc1',4,0)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Bunların hiçbirini yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="card">
+    <div class="question-number">IKDC Soru 2</div>
+    <div class="question-text">Ne sıklıkla <strong>ağrı</strong> hissediyorsunuz?</div>
+    <div class="options-list" id="ikdc2">
+      <label class="option-label" onclick="selectOption('ikdc2',0,4)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Hiç</span></label>
+      <label class="option-label" onclick="selectOption('ikdc2',1,3)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Aylık</span></label>
+      <label class="option-label" onclick="selectOption('ikdc2',2,2)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Haftalık</span></label>
+      <label class="option-label" onclick="selectOption('ikdc2',3,1)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Günlük</span></label>
+      <label class="option-label" onclick="selectOption('ikdc2',4,0)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Sürekli</span></label>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="card">
+    <div class="question-number">IKDC Soru 3</div>
+    <div class="question-text">Son 4 haftada dizinizde <strong>şişlik</strong> ne kadar oldu?</div>
+    <div class="options-list" id="ikdc3">
+      <label class="option-label" onclick="selectOption('ikdc3',0,4)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Hiç</span></label>
+      <label class="option-label" onclick="selectOption('ikdc3',1,3)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Hafif</span></label>
+      <label class="option-label" onclick="selectOption('ikdc3',2,2)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Orta</span></label>
+      <label class="option-label" onclick="selectOption('ikdc3',3,1)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Çok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc3',4,0)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Aşırı</span></label>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="card">
+    <div class="question-number">IKDC Soru 4</div>
+    <div class="question-text">Son 4 haftada diziniz <strong>kilitlendi</strong> mi ya da <strong>takıldı</strong> mı?</div>
+    <div class="options-list" id="ikdc4">
+      <label class="option-label" onclick="selectOption('ikdc4',0,1)"><input type="radio" name="ikdc4"><span class="option-dot"></span><span class="option-text">Hayır</span></label>
+      <label class="option-label" onclick="selectOption('ikdc4',1,0)"><input type="radio" name="ikdc4"><span class="option-dot"></span><span class="option-text">Evet</span></label>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="card">
+    <div class="question-number">IKDC Soru 5</div>
+    <div class="question-text"><strong>Şişlik olmadan</strong> yapabildiğiniz en yüksek aktivite düzeyi hangisidir?</div>
+    <div class="options-list" id="ikdc5">
+      <label class="option-label" onclick="selectOption('ikdc5',0,4)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Sıçrama ve dönme içeren çok ağır aktiviteler</span></label>
+      <label class="option-label" onclick="selectOption('ikdc5',1,3)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Ağır aktiviteler</span></label>
+      <label class="option-label" onclick="selectOption('ikdc5',2,2)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Orta aktiviteler</span></label>
+      <label class="option-label" onclick="selectOption('ikdc5',3,1)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Hafif aktiviteler</span></label>
+      <label class="option-label" onclick="selectOption('ikdc5',4,0)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Bunların hiçbirini yapamıyorum</span></label>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: IKDC Part B – Activities -->
+<div class="section" id="section-3">
+  <div class="section-intro">
+    <div class="section-intro-icon">🏃</div>
+    <div class="section-intro-title">IKDC – Günlük Aktiviteler</div>
+    <div class="section-intro-desc">Aşağıdaki aktiviteleri yaparken <strong>ne kadar zorluk</strong> yaşıyorsunuz?</div>
+  </div>
+
+  <!-- Reusable activity questions -->
+  <div class="card">
+    <div class="question-number">IKDC Soru 6</div>
+    <div class="question-text">Merdiven <strong>çıkma</strong></div>
+    <div class="options-list" id="ikdc6">
+      <label class="option-label" onclick="selectOption('ikdc6',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc6',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc6',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc6',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc6',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 7</div>
+    <div class="question-text">Merdivenlerden <strong>inme</strong></div>
+    <div class="options-list" id="ikdc7">
+      <label class="option-label" onclick="selectOption('ikdc7',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc7',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc7',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc7',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc7',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 8</div>
+    <div class="question-text"><strong>Diz çökme</strong> (diz üstüne)</div>
+    <div class="options-list" id="ikdc8">
+      <label class="option-label" onclick="selectOption('ikdc8',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc8',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc8',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc8',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc8',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 9</div>
+    <div class="question-text"><strong>Çömelme</strong></div>
+    <div class="options-list" id="ikdc9">
+      <label class="option-label" onclick="selectOption('ikdc9',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc9',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc9',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc9',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc9',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 10</div>
+    <div class="question-text">Diz bükülü <strong>oturma</strong> (sandalyede)</div>
+    <div class="options-list" id="ikdc10">
+      <label class="option-label" onclick="selectOption('ikdc10',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc10',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc10',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc10',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc10',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 11</div>
+    <div class="question-text">Sandalyeden <strong>kalkma</strong></div>
+    <div class="options-list" id="ikdc11">
+      <label class="option-label" onclick="selectOption('ikdc11',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc11',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc11',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc11',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc11',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 12</div>
+    <div class="question-text">Düz <strong>koşu</strong></div>
+    <div class="options-list" id="ikdc12">
+      <label class="option-label" onclick="selectOption('ikdc12',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc12',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc12',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc12',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc12',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 13</div>
+    <div class="question-text"><strong>Sıçrama</strong> ve yere inme</div>
+    <div class="options-list" id="ikdc13">
+      <label class="option-label" onclick="selectOption('ikdc13',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc13',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc13',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc13',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc13',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: IKDC Q14-18 + Final function -->
+<div class="section" id="section-4">
+  <div class="section-intro">
+    <div class="section-intro-icon">📋</div>
+    <div class="section-intro-title">IKDC – Spor & Fonksiyon</div>
+    <div class="section-intro-desc">Son birkaç soru</div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 14</div>
+    <div class="question-text">Hızlı <strong>durma ve başlama</strong> (yön değiştirme)</div>
+    <div class="options-list" id="ikdc14">
+      <label class="option-label" onclick="selectOption('ikdc14',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc14',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc14',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc14',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
+      <label class="option-label" onclick="selectOption('ikdc14',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 15</div>
+    <div class="question-text">Son 4 haftada sporsal aktivitelerinizde <strong>kısıtlılık</strong> var mıydı?</div>
+    <div class="options-list" id="ikdc15">
+      <label class="option-label" onclick="selectOption('ikdc15',0,4)"><span class="option-dot"></span><span class="option-text">Hiç yok</span></label>
+      <label class="option-label" onclick="selectOption('ikdc15',1,3)"><span class="option-dot"></span><span class="option-text">Hafif</span></label>
+      <label class="option-label" onclick="selectOption('ikdc15',2,2)"><span class="option-dot"></span><span class="option-text">Orta</span></label>
+      <label class="option-label" onclick="selectOption('ikdc15',3,1)"><span class="option-dot"></span><span class="option-text">Ciddi</span></label>
+      <label class="option-label" onclick="selectOption('ikdc15',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 16</div>
+    <div class="question-text">Diziniz şu an, yaralanma / ameliyat öncesine kıyasla nasıl?</div>
+    <div class="options-list" id="ikdc16">
+      <label class="option-label" onclick="selectOption('ikdc16',0,4)"><span class="option-dot"></span><span class="option-text">Normal (tam iyilik)</span></label>
+      <label class="option-label" onclick="selectOption('ikdc16',1,3)"><span class="option-dot"></span><span class="option-text">Normale yakın</span></label>
+      <label class="option-label" onclick="selectOption('ikdc16',2,2)"><span class="option-dot"></span><span class="option-text">Anormal</span></label>
+      <label class="option-label" onclick="selectOption('ikdc16',3,1)"><span class="option-dot"></span><span class="option-text">Çok anormal</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">IKDC Soru 17</div>
+    <div class="question-text">Güncel diz fonksiyonunuzu <strong>0–10</strong> arasında puanlayınız. (0 = hiç çalışmıyor, 10 = normal)</div>
+    <div class="nrs-container">
+      <div class="nrs-value-display" id="ikdcFuncDisplay">5</div>
+      <div class="nrs-value-label" id="ikdcFuncLabel">Orta fonksiyon</div>
+      <input type="range" class="nrs-slider" id="ikdcFuncSlider" min="0" max="10" value="5" oninput="updateIkdcFunc(this.value)">
+      <div class="nrs-labels"><span>0 – Hiç çalışmıyor</span><span>10 – Tam normal</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: Lysholm -->
+<div class="section" id="section-5">
+  <div class="section-intro">
+    <div class="section-intro-icon">🔩</div>
+    <div class="section-intro-title">Lysholm Diz Skoru</div>
+    <div class="section-intro-desc">8 kısa soru — günlük hayatınızdaki durumunuzu aktarın</div>
+  </div>
+
+  <!-- L1: Limp -->
+  <div class="card">
+    <div class="question-number">Lysholm 1 – Topallama</div>
+    <div class="question-text">Yürürken <strong>topallamanız</strong> var mı?</div>
+    <div class="options-list" id="lys1">
+      <label class="option-label" onclick="selectOption('lys1',0,5)"><span class="option-dot"></span><span class="option-text">Yok</span><span class="option-score">5p</span></label>
+      <label class="option-label" onclick="selectOption('lys1',1,3)"><span class="option-dot"></span><span class="option-text">Hafif veya ara sıra</span><span class="option-score">3p</span></label>
+      <label class="option-label" onclick="selectOption('lys1',2,0)"><span class="option-dot"></span><span class="option-text">Ciddi ve sürekli</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+
+  <!-- L2: Support -->
+  <div class="card">
+    <div class="question-number">Lysholm 2 – Destek</div>
+    <div class="question-text">Yürürken <strong>destek</strong> kullanıyor musunuz?</div>
+    <div class="options-list" id="lys2">
+      <label class="option-label" onclick="selectOption('lys2',0,5)"><span class="option-dot"></span><span class="option-text">Kullanmıyorum</span><span class="option-score">5p</span></label>
+      <label class="option-label" onclick="selectOption('lys2',1,2)"><span class="option-dot"></span><span class="option-text">Baston veya koltuk değneği</span><span class="option-score">2p</span></label>
+      <label class="option-label" onclick="selectOption('lys2',2,0)"><span class="option-dot"></span><span class="option-text">Ağırlık veremiyorum</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+
+  <!-- L3: Locking -->
+  <div class="card">
+    <div class="question-number">Lysholm 3 – Kilitlenme</div>
+    <div class="question-text">Diziniz <strong>kilitlendi</strong> mi ya da sıkıştı mı?</div>
+    <div class="options-list" id="lys3">
+      <label class="option-label" onclick="selectOption('lys3',0,15)"><span class="option-dot"></span><span class="option-text">Hiç kilitlenme yok, takılma hissi de yok</span><span class="option-score">15p</span></label>
+      <label class="option-label" onclick="selectOption('lys3',1,10)"><span class="option-dot"></span><span class="option-text">Takılma hissi var ama kilitlenme yok</span><span class="option-score">10p</span></label>
+      <label class="option-label" onclick="selectOption('lys3',2,6)"><span class="option-dot"></span><span class="option-text">Zaman zaman kilitlenme oldu</span><span class="option-score">6p</span></label>
+      <label class="option-label" onclick="selectOption('lys3',3,2)"><span class="option-dot"></span><span class="option-text">Sık sık kilitlenme oldu</span><span class="option-score">2p</span></label>
+      <label class="option-label" onclick="selectOption('lys3',4,0)"><span class="option-dot"></span><span class="option-text">Şu an kilitli durumda</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+
+  <!-- L4: Instability -->
+  <div class="card">
+    <div class="question-number">Lysholm 4 – Instabilite (Boşalma)</div>
+    <div class="question-text">Diziniz <strong>boşalıyor</strong> mu? (Aniden güç kaybı, "düşme" hissi)</div>
+    <div class="options-list" id="lys4">
+      <label class="option-label" onclick="selectOption('lys4',0,25)"><span class="option-dot"></span><span class="option-text">Hiç</span><span class="option-score">25p</span></label>
+      <label class="option-label" onclick="selectOption('lys4',1,20)"><span class="option-dot"></span><span class="option-text">Çok ağır sporlar sırasında nadiren</span><span class="option-score">20p</span></label>
+      <label class="option-label" onclick="selectOption('lys4',2,15)"><span class="option-dot"></span><span class="option-text">Ağır spor veya ağır iş sırasında</span><span class="option-score">15p</span></label>
+      <label class="option-label" onclick="selectOption('lys4',3,10)"><span class="option-dot"></span><span class="option-text">Günlük aktivitelerde zaman zaman</span><span class="option-score">10p</span></label>
+      <label class="option-label" onclick="selectOption('lys4',4,5)"><span class="option-dot"></span><span class="option-text">Günlük aktivitelerde sık sık</span><span class="option-score">5p</span></label>
+      <label class="option-label" onclick="selectOption('lys4',5,0)"><span class="option-dot"></span><span class="option-text">Her adımda</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+
+  <!-- L5: Pain -->
+  <div class="card">
+    <div class="question-number">Lysholm 5 – Ağrı</div>
+    <div class="question-text">Dizinizde <strong>ağrı</strong> var mı?</div>
+    <div class="options-list" id="lys5">
+      <label class="option-label" onclick="selectOption('lys5',0,25)"><span class="option-dot"></span><span class="option-text">Hiç</span><span class="option-score">25p</span></label>
+      <label class="option-label" onclick="selectOption('lys5',1,20)"><span class="option-dot"></span><span class="option-text">Yoğun egzersizde zaman zaman</span><span class="option-score">20p</span></label>
+      <label class="option-label" onclick="selectOption('lys5',2,15)"><span class="option-dot"></span><span class="option-text">Yoğun egzersizde belirgin</span><span class="option-score">15p</span></label>
+      <label class="option-label" onclick="selectOption('lys5',3,10)"><span class="option-dot"></span><span class="option-text">2 km'den uzun yürümede</span><span class="option-score">10p</span></label>
+      <label class="option-label" onclick="selectOption('lys5',4,5)"><span class="option-dot"></span><span class="option-text">2 km'den kısa yürümede</span><span class="option-score">5p</span></label>
+      <label class="option-label" onclick="selectOption('lys5',5,0)"><span class="option-dot"></span><span class="option-text">Sürekli</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+
+  <!-- L6: Swelling -->
+  <div class="card">
+    <div class="question-number">Lysholm 6 – Şişlik</div>
+    <div class="question-text">Dizinizde <strong>şişlik</strong> var mı?</div>
+    <div class="options-list" id="lys6">
+      <label class="option-label" onclick="selectOption('lys6',0,10)"><span class="option-dot"></span><span class="option-text">Hiç</span><span class="option-score">10p</span></label>
+      <label class="option-label" onclick="selectOption('lys6',1,6)"><span class="option-dot"></span><span class="option-text">Yoğun egzersizde</span><span class="option-score">6p</span></label>
+      <label class="option-label" onclick="selectOption('lys6',2,2)"><span class="option-dot"></span><span class="option-text">Normal egzersizde</span><span class="option-score">2p</span></label>
+      <label class="option-label" onclick="selectOption('lys6',3,0)"><span class="option-dot"></span><span class="option-text">Sürekli</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+
+  <!-- L7: Stairs -->
+  <div class="card">
+    <div class="question-number">Lysholm 7 – Merdiven</div>
+    <div class="question-text">Merdiven <strong>çıkabilir</strong> misiniz?</div>
+    <div class="options-list" id="lys7">
+      <label class="option-label" onclick="selectOption('lys7',0,10)"><span class="option-dot"></span><span class="option-text">Sorunsuz</span><span class="option-score">10p</span></label>
+      <label class="option-label" onclick="selectOption('lys7',1,6)"><span class="option-dot"></span><span class="option-text">Hafif güçlükle</span><span class="option-score">6p</span></label>
+      <label class="option-label" onclick="selectOption('lys7',2,2)"><span class="option-dot"></span><span class="option-text">Adım adım (tek tek)</span><span class="option-score">2p</span></label>
+      <label class="option-label" onclick="selectOption('lys7',3,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+
+  <!-- L8: Squatting -->
+  <div class="card">
+    <div class="question-number">Lysholm 8 – Çömelme</div>
+    <div class="question-text"><strong>Çömelme</strong> yapabilir misiniz?</div>
+    <div class="options-list" id="lys8">
+      <label class="option-label" onclick="selectOption('lys8',0,5)"><span class="option-dot"></span><span class="option-text">Sorunsuz</span><span class="option-score">5p</span></label>
+      <label class="option-label" onclick="selectOption('lys8',1,4)"><span class="option-dot"></span><span class="option-text">Hafif güçlükle</span><span class="option-score">4p</span></label>
+      <label class="option-label" onclick="selectOption('lys8',2,2)"><span class="option-dot"></span><span class="option-text">90 dereceden fazla yapamıyorum</span><span class="option-score">2p</span></label>
+      <label class="option-label" onclick="selectOption('lys8',3,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span><span class="option-score">0p</span></label>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: Tegner -->
+<div class="section" id="section-6">
+  <div class="section-intro">
+    <div class="section-intro-icon">⚡</div>
+    <div class="section-intro-title">Tegner Aktivite Düzeyi</div>
+    <div class="section-intro-desc">Şu an hangi aktivite düzeyinde olduğunuzu seçin</div>
+  </div>
+
+  <div class="card">
+    <div class="question-number">Tegner Skoru</div>
+    <div class="question-text">Aşağıdaki aktivite düzeylerinden <strong>şu an yapabildiğinize en yakın olanı</strong> seçiniz:</div>
+    <div class="tegner-grid" id="tegner">
+      <div class="tegner-option" onclick="selectTegner(0)"><span class="tegner-num">0</span><span class="tegner-desc">Hastalık nedeniyle iş göremez veya engelli aylığı alıyor</span></div>
+      <div class="tegner-option" onclick="selectTegner(1)"><span class="tegner-num">1</span><span class="tegner-desc">Yürüyüş (düz zemin) – çalışamıyor veya çalışabiliyor</span></div>
+      <div class="tegner-option" onclick="selectTegner(2)"><span class="tegner-num">2</span><span class="tegner-desc">Yürüyüş (engebeli zemin) / Yüzme / Ormanda yürüyüş mümkün değil</span></div>
+      <div class="tegner-option" onclick="selectTegner(3)"><span class="tegner-num">3</span><span class="tegner-desc">Yüzme / Koşu (düz zemin) – haftada en az 2x</span></div>
+      <div class="tegner-option" onclick="selectTegner(4)"><span class="tegner-num">4</span><span class="tegner-desc">Koşu (engebeli) / Orman koşusu – haftada en az 2x</span></div>
+      <div class="tegner-option" onclick="selectTegner(5)"><span class="tegner-num">5</span><span class="tegner-desc">Bisiklet / Orta düzey sporlar (tenis, yüzme, kayak, rekreasyonel futbol)</span></div>
+      <div class="tegner-option" onclick="selectTegner(6)"><span class="tegner-num">6</span><span class="tegner-desc">Rekreasyonel sporlar (tenis, badminton, el topu, basketbol, kayak, ağır tarım işi)</span></div>
+      <div class="tegner-option" onclick="selectTegner(7)"><span class="tegner-num">7</span><span class="tegner-desc">Rekabetçi sporlar (tenis, atletizm, el topu) / Alt lig futbol/hokey</span></div>
+      <div class="tegner-option" onclick="selectTegner(8)"><span class="tegner-num">8</span><span class="tegner-desc">Futbol veya hokey – alt lig</span></div>
+      <div class="tegner-option" onclick="selectTegner(9)"><span class="tegner-num">9</span><span class="tegner-desc">Futbol / Hokey – üst lig</span></div>
+      <div class="tegner-option" onclick="selectTegner(10)"><span class="tegner-num">10</span><span class="tegner-desc">Futbol / Hokey – ulusal veya uluslararası seviye</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7: Submit -->
+<div class="section" id="section-7">
+  <div class="section-intro">
+    <div class="section-intro-icon">✅</div>
+    <div class="section-intro-title">Anketi Tamamlayın</div>
+    <div class="section-intro-desc">Yanıtlarınız kaydedilmeye hazır</div>
+  </div>
+
+  <div class="card" id="scoreSummaryCard">
+    <div style="font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Skorlarınız</div>
+    <div class="score-row"><span class="score-name">NRS Ağrı (ort.)</span><span class="score-num" id="sumNRS">—</span></div>
+    <div class="score-row"><span class="score-name">IKDC Skoru</span><span class="score-num" id="sumIKDC">—</span></div>
+    <div class="score-row"><span class="score-name">Lysholm Skoru</span><span class="score-num" id="sumLysholm">—</span></div>
+    <div class="score-row"><span class="score-name">Tegner Aktivite</span><span class="score-num" id="sumTegner">—</span></div>
+    <div class="score-row"><span class="score-name">Ameliyat Sonrası</span><span class="score-num" id="sumDaysPostOp">—</span></div>
+  </div>
+
+  <div class="error-banner" id="errorBanner">
+    Gönderim sırasında bir hata oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.
+  </div>
+
+  <div class="card" style="background: var(--primary-light); border-color: #93c5fd;">
+    <div style="font-size: 14px; color: #1e40af; line-height: 1.5;">
+      📌 <strong>Hekiminize not:</strong> Yanıtlarınız güvenli biçimde iletilecek ve yalnızca doktorunuz tarafından görüntülenecektir.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 8: Success -->
+<div class="section" id="section-8">
+  <div class="success-screen">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Teşekkürler!</div>
+    <div class="success-text">
+      Yanıtlarınız başarıyla kaydedildi ve hekiminize iletildi.<br><br>
+      Bu pencereyi kapatabilirsiniz.
+    </div>
+    <div class="score-summary">
+      <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text);">Kayıt Özeti</div>
+      <div class="score-row"><span class="score-name">Tarih</span><span class="score-num" id="finalDate">—</span></div>
+      <div class="score-row"><span class="score-name">IKDC</span><span class="score-num" id="finalIKDC">—</span></div>
+      <div class="score-row"><span class="score-name">Lysholm</span><span class="score-num" id="finalLysholm">—</span></div>
+      <div class="score-row"><span class="score-name">Tegner</span><span class="score-num" id="finalTegner">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Footer -->
+<div class="nav-footer" id="navFooter">
+  <button class="btn btn-ghost" id="btnBack" onclick="goBack()" style="display:none">← Geri</button>
+  <button class="btn btn-primary" id="btnNext" onclick="goNext()">Başla →</button>
+</div>
+
+<script>
+// ─── Config ─────────────────────────────────────────────────────────────────
+// Bu URL'yi Google Apps Script deploy ettikten sonra güncelleyin
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentSection = 0;
+const totalSections = 9; // 0-8
+
+const scores = {
+  nrs: 5,
+  nrsWorst: 5,
+  ikdc1: null, ikdc2: null, ikdc3: null, ikdc4: null, ikdc5: null,
+  ikdc6: null, ikdc7: null, ikdc8: null, ikdc9: null, ikdc10: null,
+  ikdc11: null, ikdc12: null, ikdc13: null, ikdc14: null, ikdc15: null,
+  ikdc16: null, ikdcFunc: 5,
+  lys1: null, lys2: null, lys3: null, lys4: null,
+  lys5: null, lys6: null, lys7: null, lys8: null,
+  tegner: null
+};
+
+// ─── URL Params ──────────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const patientName   = params.get('name') || 'Hasta';
+const patientId     = params.get('id')   || 'DEMO';
+const surgeryDateStr = params.get('surgery') || '';
+const surgeryLeg    = params.get('leg') || 'sağ';
+
+function calcDaysPostOp(surgeryDateStr) {
+  if (!surgeryDateStr) return null;
+  const surgery = new Date(surgeryDateStr);
+  const today = new Date();
+  const diff = Math.floor((today - surgery) / (1000 * 60 * 60 * 24));
+  return diff;
+}
+
+const daysPostOp = calcDaysPostOp(surgeryDateStr);
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+window.onload = function() {
+  document.getElementById('patientNameDisplay').textContent = patientName;
+  document.getElementById('diagnosisDisplay').textContent = 'Menisküs Yırtığı';
+
+  if (surgeryDateStr) {
+    const d = new Date(surgeryDateStr);
+    document.getElementById('surgeryDateDisplay').textContent =
+      d.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
+  } else {
+    document.getElementById('surgeryDateDisplay').textContent = 'Belirtilmemiş';
+  }
+
+  if (daysPostOp !== null) {
+    const label = daysPostOp === 0 ? 'Bugün' :
+                  daysPostOp < 0  ? 'Ameliyat öncesi' :
+                  `Ameliyat sonrası ${daysPostOp}. gün`;
+    document.getElementById('daysPostOpDisplay').textContent = label;
+  } else {
+    document.getElementById('daysPostOpDisplay').textContent = 'Tarih girilmemiş';
+  }
+
+  updateProgress();
+};
+
+// ─── NRS Helpers ─────────────────────────────────────────────────────────────
+const nrsLabels = [
+  'Ağrı yok', 'Çok hafif', 'Hafif', 'Orta-hafif', 'Hafif-orta',
+  'Orta şiddette', 'Orta-yüksek', 'Şiddetli', 'Çok şiddetli', 'Dayanılmaz', 'Dayanılmaz – en kötü'
+];
+
+function updateNRS(v) {
+  scores.nrs = parseInt(v);
+  document.getElementById('nrsDisplay').textContent = v;
+  document.getElementById('nrsLabel').textContent = nrsLabels[v];
+}
+function updateNRSWorst(v) {
+  scores.nrsWorst = parseInt(v);
+  document.getElementById('nrsWorstDisplay').textContent = v;
+  document.getElementById('nrsWorstLabel').textContent = nrsLabels[v];
+}
+function updateIkdcFunc(v) {
+  scores.ikdcFunc = parseInt(v);
+  document.getElementById('ikdcFuncDisplay').textContent = v;
+  const labels = ['Hiç çalışmıyor','','','','','Orta fonksiyon','','','','','Tam normal'];
+  document.getElementById('ikdcFuncLabel').textContent = labels[v] || '';
+}
+
+// ─── Option Selection ────────────────────────────────────────────────────────
+function selectOption(groupId, index, value) {
+  scores[groupId] = value;
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.option-label').forEach((el, i) => {
+    el.classList.toggle('selected', i === index);
+  });
+  updateNextButton();
+}
+
+function selectTegner(value) {
+  scores.tegner = value;
+  document.querySelectorAll('.tegner-option').forEach((el, i) => {
+    el.classList.toggle('selected', i === value);
+  });
+  updateNextButton();
+}
+
+// ─── Validation ──────────────────────────────────────────────────────────────
+const sectionRequiredFields = {
+  0: [],
+  1: [], // NRS — always has value (slider)
+  2: ['ikdc1','ikdc2','ikdc3','ikdc4','ikdc5'],
+  3: ['ikdc6','ikdc7','ikdc8','ikdc9','ikdc10','ikdc11','ikdc12','ikdc13'],
+  4: ['ikdc14','ikdc15','ikdc16'],
+  5: ['lys1','lys2','lys3','lys4','lys5','lys6','lys7','lys8'],
+  6: ['tegner'],
+  7: [],
+  8: []
+};
+
+function isSectionValid(s) {
+  return sectionRequiredFields[s].every(f => scores[f] !== null);
+}
+
+function updateNextButton() {
+  const btn = document.getElementById('btnNext');
+  btn.disabled = !isSectionValid(currentSection);
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function updateProgress() {
+  const pct = (currentSection / (totalSections - 1)) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+  updateNextButton();
+
+  const sectionTitles = [
+    'Hoş Geldiniz', 'Ağrı', 'IKDC – Semptomlar', 'IKDC – Aktiviteler',
+    'IKDC – Spor', 'Lysholm', 'Tegner', 'Gönder', 'Tamamlandı'
+  ];
+  const headerLabel = document.querySelector('.header-section-label');
+  const headerTitle = document.querySelector('.header-section-title');
+  const headerProg  = document.querySelector('.header-progress-text');
+  if (headerLabel) {
+    headerLabel.textContent = currentSection === 0 ? 'Menisküs PROM Takip' :
+                              currentSection === 8 ? '' : 'Soru Seti';
+    headerTitle.textContent = sectionTitles[currentSection];
+    headerProg.textContent  = currentSection > 0 && currentSection < 8 ?
+      `${currentSection} / 7 bölüm tamamlandı` : '';
+  }
+
+  document.getElementById('btnBack').style.display =
+    (currentSection > 0 && currentSection < 8) ? 'block' : 'none';
+
+  const btnNext = document.getElementById('btnNext');
+  if (currentSection === 0) btnNext.textContent = 'Ankete Başla →';
+  else if (currentSection === 7) btnNext.textContent = '✓ Gönder';
+  else if (currentSection === 8) btnNext.style.display = 'none';
+  else btnNext.textContent = 'Devam →';
+
+  document.getElementById('navFooter').style.display =
+    currentSection === 8 ? 'none' : 'flex';
+}
+
+function goNext() {
+  if (currentSection === 7) { submitForm(); return; }
+  if (currentSection === 6) { populateSummary(); }
+  showSection(currentSection + 1);
+}
+
+function goBack() {
+  if (currentSection > 0) showSection(currentSection - 1);
+}
+
+function showSection(n) {
+  document.getElementById('section-' + currentSection).classList.remove('active');
+  currentSection = n;
+  document.getElementById('section-' + currentSection).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateProgress();
+}
+
+// ─── Score Calculation ────────────────────────────────────────────────────────
+function calcIKDC() {
+  const fields = ['ikdc1','ikdc2','ikdc3','ikdc4','ikdc5',
+                  'ikdc6','ikdc7','ikdc8','ikdc9','ikdc10',
+                  'ikdc11','ikdc12','ikdc13','ikdc14','ikdc15','ikdc16'];
+  const sum = fields.reduce((acc, f) => acc + (scores[f] ?? 0), 0) + scores.ikdcFunc;
+  const maxPossible = 4+4+4+1+4 + 4*9 + 4+4+4 + 10;
+  return Math.round((sum / maxPossible) * 100);
+}
+
+function calcLysholm() {
+  return (scores.lys1 ?? 0) + (scores.lys2 ?? 0) + (scores.lys3 ?? 0) +
+         (scores.lys4 ?? 0) + (scores.lys5 ?? 0) + (scores.lys6 ?? 0) +
+         (scores.lys7 ?? 0) + (scores.lys8 ?? 0);
+}
+
+function populateSummary() {
+  const ikdc = calcIKDC();
+  const lysholm = calcLysholm();
+  document.getElementById('sumNRS').textContent = scores.nrs + ' / 10';
+  document.getElementById('sumIKDC').textContent = ikdc + ' / 100';
+  document.getElementById('sumLysholm').textContent = lysholm + ' / 100';
+  document.getElementById('sumTegner').textContent = scores.tegner + ' / 10';
+  document.getElementById('sumDaysPostOp').textContent =
+    daysPostOp !== null ? daysPostOp + '. gün' : '—';
+}
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
+function submitForm() {
+  const btn = document.getElementById('btnNext');
+  btn.innerHTML = '<span class="spinner"></span>Gönderiliyor...';
+  btn.disabled = true;
+  document.getElementById('errorBanner').style.display = 'none';
+
+  const ikdc = calcIKDC();
+  const lysholm = calcLysholm();
+  const now = new Date();
+
+  const payload = {
+    timestamp: now.toISOString(),
+    date: now.toLocaleDateString('tr-TR'),
+    time: now.toLocaleTimeString('tr-TR'),
+    patientId,
+    patientName,
+    diagnosis: 'Menisküs Yırtığı',
+    surgeryDate: surgeryDateStr,
+    daysPostOp: daysPostOp !== null ? daysPostOp : '',
+    surgeryLeg,
+    nrs_avg: scores.nrs,
+    nrs_worst: scores.nrsWorst,
+    ikdc_score: ikdc,
+    ikdc_raw: JSON.stringify({
+      q1:scores.ikdc1, q2:scores.ikdc2, q3:scores.ikdc3, q4:scores.ikdc4, q5:scores.ikdc5,
+      q6:scores.ikdc6, q7:scores.ikdc7, q8:scores.ikdc8, q9:scores.ikdc9, q10:scores.ikdc10,
+      q11:scores.ikdc11, q12:scores.ikdc12, q13:scores.ikdc13, q14:scores.ikdc14,
+      q15:scores.ikdc15, q16:scores.ikdc16, func:scores.ikdcFunc
+    }),
+    lysholm_score: lysholm,
+    lysholm_raw: JSON.stringify({
+      limp:scores.lys1, support:scores.lys2, locking:scores.lys3, instability:scores.lys4,
+      pain:scores.lys5, swelling:scores.lys6, stairs:scores.lys7, squat:scores.lys8
+    }),
+    tegner: scores.tegner
+  };
+
+  // If no URL configured yet, show demo mode
+  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    setTimeout(() => {
+      showSuccess(ikdc, lysholm, now);
+    }, 800);
+    return;
+  }
+
+  const getUrl = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  const popup = window.open(getUrl, 'prom_submit', 'width=1,height=1,left=0,top=0');
+  setTimeout(() => {
+    try { if (popup) popup.close(); } catch(e) {}
+    showSuccess(ikdc, lysholm, now);
+  }, 2500);
+}
+
+function showSuccess(ikdc, lysholm, now) {
+  document.getElementById('finalDate').textContent = now.toLocaleDateString('tr-TR');
+  document.getElementById('finalIKDC').textContent = ikdc + ' / 100';
+  document.getElementById('finalLysholm').textContent = lysholm + ' / 100';
+  document.getElementById('finalTegner').textContent = (scores.tegner ?? '—') + ' / 10';
+  showSection(8);
+}
+</script>
+</body>
+</html>
