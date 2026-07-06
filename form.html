@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Diz Değerlendirme Anketi</title>
+  <title>Omuz Değerlendirme Anketi</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,7 +29,7 @@
       line-height: 1.5;
     }
 
-    /* Progress Bar */
+    /* ── Progress Bar ─────────────────────────────── */
     .progress-bar-container {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -44,7 +44,7 @@
       border-radius: 0 2px 2px 0;
     }
 
-    /* Header */
+    /* ── Header ───────────────────────────────────── */
     .header {
       background: white;
       padding: 16px 20px 12px;
@@ -53,34 +53,34 @@
       top: 4px;
       z-index: 99;
     }
-    .header-section-label {
+    .header-label {
       font-size: 12px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 2px;
     }
-    .header-section-title {
+    .header-title {
       font-size: 18px;
       font-weight: 700;
       color: var(--text);
     }
-    .header-progress-text {
+    .header-sub {
       font-size: 13px;
       color: var(--muted);
       margin-top: 2px;
     }
 
-    /* Sections */
+    /* ── Sections ─────────────────────────────────── */
     .section {
       display: none;
-      padding: 20px 16px 100px;
+      padding: 20px 16px 120px;
       max-width: 600px;
       margin: 0 auto;
     }
     .section.active { display: block; }
 
-    /* Cards */
+    /* ── Cards ────────────────────────────────────── */
     .card {
       background: var(--card);
       border-radius: 16px;
@@ -89,181 +89,177 @@
       border: 1px solid var(--border);
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-
-    .question-number {
+    .card-label {
       font-size: 12px;
       font-weight: 600;
       color: var(--primary);
-      margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      margin-bottom: 6px;
     }
-    .question-text {
+    .card-question {
       font-size: 16px;
       font-weight: 600;
       color: var(--text);
-      margin-bottom: 16px;
       line-height: 1.4;
+      margin-bottom: 20px;
     }
 
-    /* Radio Options */
-    .options-list { display: flex; flex-direction: column; gap: 8px; }
-    .option-label {
-      display: flex;
-      align-items: center;
-      padding: 12px 14px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: white;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .option-label:active { transform: scale(0.98); }
-    .option-label input[type="radio"],
-    .option-label input[type="checkbox"] {
-      display: none;
-    }
-    .option-label.selected {
-      border-color: var(--primary);
-      background: var(--primary-light);
-    }
-    .option-dot {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      margin-right: 12px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    .option-label.selected .option-dot {
-      border-color: var(--primary);
-      background: var(--primary);
-    }
-    .option-dot::after {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: white;
-      display: none;
-    }
-    .option-label.selected .option-dot::after { display: block; }
-    .option-text {
-      font-size: 15px;
-      color: var(--text);
-      flex: 1;
-    }
-    .option-score {
-      font-size: 12px;
-      color: var(--muted);
-      margin-left: 8px;
-      background: var(--bg);
-      padding: 2px 7px;
-      border-radius: 99px;
-    }
-
-    /* NRS Slider */
-    .nrs-container { text-align: center; }
-    .nrs-value-display {
-      font-size: 56px;
+    /* ── VAS Slider ───────────────────────────────── */
+    .vas-container { text-align: center; }
+    .vas-value-display {
+      font-size: 72px;
       font-weight: 800;
       color: var(--primary);
       line-height: 1;
       margin-bottom: 4px;
+      transition: color 0.3s;
     }
-    .nrs-value-label {
-      font-size: 14px;
+    .vas-value-label {
+      font-size: 15px;
+      font-weight: 500;
       color: var(--muted);
-      margin-bottom: 20px;
-      min-height: 20px;
+      margin-bottom: 28px;
+      min-height: 22px;
+      transition: color 0.3s;
     }
-    .nrs-slider {
+    .vas-slider-wrap {
+      position: relative;
+      padding: 0 4px;
+      margin-bottom: 12px;
+    }
+    .vas-slider {
+      --thumb-color: #d97706;
       -webkit-appearance: none;
       width: 100%;
-      height: 8px;
-      border-radius: 4px;
-      background: linear-gradient(90deg, #16a34a, #eab308, #dc2626);
+      height: 10px;
+      border-radius: 5px;
       outline: none;
-      margin-bottom: 8px;
+      cursor: pointer;
+      background: linear-gradient(90deg,
+        #22c55e  0%,
+        #84cc16 22%,
+        #facc15 42%,
+        #f97316 64%,
+        #ef4444 82%,
+        #991b1b 100%);
     }
-    .nrs-slider::-webkit-slider-thumb {
+    .vas-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 28px;
-      height: 28px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: white;
-      border: 3px solid var(--primary);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      border: 3px solid var(--thumb-color);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
       cursor: pointer;
+      transition: transform 0.15s, border-color 0.2s;
     }
-    .nrs-labels {
+    .vas-slider:active::-webkit-slider-thumb { transform: scale(1.18); }
+    .vas-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    /* Welcome screen */
-    .welcome-hero {
-      text-align: center;
-      padding: 32px 0 24px;
-    }
-    .welcome-icon {
-      font-size: 64px;
+      margin-top: 6px;
       margin-bottom: 16px;
     }
-    .welcome-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-    .welcome-subtitle {
-      font-size: 16px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .info-row:last-child { border-bottom: none; }
-    .info-label { font-size: 14px; color: var(--muted); }
-    .info-value { font-size: 15px; font-weight: 600; color: var(--text); }
-    .badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 99px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .badge-blue { background: var(--primary-light); color: var(--primary); }
-    .badge-green { background: var(--success-light); color: var(--success); }
-    .section-preview {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .section-chip {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      padding: 4px 12px;
-      font-size: 13px;
-      color: var(--muted);
+    .vas-labels span { font-size: 12px; color: var(--muted); }
+    .vas-ticks { display: flex; justify-content: space-between; padding: 4px 2px 0; }
+    .vas-ticks span { font-size: 11px; color: var(--muted); width: 20px; text-align: center; }
+    /* Uyku VAS — ters yön: 0 = kötü (kırmızı), 10 = mükemmel (yeşil) */
+    .vas-slider.sleep {
+      background: linear-gradient(90deg,
+        #991b1b  0%,
+        #ef4444 18%,
+        #f97316 36%,
+        #facc15 58%,
+        #84cc16 78%,
+        #22c55e 100%);
     }
 
-    /* Navigation buttons */
-    .nav-footer {
+    /* ── Demographics ─────────────────────────────── */
+    .demo-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+    .demo-table td {
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+      vertical-align: middle;
+    }
+    .demo-table tr:last-child td { border-bottom: none; }
+    .demo-lbl { color: var(--muted); font-size: 13px; width: 120px; }
+    .demo-val { font-weight: 600; color: var(--text); }
+
+    .side-alert {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+    .side-alert-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 10px;
+    }
+    .side-btns { display: flex; gap: 8px; }
+    .side-btn {
+      flex: 1;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid var(--border);
+      background: white;
+      color: var(--text);
+      transition: all .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .side-btn.on {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-6px); }
+      40%,80%  { transform: translateX(6px); }
+    }
+
+    /* ── ROM ──────────────────────────────────────── */
+    .rom-note {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .rom-deg {
+      font-size: 64px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1;
+      margin-bottom: 8px;
+      transition: color .2s;
+      color: #16a34a;
+    }
+    .rom-svg-wrap { padding: 0 2px; }
+    .rom-svg-wrap svg {
+      width: 100%;
+      display: block;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: crosshair;
+    }
+    .rom-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Bottom Navigation ────────────────────────── */
+    .nav-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
       background: white;
@@ -271,11 +267,7 @@
       padding: 12px 16px;
       display: flex;
       gap: 10px;
-      max-width: 600px;
-      margin: 0 auto;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
+      z-index: 100;
     }
     .btn {
       flex: 1;
@@ -289,81 +281,105 @@
       -webkit-tap-highlight-color: transparent;
     }
     .btn:active { transform: scale(0.97); }
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-    .btn-primary:disabled {
-      background: #93c5fd;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .btn-ghost {
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; transform: none; }
+    .btn-secondary {
       background: var(--bg);
-      color: var(--muted);
+      color: var(--text);
       border: 1px solid var(--border);
       flex: 0 0 auto;
       padding: 14px 20px;
     }
 
-    /* Section divider */
-    .section-intro {
+    /* ── Welcome Screen ───────────────────────────── */
+    .welcome-hero { text-align: center; padding: 40px 20px 32px; }
+    .welcome-icon { font-size: 56px; margin-bottom: 16px; }
+    .welcome-title { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .welcome-name { color: var(--primary); }
+    .welcome-sub { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+    .info-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .info-chip {
+      flex: 1;
+      background: var(--primary-light);
+      border-radius: 12px;
+      padding: 12px 14px;
       text-align: center;
-      padding: 24px 0 20px;
     }
-    .section-intro-icon { font-size: 40px; margin-bottom: 10px; }
-    .section-intro-title {
-      font-size: 20px;
-      font-weight: 700;
+    .info-chip-label {
+      font-size: 11px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .info-chip-value { font-size: 15px; font-weight: 700; color: var(--text); }
+    .steps-list {
+      list-style: none;
+      text-align: left;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .steps-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--text);
+    }
+    .steps-list li:last-child { border-bottom: none; }
+    .step-num {
+      width: 24px; height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Success Screen ───────────────────────────── */
+    .success-wrap { text-align: center; padding: 40px 16px; }
+    .success-check {
+      width: 80px; height: 80px;
+      background: var(--success-light);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+    }
+    .success-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .success-sub { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .score-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+    }
+    .score-box-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
       margin-bottom: 6px;
     }
-    .section-intro-desc {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
+    .score-box-value { font-size: 28px; font-weight: 800; color: var(--primary); }
 
-    /* Success screen */
-    .success-screen {
-      text-align: center;
-      padding: 48px 20px;
-    }
-    .success-icon { font-size: 80px; margin-bottom: 20px; }
-    .success-title {
-      font-size: 26px;
-      font-weight: 800;
-      margin-bottom: 10px;
-      color: var(--success);
-    }
-    .success-text {
-      font-size: 16px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-    .score-summary {
-      background: var(--bg);
-      border-radius: 16px;
-      padding: 20px;
-      margin-top: 24px;
-      text-align: left;
-    }
-    .score-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 15px;
-    }
-    .score-row:last-child { border-bottom: none; }
-    .score-name { color: var(--muted); }
-    .score-num { font-weight: 700; color: var(--text); }
-
-    /* Loading spinner */
+    /* ── Spinner ──────────────────────────────────── */
     .spinner {
       display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(255,255,255,0.4);
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
@@ -372,822 +388,2120 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Error banner */
-    .error-banner {
-      background: #fee2e2;
-      border: 1px solid #fca5a5;
-      border-radius: 12px;
-      padding: 12px 16px;
-      color: #991b1b;
+    /* ── DASH Questionnaire ───────────────────────── */
+    .dash-intro {
+      background: var(--primary-light);
+      border-radius: 14px;
+      padding: 14px 16px;
       font-size: 14px;
-      margin-bottom: 12px;
-      display: none;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 14px;
     }
-
-    /* Tegner visual */
-    .tegner-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .tegner-option {
+    .dash-score-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .tegner-option.selected {
-      border-color: var(--primary);
-      background: var(--primary-light);
+    .dash-score-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .dash-score-prog  { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .dash-score-val   { font-size: 38px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .dash-score-sub   { font-size: 12px; color: var(--muted); text-align: right; }
+    .dash-group {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .tegner-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
+    .dash-group-hd {
       background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+    }
+    .dash-group-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .dash-group-intro {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .dash-q {
+      padding: 12px 16px 11px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dash-q:last-child { border-bottom: none; }
+    .dash-q-text {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 11px;
+    }
+    .dash-q-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-right: 5px;
+    }
+    /* ── Gradient colour bar ──────────────────────── */
+    .dbar {
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      height: 52px;
+      gap: 2px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    .dseg {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 13px;
-      flex-shrink: 0;
+      transition: transform 0.14s, opacity 0.14s;
     }
-    .tegner-option.selected .tegner-num {
-      background: var(--primary);
-      color: white;
+    .dseg:first-child { border-radius: 12px 0 0 12px; }
+    .dseg:last-child  { border-radius: 0 12px 12px 0; }
+    .dseg-num {
+      font-size: 18px;
+      font-weight: 800;
+      transition: color 0.14s;
     }
-    .tegner-desc { font-size: 14px; color: var(--text); }
+    .dbar.touched .dseg:not(.sel) { opacity: 0.28; }
+    .dseg.sel { transform: scaleY(1.08); }
+    .dqlbl {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      min-height: 20px;
+      margin-top: 7px;
+      transition: color 0.2s;
+      letter-spacing: 0.01em;
+    }
+    /* ── Constant Score ──────────────────────────────────── */
+    .const-sub-row { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+    .const-toggle-group { display: flex; flex-direction: column; gap: 8px; }
+    .const-toggle {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; border: 2px solid var(--border);
+      border-radius: 12px; cursor: pointer; transition: all 0.15s;
+      font-size: 13px; color: var(--text); background: white;
+      user-select: none; -webkit-user-select: none;
+    }
+    .const-toggle:active { opacity: 0.8; }
+    .const-toggle.active { background: #dcfce7; border-color: #16a34a; color: #166534; }
+    .const-toggle-pts { margin-left: auto; font-size: 11px; font-weight: 700;
+                        opacity: 0.5; white-space: nowrap; }
+    .const-toggle.active .const-toggle-pts { opacity: 1; }
+    .const-rom-grid { display: grid; grid-template-columns: 1fr 1fr;
+                      gap: 1px; background: var(--border); }
+    .const-rom-item { background: white; padding: 12px 16px;
+                      display: flex; justify-content: space-between; align-items: center; }
+    .const-rom-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .const-rom-score { font-size: 16px; font-weight: 800; color: var(--primary); }
+    /* ── Strength slider ──────────────────────────────── */
+    .str-track {
+      position: relative; height: 52px; border-radius: 12px;
+      background: linear-gradient(to right,
+        #ef4444 0%, #f97316 11%, #fb923c 22%, #f59e0b 33%, #eab308 44%,
+        #a3e635 55%, #84cc16 66%, #4ade80 77%, #22c55e 88%, #16a34a 100%);
+      cursor: pointer; touch-action: none;
+      user-select: none; -webkit-user-select: none; overflow: visible;
+    }
+    .str-thumb {
+      position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: 34px; height: 34px; border-radius: 50%;
+      background: white; border: 3px solid var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      pointer-events: none; display: none;
+    }
+    .str-ticks { display: flex; margin-top: 7px; }
+    .str-tick  { flex: 1; font-size: 10px; color: var(--muted); text-align: center; line-height: 1.3; }
+    .str-val   { text-align: center; font-size: 13px; font-weight: 600; margin-top: 6px; min-height: 22px; transition: color 0.2s; }
   </style>
 </head>
 <body>
 
 <div class="progress-bar-container">
-  <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+  <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
 </div>
 
-<!-- SECTION 0: Welcome -->
-<div class="section active" id="section-0">
+<div class="header">
+  <div class="header-label" id="headerLabel">Omuz Değerlendirmesi</div>
+  <div class="header-title" id="headerTitle">Hoş Geldiniz</div>
+  <div class="header-sub"   id="headerSub"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 0 — WELCOME
+════════════════════════════════════════════ -->
+<div class="section active" id="sec0">
   <div class="welcome-hero">
-    <div class="welcome-icon">🦵</div>
-    <div class="welcome-title">Diz Değerlendirme Anketi</div>
-    <div class="welcome-subtitle" id="welcomeSubtitle">Dizinizle ilgili durumunuzu daha iyi anlayabilmemiz için lütfen bu kısa anketi doldurunuz.</div>
-  </div>
-
-  <div class="card">
+    <div class="welcome-icon">🩺</div>
+    <div class="welcome-title">Merhaba,
+      <span class="welcome-name" id="welcomeName">Hasta</span>
+    </div>
+    <p class="welcome-sub">
+      Omzunuzu daha iyi takip edebilmemiz için birkaç soru soracağız.<br>
+      Yanıtlarınız doğrudan doktorunuza iletilir.
+    </p>
     <div class="info-row">
-      <span class="info-label">Hasta</span>
-      <span class="info-value" id="patientNameDisplay">—</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Tanı</span>
-      <span class="info-value"><span class="badge badge-blue" id="diagnosisDisplay">Menisküs Yırtığı</span></span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Ameliyat Tarihi</span>
-      <span class="info-value" id="surgeryDateDisplay">—</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Ameliyat Sonrası</span>
-      <span class="info-value"><span class="badge badge-green" id="daysPostOpDisplay">—</span></span>
+      <div class="info-chip">
+        <div class="info-chip-label">Post-op Gün</div>
+        <div class="info-chip-value" id="chipDays">—</div>
+      </div>
+      <div class="info-chip">
+        <div class="info-chip-label">Taraf</div>
+        <div class="info-chip-value" id="chipLeg">—</div>
+      </div>
     </div>
   </div>
-
-  <div class="card">
-    <div style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">Bu anket şu bölümleri içerir:</div>
-    <div class="section-preview">
-      <span class="section-chip">🩹 Ağrı (NRS)</span>
-      <span class="section-chip">📋 IKDC (18 soru)</span>
-      <span class="section-chip">🔩 Lysholm (8 soru)</span>
-      <span class="section-chip">🏃 Tegner (1 soru)</span>
-    </div>
-    <div style="font-size: 13px; color: var(--muted); margin-top: 12px;">Tahmini süre: <strong>4–5 dakika</strong></div>
-  </div>
-
-  <div style="font-size: 13px; color: var(--muted); text-align: center; padding: 8px 0;">
-    Bilgileriniz güvenle saklanır ve yalnızca hekiminiz tarafından görüntülenir.
-  </div>
+  <ul class="steps-list">
+    <li><span class="step-num">1</span> Ağrı değerlendirmesi (VAS)</li>
+    <li><span class="step-num">2</span> Eklem hareket açıklığı</li>
+    <li><span class="step-num">3</span> Fonksiyonel skorlar (DASH · Constant-Murley · SF-12)</li>
+    <li><span class="step-num">4</span> Uyku kalitesi (VAS Sleep)</li>
+  </ul>
 </div>
 
-<!-- SECTION 1: NRS Pain -->
-<div class="section" id="section-1">
-  <div class="section-intro">
-    <div class="section-intro-icon">🩹</div>
-    <div class="section-intro-title">Ağrı Değerlendirmesi</div>
-    <div class="section-intro-desc">Son 24 saat içindeki ağrı durumunuzu değerlendirin</div>
-  </div>
-
+<!-- ═══════════════════════════════════════════
+     SECTION 1 — DEMOGRAPHICS
+════════════════════════════════════════════ -->
+<div class="section" id="sec1">
   <div class="card">
-    <div class="question-number">NRS Ağrı Skoru</div>
-    <div class="question-text">Son 24 saatte dizinizdeki ortalama ağrı şiddetini işaretleyiniz.</div>
-    <div class="nrs-container">
-      <div class="nrs-value-display" id="nrsDisplay">5</div>
-      <div class="nrs-value-label" id="nrsLabel">Orta şiddette ağrı</div>
-      <input type="range" class="nrs-slider" id="nrsSlider" min="0" max="10" value="5" oninput="updateNRS(this.value)">
-      <div class="nrs-labels"><span>0 – Ağrı yok</span><span>10 – Dayanılmaz</span></div>
-    </div>
-  </div>
+    <div class="card-label">Hasta Bilgileri</div>
+    <div class="card-question">Bilgilerinizi doğrulayın</div>
+    <table class="demo-table">
+      <tr>
+        <td class="demo-lbl">Ad Soyad</td>
+        <td class="demo-val" id="demoName">—</td>
+      </tr>
+      <tr>
+        <td class="demo-lbl">Tanı</td>
+        <td class="demo-val" id="demoProcedure">—</td>
+      </tr>
+      <tr>
+        <td class="demo-lbl">Ameliyat tarihi</td>
+        <td class="demo-val" id="demoDate">—</td>
+      </tr>
+      <tr>
+        <td class="demo-lbl">Post-op süre</td>
+        <td class="demo-val" id="demoDays">—</td>
+      </tr>
+      <tr>
+        <td class="demo-lbl">Ameliyat tarafı</td>
+        <td class="demo-val" id="demoLeg">—</td>
+      </tr>
+    </table>
 
-  <div class="card">
-    <div class="question-number">Ağrı – En Kötü</div>
-    <div class="question-text">Son 24 saatte dizinizdeki <strong>en şiddetli</strong> ağrıyı işaretleyiniz.</div>
-    <div class="nrs-container">
-      <div class="nrs-value-display" id="nrsWorstDisplay">5</div>
-      <div class="nrs-value-label" id="nrsWorstLabel">Orta şiddette ağrı</div>
-      <input type="range" class="nrs-slider" id="nrsWorstSlider" min="0" max="10" value="5" oninput="updateNRSWorst(this.value)">
-      <div class="nrs-labels"><span>0 – Ağrı yok</span><span>10 – Dayanılmaz</span></div>
+    <!-- Shown only when leg is missing from URL -->
+    <div id="sidePicker" style="display:none;">
+      <div class="side-alert">
+        <div class="side-alert-title">Hangi omzunuz ameliyat edildi?</div>
+        <div class="side-btns">
+          <button class="side-btn" id="btnSag" onclick="selectLeg('Sağ omuz')">Sağ omuz</button>
+          <button class="side-btn" id="btnSol" onclick="selectLeg('Sol omuz')">Sol omuz</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- SECTION 2: IKDC Part A – Activity & Symptoms -->
-<div class="section" id="section-2">
-  <div class="section-intro">
-    <div class="section-intro-icon">📋</div>
-    <div class="section-intro-title">IKDC – Semptomlar</div>
-    <div class="section-intro-desc">Uluslararası Diz Belgeleme Komitesi anketi (bölüm 1/2)</div>
-  </div>
-
-  <!-- Q1 -->
+<!-- ═══════════════════════════════════════════
+     SECTION 2 — VAS
+════════════════════════════════════════════ -->
+<div class="section" id="sec2">
   <div class="card">
-    <div class="question-number">IKDC Soru 1</div>
-    <div class="question-text">Dizinizde <strong>belirgin ağrı duymadan</strong> yapabildiğiniz en yüksek aktivite düzeyi hangisidir?</div>
-    <div class="options-list" id="ikdc1">
-      <label class="option-label" onclick="selectOption('ikdc1',0,4)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Sıçrama ve dönme içeren çok ağır aktiviteler (futbol, basketbol)</span></label>
-      <label class="option-label" onclick="selectOption('ikdc1',1,3)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Ağır aktiviteler (ağır fizik iş, kayak, tenis)</span></label>
-      <label class="option-label" onclick="selectOption('ikdc1',2,2)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Orta aktiviteler (orta ağır fizik iş, koşu)</span></label>
-      <label class="option-label" onclick="selectOption('ikdc1',3,1)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Hafif aktiviteler (yürüyüş, ev işleri)</span></label>
-      <label class="option-label" onclick="selectOption('ikdc1',4,0)"><input type="radio" name="ikdc1"><span class="option-dot"></span><span class="option-text">Bunların hiçbirini yapamıyorum</span></label>
+    <div class="card-label">Bölüm 1 / 3 — Ağrı Değerlendirmesi</div>
+    <div class="card-question">
+      Son zamanlarda omzunuzdaki <strong>ortalama ağrı</strong> şiddetini
+      aşağıdaki cetvelde işaretleyiniz.
     </div>
-  </div>
-
-  <!-- Q2 -->
-  <div class="card">
-    <div class="question-number">IKDC Soru 2</div>
-    <div class="question-text">Ne sıklıkla <strong>ağrı</strong> hissediyorsunuz?</div>
-    <div class="options-list" id="ikdc2">
-      <label class="option-label" onclick="selectOption('ikdc2',0,4)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Hiç</span></label>
-      <label class="option-label" onclick="selectOption('ikdc2',1,3)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Aylık</span></label>
-      <label class="option-label" onclick="selectOption('ikdc2',2,2)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Haftalık</span></label>
-      <label class="option-label" onclick="selectOption('ikdc2',3,1)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Günlük</span></label>
-      <label class="option-label" onclick="selectOption('ikdc2',4,0)"><input type="radio" name="ikdc2"><span class="option-dot"></span><span class="option-text">Sürekli</span></label>
-    </div>
-  </div>
-
-  <!-- Q3 -->
-  <div class="card">
-    <div class="question-number">IKDC Soru 3</div>
-    <div class="question-text">Son 4 haftada dizinizde <strong>şişlik</strong> ne kadar oldu?</div>
-    <div class="options-list" id="ikdc3">
-      <label class="option-label" onclick="selectOption('ikdc3',0,4)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Hiç</span></label>
-      <label class="option-label" onclick="selectOption('ikdc3',1,3)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Hafif</span></label>
-      <label class="option-label" onclick="selectOption('ikdc3',2,2)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Orta</span></label>
-      <label class="option-label" onclick="selectOption('ikdc3',3,1)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Çok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc3',4,0)"><input type="radio" name="ikdc3"><span class="option-dot"></span><span class="option-text">Aşırı</span></label>
-    </div>
-  </div>
-
-  <!-- Q4 -->
-  <div class="card">
-    <div class="question-number">IKDC Soru 4</div>
-    <div class="question-text">Son 4 haftada diziniz <strong>kilitlendi</strong> mi ya da <strong>takıldı</strong> mı?</div>
-    <div class="options-list" id="ikdc4">
-      <label class="option-label" onclick="selectOption('ikdc4',0,1)"><input type="radio" name="ikdc4"><span class="option-dot"></span><span class="option-text">Hayır</span></label>
-      <label class="option-label" onclick="selectOption('ikdc4',1,0)"><input type="radio" name="ikdc4"><span class="option-dot"></span><span class="option-text">Evet</span></label>
-    </div>
-  </div>
-
-  <!-- Q5 -->
-  <div class="card">
-    <div class="question-number">IKDC Soru 5</div>
-    <div class="question-text"><strong>Şişlik olmadan</strong> yapabildiğiniz en yüksek aktivite düzeyi hangisidir?</div>
-    <div class="options-list" id="ikdc5">
-      <label class="option-label" onclick="selectOption('ikdc5',0,4)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Sıçrama ve dönme içeren çok ağır aktiviteler</span></label>
-      <label class="option-label" onclick="selectOption('ikdc5',1,3)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Ağır aktiviteler</span></label>
-      <label class="option-label" onclick="selectOption('ikdc5',2,2)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Orta aktiviteler</span></label>
-      <label class="option-label" onclick="selectOption('ikdc5',3,1)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Hafif aktiviteler</span></label>
-      <label class="option-label" onclick="selectOption('ikdc5',4,0)"><input type="radio" name="ikdc5"><span class="option-dot"></span><span class="option-text">Bunların hiçbirini yapamıyorum</span></label>
+    <div class="vas-container">
+      <div class="vas-value-display" id="vasDisplay">5</div>
+      <div class="vas-value-label"   id="vasLabel">Orta şiddette ağrı</div>
+      <div class="vas-slider-wrap">
+        <input type="range" class="vas-slider" id="vasSlider"
+               min="0" max="10" step="1" value="5">
+      </div>
+      <div class="vas-ticks">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
+        <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+      <div class="vas-labels">
+        <span>Ağrı yok</span>
+        <span>Dayanılmaz ağrı</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- SECTION 3: IKDC Part B – Activities -->
-<div class="section" id="section-3">
-  <div class="section-intro">
-    <div class="section-intro-icon">🏃</div>
-    <div class="section-intro-title">IKDC – Günlük Aktiviteler</div>
-    <div class="section-intro-desc">Aşağıdaki aktiviteleri yaparken <strong>ne kadar zorluk</strong> yaşıyorsunuz?</div>
-  </div>
-
-  <!-- Reusable activity questions -->
+<!-- ═══════════════════════════════════════════
+     SECTION 3 — ROM (Abduksiyon)
+════════════════════════════════════════════ -->
+<div class="section" id="sec3">
   <div class="card">
-    <div class="question-number">IKDC Soru 6</div>
-    <div class="question-text">Merdiven <strong>çıkma</strong></div>
-    <div class="options-list" id="ikdc6">
-      <label class="option-label" onclick="selectOption('ikdc6',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc6',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc6',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc6',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc6',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    <div class="card-label">Bölüm 2 / 3 — Eklem Hareket Açıklığı</div>
+    <div class="card-question">Abduksiyon (yana kaldırma)</div>
+    <p class="rom-note">Omuzunuzu ağrısız olarak ne kadar yana kaldırabildiğinizi sürükleyerek belirtiniz.</p>
+    <div class="rom-deg" id="romDeg">0°</div>
+    <div class="rom-svg-wrap">
+      <svg viewBox="0 0 340 290" id="romSvg" xmlns="http://www.w3.org/2000/svg"
+           style="touch-action:none">
+
+        <!-- Track (full semicircle, gray) -->
+        <path id="romTrack" fill="none" stroke="#dde3ed" stroke-width="6" stroke-linecap="round"/>
+        <!-- Sector fill -->
+        <path id="romSec" fill="#1e6fff" fill-opacity="0.09"/>
+        <!-- Active arc -->
+        <path id="romArc" fill="none" stroke="#1e6fff" stroke-width="6" stroke-linecap="round"/>
+        <!-- Tick marks + labels (drawn by JS) -->
+        <g id="romTicks"></g>
+
+        <!-- ── Body (static) ── -->
+        <!-- Head -->
+        <circle cx="167" cy="35" r="21" fill="none" stroke="#546e7a" stroke-width="2.5"/>
+        <!-- Hair -->
+        <path d="M 147,28 Q 167,13 187,28" fill="none" stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+        <!-- Neck -->
+        <line x1="162" y1="55" x2="159" y2="70" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="172" y1="55" x2="175" y2="70" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Torso (left shoulder at x=140, right shoulder at x=194) -->
+        <path d="M 140,78 C 140,74 194,74 194,78 L 186,188 L 150,188 Z"
+              fill="none" stroke="#546e7a" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Waist hint -->
+        <path d="M 152,138 Q 167,132 183,138" fill="none" stroke="#78909c"
+              stroke-width="1.2" stroke-dasharray="3,3" opacity="0.4"/>
+        <!-- Legs -->
+        <line x1="155" y1="188" x2="148" y2="272" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="179" y1="188" x2="186" y2="272" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Feet -->
+        <line x1="148" y1="272" x2="137" y2="275" stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+        <line x1="186" y1="272" x2="197" y2="275" stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- ── Static (non-active) arm ── -->
+        <circle id="romSSH" r="5"   fill="#90a4ae" opacity="0.45"/>
+        <line   id="romSUA" stroke="#90a4ae" stroke-width="3"   stroke-linecap="round"/>
+        <circle id="romSEL" r="4.5" fill="#90a4ae" opacity="0.8"/>
+        <line   id="romSFA" stroke="#90a4ae" stroke-width="2.5" stroke-linecap="round"/>
+        <circle id="romSHD" r="5.5" fill="#90a4ae" opacity="0.8"/>
+
+        <!-- ── Active shoulder indicator ── -->
+        <circle id="romASH"  r="8"   fill="white" stroke="#1e6fff" stroke-width="3"/>
+        <circle id="romASH2" r="3.5" fill="#1e6fff"/>
+
+        <!-- ── Active arm ── -->
+        <line   id="romAUA" stroke="#1e6fff" stroke-width="5"   stroke-linecap="round"/>
+        <circle id="romAEL" r="6"   fill="white" stroke="#1e6fff" stroke-width="2.5"/>
+        <line   id="romAFA" stroke="#1e6fff" stroke-width="4.5" stroke-linecap="round"/>
+
+        <!-- ── Drag thumb (hand) ── -->
+        <circle id="romTT"  r="22" fill="transparent"/>
+        <circle id="romAHD" r="12" fill="white" stroke="#1e6fff" stroke-width="3"/>
+        <circle id="romAH2" r="5"  fill="#1e6fff"/>
+
+      </svg>
     </div>
+    <p class="rom-hint">Mavi noktayı sürükleyin</p>
   </div>
+</div>
 
+<!-- ═══════════════════════════════════════════
+     SECTION 4 — ROM (Öne Fleksiyon)
+════════════════════════════════════════════ -->
+<div class="section" id="sec4">
   <div class="card">
-    <div class="question-number">IKDC Soru 7</div>
-    <div class="question-text">Merdivenlerden <strong>inme</strong></div>
-    <div class="options-list" id="ikdc7">
-      <label class="option-label" onclick="selectOption('ikdc7',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc7',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc7',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc7',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc7',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    <div class="card-label">Bölüm 2 / 3 — Eklem Hareket Açıklığı</div>
+    <div class="card-question">Öne fleksiyon (öne kaldırma)</div>
+    <p class="rom-note">Omuzunuzu ağrısız olarak ne kadar öne kaldırabildiğinizi sürükleyerek belirtiniz.</p>
+    <div class="rom-deg" id="ffDeg">0°</div>
+    <div class="rom-svg-wrap">
+      <!--
+        ffGrp: the flip group — everything inside uses LOCAL right-arm coordinates.
+        For left arm, JS applies transform="translate(340,0) scale(-1,1)" which mirrors
+        the entire group so the figure faces left and the arc swings forward-left.
+        Tick labels are drawn separately in ffTicks (SVG space) so text stays readable.
+      -->
+      <svg viewBox="0 0 340 290" id="ffSvg" xmlns="http://www.w3.org/2000/svg"
+           style="touch-action:none">
+
+        <g id="ffGrp">
+          <!-- Track (full semicircle, LOCAL right-arm coords: SX=168, SY=84, R=76) -->
+          <path d="M 168 160 A 76 76 0 0 0 244 84 A 76 76 0 0 0 168 8"
+                fill="none" stroke="#dde3ed" stroke-width="6" stroke-linecap="round"/>
+          <!-- Sector fill (dynamic) -->
+          <path id="ffSec" fill="#1e6fff" fill-opacity="0.09"/>
+          <!-- Active arc (dynamic) -->
+          <path id="ffArc" fill="none" stroke="#1e6fff" stroke-width="6" stroke-linecap="round"/>
+
+          <!-- ── Profile body (right-facing by default) ── -->
+          <!-- Head -->
+          <circle cx="150" cy="35" r="20" fill="none" stroke="#546e7a" stroke-width="2.5"/>
+          <!-- Eye -->
+          <circle cx="163" cy="29" r="2.5" fill="#546e7a"/>
+          <!-- Nose (profile curve; auto-mirrors for left arm via group flip) -->
+          <path d="M 170,31 Q 177,36 170,41" fill="none" stroke="#546e7a"
+                stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Mouth (slight smile) -->
+          <path d="M 163,44 Q 167,47 170,44" fill="none" stroke="#546e7a"
+                stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Neck -->
+          <line x1="151" y1="54" x2="152" y2="71" stroke="#546e7a" stroke-width="3" stroke-linecap="round"/>
+          <!-- Torso (profile: front edge x≈163, back edge x≈147) -->
+          <path d="M 147,71 L 148,185 L 163,185 L 164,76 Z"
+                fill="none" stroke="#546e7a" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Waist hint -->
+          <path d="M 147,136 Q 152,131 164,135" fill="none" stroke="#78909c"
+                stroke-width="1.2" stroke-dasharray="3,3" opacity="0.4"/>
+          <!-- Hip -->
+          <line x1="145" y1="185" x2="165" y2="185" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Front leg -->
+          <line x1="156" y1="185" x2="154" y2="272" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Front foot (pointing forward, toward arm side) -->
+          <line x1="154" y1="272" x2="166" y2="276" stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+          <!-- Back leg (dashed — depth cue) -->
+          <line x1="152" y1="185" x2="150" y2="268" stroke="#78909c"
+                stroke-width="2" stroke-linecap="round" stroke-dasharray="4,3" opacity="0.65"/>
+          <line x1="150" y1="268" x2="161" y2="272" stroke="#78909c"
+                stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+
+          <!-- ── Active shoulder ── -->
+          <circle id="ffASH"  cx="168" cy="84" r="8"   fill="white" stroke="#1e6fff" stroke-width="3"/>
+          <circle id="ffASH2" cx="168" cy="84" r="3.5" fill="#1e6fff"/>
+
+          <!-- ── Active arm ── -->
+          <line   id="ffUA" stroke="#1e6fff" stroke-width="5"   stroke-linecap="round"/>
+          <circle id="ffEL" r="6"   fill="white" stroke="#1e6fff" stroke-width="2.5"/>
+          <line   id="ffFA" stroke="#1e6fff" stroke-width="4.5" stroke-linecap="round"/>
+          <!-- Drag thumb -->
+          <circle id="ffTT" r="22" fill="transparent"/>
+          <circle id="ffHD" r="12" fill="white" stroke="#1e6fff" stroke-width="3"/>
+          <circle id="ffH2" r="5"  fill="#1e6fff"/>
+        </g>
+
+        <!-- Tick labels (outside flip group → always readable SVG text) -->
+        <g id="ffTicks"></g>
+      </svg>
     </div>
+    <p class="rom-hint">Mavi noktayı sürükleyin</p>
   </div>
+</div>
 
+<!-- ═══════════════════════════════════════════
+     SECTION 5 — ROM (İç Rotasyon)
+════════════════════════════════════════════ -->
+<div class="section" id="sec5">
   <div class="card">
-    <div class="question-number">IKDC Soru 8</div>
-    <div class="question-text"><strong>Diz çökme</strong> (diz üstüne)</div>
-    <div class="options-list" id="ikdc8">
-      <label class="option-label" onclick="selectOption('ikdc8',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc8',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc8',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc8',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc8',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    <div class="card-label">Bölüm 2 / 3 — Eklem Hareket Açıklığı</div>
+    <div class="card-question">İç rotasyon (el arkada)</div>
+    <p class="rom-note">Kolunuzu büküp elinizi sırtınıza götürün ve olabildiğince yukarı kaydırın. Elinizin ulaştığı bölgeyi seçin.</p>
+    <div class="rom-deg" id="irLabelDisplay" style="font-size:30px; min-height:40px;">Kalça</div>
+    <div class="rom-svg-wrap" style="display:flex; gap:6px; align-items:flex-start;">
+      <div style="flex:1; min-width:0;">
+      <svg viewBox="0 0 340 290" id="irSvg" xmlns="http://www.w3.org/2000/svg"
+           style="touch-action:none">
+
+        <!-- Spine -->
+        <line x1="170" y1="75" x2="170" y2="222" stroke="#dde3ed" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Landmark ticks + labels (drawn by JS) -->
+        <g id="irLandmarks"></g>
+
+        <!-- ── Body (posterior / back view) ── -->
+        <circle cx="170" cy="34" r="20" fill="none" stroke="#546e7a" stroke-width="2.5"/>
+        <path d="M 151,27 Q 170,13 189,27" fill="none" stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+        <line x1="165" y1="53" x2="163" y2="70" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="175" y1="53" x2="177" y2="70" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Torso back (wider at shoulders) -->
+        <path d="M 140,78 C 140,74 200,74 200,78 L 186,188 L 150,188 Z"
+              fill="none" stroke="#546e7a" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Waist hint -->
+        <path d="M 152,138 Q 170,132 188,138" fill="none" stroke="#78909c"
+              stroke-width="1.2" stroke-dasharray="3,3" opacity="0.4"/>
+        <!-- Scapular border hints -->
+        <path d="M 152,93 Q 146,115 153,133" fill="none" stroke="#b0bec5"
+              stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        <path d="M 188,93 Q 194,115 187,133" fill="none" stroke="#b0bec5"
+              stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        <!-- Legs -->
+        <line x1="155" y1="188" x2="148" y2="272" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="181" y1="188" x2="188" y2="272" stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Feet -->
+        <line x1="148" y1="272" x2="137" y2="275" stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+        <line x1="188" y1="272" x2="199" y2="275" stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- ── Passive arm (hanging, drawn beneath active arm) ── -->
+        <line id="irPassUA" stroke="#90a4ae" stroke-width="3"   stroke-linecap="round" opacity="0.45"/>
+        <line id="irPassFA" stroke="#90a4ae" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/>
+
+        <!-- ── Active arm (behind back) ── -->
+        <circle id="irASH"  r="8"   fill="white" stroke="#1e6fff" stroke-width="3"/>
+        <circle id="irASH2" r="3.5" fill="#1e6fff"/>
+        <!-- Upper arm: shoulder → elbow (sticking out to side) -->
+        <line   id="irUA"  stroke="#1e6fff" stroke-width="5"   stroke-linecap="round"/>
+        <!-- Elbow -->
+        <circle id="irEL"  r="6"   fill="white" stroke="#1e6fff" stroke-width="2.5"/>
+        <!-- Forearm: elbow → hand (traveling inward to spine) -->
+        <line   id="irFA"  stroke="#1e6fff" stroke-width="4.5" stroke-linecap="round"/>
+        <!-- Drag thumb (hand on spine) -->
+        <circle id="irTT"  r="22"  fill="transparent"/>
+        <circle id="irHD"  r="12"  fill="white" stroke="#1e6fff" stroke-width="3"/>
+        <circle id="irH2"  r="5"   fill="#1e6fff"/>
+
+      </svg>
+      </div>
+      <div style="flex:0 0 42%;">
+      <svg viewBox="0 0 200 290" id="irSideSvg" xmlns="http://www.w3.org/2000/svg"
+           style="touch-action:none">
+        <g id="irSideGrp">
+          <!-- Spine (back edge indicator) -->
+          <line x1="109" y1="75" x2="109" y2="210"
+                stroke="#dde3ed" stroke-width="2" stroke-linecap="round"/>
+          <!-- Profile body (left-facing, back at x≈109) -->
+          <circle cx="88" cy="34" r="19" fill="none" stroke="#546e7a" stroke-width="2"/>
+          <circle cx="76" cy="28" r="2" fill="#546e7a"/>
+          <path d="M 70,30 Q 64,35 70,40" fill="none" stroke="#546e7a"
+                stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M 76,43 Q 72,46 70,43" fill="none" stroke="#546e7a"
+                stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="87" y1="52" x2="86" y2="68"
+                stroke="#546e7a" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 109,68 L 108,188 L 75,188 L 76,73 Z"
+                fill="none" stroke="#546e7a" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M 108,138 Q 104,132 76,137" fill="none" stroke="#78909c"
+                stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+          <line x1="73" y1="188" x2="110" y2="188"
+                stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="79" y1="188" x2="77" y2="268"
+                stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="77" y1="268" x2="65" y2="272"
+                stroke="#546e7a" stroke-width="2" stroke-linecap="round"/>
+          <line x1="84" y1="188" x2="82" y2="264" stroke="#78909c"
+                stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4,3" opacity="0.6"/>
+          <!-- Active arm (behind back — synchronized with posterior view) -->
+          <circle id="irSideSH"  r="6"   fill="white" stroke="#1e6fff" stroke-width="2.5"/>
+          <line   id="irSideUA"  stroke="#1e6fff" stroke-width="4"   stroke-linecap="round"/>
+          <circle id="irSideEL"  r="5"   fill="white" stroke="#1e6fff" stroke-width="2"/>
+          <line   id="irSideFA"  stroke="#1e6fff" stroke-width="3.5" stroke-linecap="round"/>
+          <circle id="irSideHD"  r="9"   fill="white" stroke="#1e6fff" stroke-width="2.5"/>
+          <circle id="irSideH2"  r="4"   fill="#1e6fff"/>
+        </g>
+      </svg>
+      </div>
     </div>
+    <p class="rom-hint">Mavi noktayı yukarı sürükleyin</p>
   </div>
+</div>
 
+<!-- ═══════════════════════════════════════════
+     SECTION 6 — ER (Dış Rotasyon — üstten bakış)
+════════════════════════════════════════════ -->
+<div class="section" id="sec6">
   <div class="card">
-    <div class="question-number">IKDC Soru 9</div>
-    <div class="question-text"><strong>Çömelme</strong></div>
-    <div class="options-list" id="ikdc9">
-      <label class="option-label" onclick="selectOption('ikdc9',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc9',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc9',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc9',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc9',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    <div class="card-label">Bölüm 2 / 3 — Eklem Hareket Açıklığı</div>
+    <div class="card-question">Dış rotasyon (kolu dışa döndürme)</div>
+    <p class="rom-note">Kolunuz yanda sarkık, dirsek 90° bükük iken elin öne'den dışarıya ne kadar döndüğünü sürükleyerek belirtiniz.</p>
+    <div class="rom-deg" id="erDeg">0°</div>
+    <div class="rom-svg-wrap">
+      <svg viewBox="0 0 340 290" id="erSvg" xmlns="http://www.w3.org/2000/svg"
+           style="touch-action:none">
+
+        <!-- Compass face: full background circle -->
+        <circle cx="170" cy="150" r="96" fill="rgba(248,250,252,0.7)"
+                stroke="#e2e8f0" stroke-width="1.5"/>
+
+        <!-- Ghost track arc (0°–90°, direction set by JS) -->
+        <path id="erTrack" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-linecap="round"/>
+        <!-- Sector fill -->
+        <path id="erSec" fill="rgba(30,111,255,0.10)" stroke="none"/>
+        <!-- Active arc -->
+        <path id="erArc" fill="none" stroke="#1e6fff" stroke-width="4"
+              stroke-linecap="round" opacity="0.85"/>
+        <!-- Tick marks and labels (drawn by JS) -->
+        <g id="erTicks"></g>
+
+        <!-- 0° reference line: center → top (forward/head direction) -->
+        <line x1="170" y1="150" x2="170" y2="54"
+              stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,3" stroke-linecap="round"/>
+
+        <!-- Center: shoulder joint pivot -->
+        <circle cx="170" cy="150" r="10" fill="none" stroke="#e74c3c"
+                stroke-width="2" stroke-dasharray="3,2"/>
+        <circle cx="170" cy="150" r="4" fill="#e74c3c"/>
+        <text x="170" y="168" font-size="9" fill="#e74c3c"
+              font-family="sans-serif" text-anchor="middle" opacity="0.85">omuz eklemi</text>
+
+        <!-- Measurement pointer (shoulder pivot → hand) -->
+        <line id="erFA" stroke="#1e6fff" stroke-width="5.5" stroke-linecap="round"/>
+        <!-- Drag thumb -->
+        <circle id="erTT" r="24" fill="transparent"/>
+        <circle id="erHD" r="13" fill="white" stroke="#1e6fff" stroke-width="3"/>
+        <circle id="erH2" r="5"  fill="#1e6fff"/>
+
+      </svg>
     </div>
+    <p class="rom-hint">Mavi noktayı dışarı sürükleyin</p>
   </div>
+</div>
 
+<!-- ═══════════════════════════════════════════
+     SECTION 7 — DASH
+════════════════════════════════════════════ -->
+<div class="section" id="sec7">
+  <div id="dashContainer"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 8 — CONSTANT SCORE
+════════════════════════════════════════════ -->
+<div class="section" id="sec8">
+  <div id="constantContainer"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 9 — SF-12 (Genel Sağlık)
+════════════════════════════════════════════ -->
+<div class="section" id="sec9">
+  <div id="sf12Container"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 10 — UYKU KALİTESİ (VAS Sleep)
+════════════════════════════════════════════ -->
+<div class="section" id="sec10">
   <div class="card">
-    <div class="question-number">IKDC Soru 10</div>
-    <div class="question-text">Diz bükülü <strong>oturma</strong> (sandalyede)</div>
-    <div class="options-list" id="ikdc10">
-      <label class="option-label" onclick="selectOption('ikdc10',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc10',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc10',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc10',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc10',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    <div class="card-label">Uyku Kalitesi — Visual Analog Sleep Scale</div>
+    <div class="card-question">
+      Omuz ağrınızı da göz önünde bulundurarak, son zamanlardaki
+      <strong>gece uyku kalitenizi</strong> aşağıdaki cetvelde işaretleyiniz.
     </div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">IKDC Soru 11</div>
-    <div class="question-text">Sandalyeden <strong>kalkma</strong></div>
-    <div class="options-list" id="ikdc11">
-      <label class="option-label" onclick="selectOption('ikdc11',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc11',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc11',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc11',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc11',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">IKDC Soru 12</div>
-    <div class="question-text">Düz <strong>koşu</strong></div>
-    <div class="options-list" id="ikdc12">
-      <label class="option-label" onclick="selectOption('ikdc12',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc12',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc12',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc12',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc12',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">IKDC Soru 13</div>
-    <div class="question-text"><strong>Sıçrama</strong> ve yere inme</div>
-    <div class="options-list" id="ikdc13">
-      <label class="option-label" onclick="selectOption('ikdc13',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc13',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc13',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc13',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc13',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
+    <div class="vas-container">
+      <div class="vas-value-display" id="sleepDisplay">5</div>
+      <div class="vas-value-label"   id="sleepLabel">Orta kalitede uyku</div>
+      <div class="vas-slider-wrap">
+        <input type="range" class="vas-slider sleep" id="sleepSlider"
+               min="0" max="10" step="1" value="5">
+      </div>
+      <div class="vas-ticks">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
+        <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+      <div class="vas-labels">
+        <span>Hiç uyuyamadım</span>
+        <span>Mükemmel uyku</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- SECTION 4: IKDC Q14-18 + Final function -->
-<div class="section" id="section-4">
-  <div class="section-intro">
-    <div class="section-intro-icon">📋</div>
-    <div class="section-intro-title">IKDC – Spor & Fonksiyon</div>
-    <div class="section-intro-desc">Son birkaç soru</div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">IKDC Soru 14</div>
-    <div class="question-text">Hızlı <strong>durma ve başlama</strong> (yön değiştirme)</div>
-    <div class="options-list" id="ikdc14">
-      <label class="option-label" onclick="selectOption('ikdc14',0,4)"><span class="option-dot"></span><span class="option-text">Hiç sorun yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc14',1,3)"><span class="option-dot"></span><span class="option-text">Biraz zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc14',2,2)"><span class="option-dot"></span><span class="option-text">Orta derecede zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc14',3,1)"><span class="option-dot"></span><span class="option-text">Çok zor</span></label>
-      <label class="option-label" onclick="selectOption('ikdc14',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">IKDC Soru 15</div>
-    <div class="question-text">Son 4 haftada sporsal aktivitelerinizde <strong>kısıtlılık</strong> var mıydı?</div>
-    <div class="options-list" id="ikdc15">
-      <label class="option-label" onclick="selectOption('ikdc15',0,4)"><span class="option-dot"></span><span class="option-text">Hiç yok</span></label>
-      <label class="option-label" onclick="selectOption('ikdc15',1,3)"><span class="option-dot"></span><span class="option-text">Hafif</span></label>
-      <label class="option-label" onclick="selectOption('ikdc15',2,2)"><span class="option-dot"></span><span class="option-text">Orta</span></label>
-      <label class="option-label" onclick="selectOption('ikdc15',3,1)"><span class="option-dot"></span><span class="option-text">Ciddi</span></label>
-      <label class="option-label" onclick="selectOption('ikdc15',4,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span></label>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">IKDC Soru 16</div>
-    <div class="question-text">Diziniz şu an, yaralanma / ameliyat öncesine kıyasla nasıl?</div>
-    <div class="options-list" id="ikdc16">
-      <label class="option-label" onclick="selectOption('ikdc16',0,4)"><span class="option-dot"></span><span class="option-text">Normal (tam iyilik)</span></label>
-      <label class="option-label" onclick="selectOption('ikdc16',1,3)"><span class="option-dot"></span><span class="option-text">Normale yakın</span></label>
-      <label class="option-label" onclick="selectOption('ikdc16',2,2)"><span class="option-dot"></span><span class="option-text">Anormal</span></label>
-      <label class="option-label" onclick="selectOption('ikdc16',3,1)"><span class="option-dot"></span><span class="option-text">Çok anormal</span></label>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">IKDC Soru 17</div>
-    <div class="question-text">Güncel diz fonksiyonunuzu <strong>0–10</strong> arasında puanlayınız. (0 = hiç çalışmıyor, 10 = normal)</div>
-    <div class="nrs-container">
-      <div class="nrs-value-display" id="ikdcFuncDisplay">5</div>
-      <div class="nrs-value-label" id="ikdcFuncLabel">Orta fonksiyon</div>
-      <input type="range" class="nrs-slider" id="ikdcFuncSlider" min="0" max="10" value="5" oninput="updateIkdcFunc(this.value)">
-      <div class="nrs-labels"><span>0 – Hiç çalışmıyor</span><span>10 – Tam normal</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- SECTION 5: Lysholm -->
-<div class="section" id="section-5">
-  <div class="section-intro">
-    <div class="section-intro-icon">🔩</div>
-    <div class="section-intro-title">Lysholm Diz Skoru</div>
-    <div class="section-intro-desc">8 kısa soru — günlük hayatınızdaki durumunuzu aktarın</div>
-  </div>
-
-  <!-- L1: Limp -->
-  <div class="card">
-    <div class="question-number">Lysholm 1 – Topallama</div>
-    <div class="question-text">Yürürken <strong>topallamanız</strong> var mı?</div>
-    <div class="options-list" id="lys1">
-      <label class="option-label" onclick="selectOption('lys1',0,5)"><span class="option-dot"></span><span class="option-text">Yok</span><span class="option-score">5p</span></label>
-      <label class="option-label" onclick="selectOption('lys1',1,3)"><span class="option-dot"></span><span class="option-text">Hafif veya ara sıra</span><span class="option-score">3p</span></label>
-      <label class="option-label" onclick="selectOption('lys1',2,0)"><span class="option-dot"></span><span class="option-text">Ciddi ve sürekli</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-
-  <!-- L2: Support -->
-  <div class="card">
-    <div class="question-number">Lysholm 2 – Destek</div>
-    <div class="question-text">Yürürken <strong>destek</strong> kullanıyor musunuz?</div>
-    <div class="options-list" id="lys2">
-      <label class="option-label" onclick="selectOption('lys2',0,5)"><span class="option-dot"></span><span class="option-text">Kullanmıyorum</span><span class="option-score">5p</span></label>
-      <label class="option-label" onclick="selectOption('lys2',1,2)"><span class="option-dot"></span><span class="option-text">Baston veya koltuk değneği</span><span class="option-score">2p</span></label>
-      <label class="option-label" onclick="selectOption('lys2',2,0)"><span class="option-dot"></span><span class="option-text">Ağırlık veremiyorum</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-
-  <!-- L3: Locking -->
-  <div class="card">
-    <div class="question-number">Lysholm 3 – Kilitlenme</div>
-    <div class="question-text">Diziniz <strong>kilitlendi</strong> mi ya da sıkıştı mı?</div>
-    <div class="options-list" id="lys3">
-      <label class="option-label" onclick="selectOption('lys3',0,15)"><span class="option-dot"></span><span class="option-text">Hiç kilitlenme yok, takılma hissi de yok</span><span class="option-score">15p</span></label>
-      <label class="option-label" onclick="selectOption('lys3',1,10)"><span class="option-dot"></span><span class="option-text">Takılma hissi var ama kilitlenme yok</span><span class="option-score">10p</span></label>
-      <label class="option-label" onclick="selectOption('lys3',2,6)"><span class="option-dot"></span><span class="option-text">Zaman zaman kilitlenme oldu</span><span class="option-score">6p</span></label>
-      <label class="option-label" onclick="selectOption('lys3',3,2)"><span class="option-dot"></span><span class="option-text">Sık sık kilitlenme oldu</span><span class="option-score">2p</span></label>
-      <label class="option-label" onclick="selectOption('lys3',4,0)"><span class="option-dot"></span><span class="option-text">Şu an kilitli durumda</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-
-  <!-- L4: Instability -->
-  <div class="card">
-    <div class="question-number">Lysholm 4 – Instabilite (Boşalma)</div>
-    <div class="question-text">Diziniz <strong>boşalıyor</strong> mu? (Aniden güç kaybı, "düşme" hissi)</div>
-    <div class="options-list" id="lys4">
-      <label class="option-label" onclick="selectOption('lys4',0,25)"><span class="option-dot"></span><span class="option-text">Hiç</span><span class="option-score">25p</span></label>
-      <label class="option-label" onclick="selectOption('lys4',1,20)"><span class="option-dot"></span><span class="option-text">Çok ağır sporlar sırasında nadiren</span><span class="option-score">20p</span></label>
-      <label class="option-label" onclick="selectOption('lys4',2,15)"><span class="option-dot"></span><span class="option-text">Ağır spor veya ağır iş sırasında</span><span class="option-score">15p</span></label>
-      <label class="option-label" onclick="selectOption('lys4',3,10)"><span class="option-dot"></span><span class="option-text">Günlük aktivitelerde zaman zaman</span><span class="option-score">10p</span></label>
-      <label class="option-label" onclick="selectOption('lys4',4,5)"><span class="option-dot"></span><span class="option-text">Günlük aktivitelerde sık sık</span><span class="option-score">5p</span></label>
-      <label class="option-label" onclick="selectOption('lys4',5,0)"><span class="option-dot"></span><span class="option-text">Her adımda</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-
-  <!-- L5: Pain -->
-  <div class="card">
-    <div class="question-number">Lysholm 5 – Ağrı</div>
-    <div class="question-text">Dizinizde <strong>ağrı</strong> var mı?</div>
-    <div class="options-list" id="lys5">
-      <label class="option-label" onclick="selectOption('lys5',0,25)"><span class="option-dot"></span><span class="option-text">Hiç</span><span class="option-score">25p</span></label>
-      <label class="option-label" onclick="selectOption('lys5',1,20)"><span class="option-dot"></span><span class="option-text">Yoğun egzersizde zaman zaman</span><span class="option-score">20p</span></label>
-      <label class="option-label" onclick="selectOption('lys5',2,15)"><span class="option-dot"></span><span class="option-text">Yoğun egzersizde belirgin</span><span class="option-score">15p</span></label>
-      <label class="option-label" onclick="selectOption('lys5',3,10)"><span class="option-dot"></span><span class="option-text">2 km'den uzun yürümede</span><span class="option-score">10p</span></label>
-      <label class="option-label" onclick="selectOption('lys5',4,5)"><span class="option-dot"></span><span class="option-text">2 km'den kısa yürümede</span><span class="option-score">5p</span></label>
-      <label class="option-label" onclick="selectOption('lys5',5,0)"><span class="option-dot"></span><span class="option-text">Sürekli</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-
-  <!-- L6: Swelling -->
-  <div class="card">
-    <div class="question-number">Lysholm 6 – Şişlik</div>
-    <div class="question-text">Dizinizde <strong>şişlik</strong> var mı?</div>
-    <div class="options-list" id="lys6">
-      <label class="option-label" onclick="selectOption('lys6',0,10)"><span class="option-dot"></span><span class="option-text">Hiç</span><span class="option-score">10p</span></label>
-      <label class="option-label" onclick="selectOption('lys6',1,6)"><span class="option-dot"></span><span class="option-text">Yoğun egzersizde</span><span class="option-score">6p</span></label>
-      <label class="option-label" onclick="selectOption('lys6',2,2)"><span class="option-dot"></span><span class="option-text">Normal egzersizde</span><span class="option-score">2p</span></label>
-      <label class="option-label" onclick="selectOption('lys6',3,0)"><span class="option-dot"></span><span class="option-text">Sürekli</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-
-  <!-- L7: Stairs -->
-  <div class="card">
-    <div class="question-number">Lysholm 7 – Merdiven</div>
-    <div class="question-text">Merdiven <strong>çıkabilir</strong> misiniz?</div>
-    <div class="options-list" id="lys7">
-      <label class="option-label" onclick="selectOption('lys7',0,10)"><span class="option-dot"></span><span class="option-text">Sorunsuz</span><span class="option-score">10p</span></label>
-      <label class="option-label" onclick="selectOption('lys7',1,6)"><span class="option-dot"></span><span class="option-text">Hafif güçlükle</span><span class="option-score">6p</span></label>
-      <label class="option-label" onclick="selectOption('lys7',2,2)"><span class="option-dot"></span><span class="option-text">Adım adım (tek tek)</span><span class="option-score">2p</span></label>
-      <label class="option-label" onclick="selectOption('lys7',3,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-
-  <!-- L8: Squatting -->
-  <div class="card">
-    <div class="question-number">Lysholm 8 – Çömelme</div>
-    <div class="question-text"><strong>Çömelme</strong> yapabilir misiniz?</div>
-    <div class="options-list" id="lys8">
-      <label class="option-label" onclick="selectOption('lys8',0,5)"><span class="option-dot"></span><span class="option-text">Sorunsuz</span><span class="option-score">5p</span></label>
-      <label class="option-label" onclick="selectOption('lys8',1,4)"><span class="option-dot"></span><span class="option-text">Hafif güçlükle</span><span class="option-score">4p</span></label>
-      <label class="option-label" onclick="selectOption('lys8',2,2)"><span class="option-dot"></span><span class="option-text">90 dereceden fazla yapamıyorum</span><span class="option-score">2p</span></label>
-      <label class="option-label" onclick="selectOption('lys8',3,0)"><span class="option-dot"></span><span class="option-text">Yapamıyorum</span><span class="option-score">0p</span></label>
-    </div>
-  </div>
-</div>
-
-<!-- SECTION 6: Tegner -->
-<div class="section" id="section-6">
-  <div class="section-intro">
-    <div class="section-intro-icon">⚡</div>
-    <div class="section-intro-title">Tegner Aktivite Düzeyi</div>
-    <div class="section-intro-desc">Şu an hangi aktivite düzeyinde olduğunuzu seçin</div>
-  </div>
-
-  <div class="card">
-    <div class="question-number">Tegner Skoru</div>
-    <div class="question-text">Aşağıdaki aktivite düzeylerinden <strong>şu an yapabildiğinize en yakın olanı</strong> seçiniz:</div>
-    <div class="tegner-grid" id="tegner">
-      <div class="tegner-option" onclick="selectTegner(0)"><span class="tegner-num">0</span><span class="tegner-desc">Hastalık nedeniyle iş göremez veya engelli aylığı alıyor</span></div>
-      <div class="tegner-option" onclick="selectTegner(1)"><span class="tegner-num">1</span><span class="tegner-desc">Yürüyüş (düz zemin) – çalışamıyor veya çalışabiliyor</span></div>
-      <div class="tegner-option" onclick="selectTegner(2)"><span class="tegner-num">2</span><span class="tegner-desc">Yürüyüş (engebeli zemin) / Yüzme / Ormanda yürüyüş mümkün değil</span></div>
-      <div class="tegner-option" onclick="selectTegner(3)"><span class="tegner-num">3</span><span class="tegner-desc">Yüzme / Koşu (düz zemin) – haftada en az 2x</span></div>
-      <div class="tegner-option" onclick="selectTegner(4)"><span class="tegner-num">4</span><span class="tegner-desc">Koşu (engebeli) / Orman koşusu – haftada en az 2x</span></div>
-      <div class="tegner-option" onclick="selectTegner(5)"><span class="tegner-num">5</span><span class="tegner-desc">Bisiklet / Orta düzey sporlar (tenis, yüzme, kayak, rekreasyonel futbol)</span></div>
-      <div class="tegner-option" onclick="selectTegner(6)"><span class="tegner-num">6</span><span class="tegner-desc">Rekreasyonel sporlar (tenis, badminton, el topu, basketbol, kayak, ağır tarım işi)</span></div>
-      <div class="tegner-option" onclick="selectTegner(7)"><span class="tegner-num">7</span><span class="tegner-desc">Rekabetçi sporlar (tenis, atletizm, el topu) / Alt lig futbol/hokey</span></div>
-      <div class="tegner-option" onclick="selectTegner(8)"><span class="tegner-num">8</span><span class="tegner-desc">Futbol veya hokey – alt lig</span></div>
-      <div class="tegner-option" onclick="selectTegner(9)"><span class="tegner-num">9</span><span class="tegner-desc">Futbol / Hokey – üst lig</span></div>
-      <div class="tegner-option" onclick="selectTegner(10)"><span class="tegner-num">10</span><span class="tegner-desc">Futbol / Hokey – ulusal veya uluslararası seviye</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- SECTION 7: Submit -->
-<div class="section" id="section-7">
-  <div class="section-intro">
-    <div class="section-intro-icon">✅</div>
-    <div class="section-intro-title">Anketi Tamamlayın</div>
-    <div class="section-intro-desc">Yanıtlarınız kaydedilmeye hazır</div>
-  </div>
-
-  <div class="card" id="scoreSummaryCard">
-    <div style="font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Skorlarınız</div>
-    <div class="score-row"><span class="score-name">NRS Ağrı (ort.)</span><span class="score-num" id="sumNRS">—</span></div>
-    <div class="score-row"><span class="score-name">IKDC Skoru</span><span class="score-num" id="sumIKDC">—</span></div>
-    <div class="score-row"><span class="score-name">Lysholm Skoru</span><span class="score-num" id="sumLysholm">—</span></div>
-    <div class="score-row"><span class="score-name">Tegner Aktivite</span><span class="score-num" id="sumTegner">—</span></div>
-    <div class="score-row"><span class="score-name">Ameliyat Sonrası</span><span class="score-num" id="sumDaysPostOp">—</span></div>
-  </div>
-
-  <div class="error-banner" id="errorBanner">
-    Gönderim sırasında bir hata oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.
-  </div>
-
-  <div class="card" style="background: var(--primary-light); border-color: #93c5fd;">
-    <div style="font-size: 14px; color: #1e40af; line-height: 1.5;">
-      📌 <strong>Hekiminize not:</strong> Yanıtlarınız güvenli biçimde iletilecek ve yalnızca doktorunuz tarafından görüntülenecektir.
-    </div>
-  </div>
-</div>
-
-<!-- SECTION 8: Success -->
-<div class="section" id="section-8">
-  <div class="success-screen">
-    <div class="success-icon">🎉</div>
+<!-- ═══════════════════════════════════════════
+     SECTION 11 — SUCCESS
+════════════════════════════════════════════ -->
+<div class="section" id="sec11">
+  <div class="success-wrap">
+    <div class="success-check">✅</div>
     <div class="success-title">Teşekkürler!</div>
-    <div class="success-text">
-      Yanıtlarınız başarıyla kaydedildi ve hekiminize iletildi.<br><br>
-      Bu pencereyi kapatabilirsiniz.
+    <p class="success-sub">Yanıtlarınız başarıyla kaydedildi.</p>
+    <div class="score-grid">
+      <div class="score-box">
+        <div class="score-box-label">DASH Skoru</div>
+        <div class="score-box-value" id="finalDash">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">Constant Skoru</div>
+        <div class="score-box-value" id="finalConstant">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">VAS Ağrı</div>
+        <div class="score-box-value" id="finalVas">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">Uyku Kalitesi</div>
+        <div class="score-box-value" id="finalSleep">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">SF-12 Fiziksel (PCS)</div>
+        <div class="score-box-value" id="finalPCS">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">SF-12 Mental (MCS)</div>
+        <div class="score-box-value" id="finalMCS">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">Abdüksiyon</div>
+        <div class="score-box-value" id="finalAbduction">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">Öne Fleksiyon</div>
+        <div class="score-box-value" id="finalFlexion">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">İç Rotasyon</div>
+        <div class="score-box-value" id="finalIR" style="font-size:18px;">—</div>
+      </div>
+      <div class="score-box">
+        <div class="score-box-label">Dış Rotasyon</div>
+        <div class="score-box-value" id="finalER">—</div>
+      </div>
+      <div class="score-box" style="grid-column: 1 / -1;">
+        <div class="score-box-label">Post-op Süre</div>
+        <div class="score-box-value" id="finalDays">—</div>
+      </div>
     </div>
-    <div class="score-summary">
-      <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text);">Kayıt Özeti</div>
-      <div class="score-row"><span class="score-name">Tarih</span><span class="score-num" id="finalDate">—</span></div>
-      <div class="score-row"><span class="score-name">IKDC</span><span class="score-num" id="finalIKDC">—</span></div>
-      <div class="score-row"><span class="score-name">Lysholm</span><span class="score-num" id="finalLysholm">—</span></div>
-      <div class="score-row"><span class="score-name">Tegner</span><span class="score-num" id="finalTegner">—</span></div>
-    </div>
+    <p style="font-size:13px; color:var(--muted);">Bu sayfayı kapatabilirsiniz.</p>
   </div>
 </div>
 
-<!-- Navigation Footer -->
-<div class="nav-footer" id="navFooter">
-  <button class="btn btn-ghost" id="btnBack" onclick="goBack()" style="display:none">← Geri</button>
-  <button class="btn btn-primary" id="btnNext" onclick="goNext()">Başla →</button>
+<!-- ── Bottom Nav ──────────────────────────── -->
+<div class="nav-bar" id="navBar">
+  <button class="btn btn-secondary" id="btnBack" onclick="goBack()" style="display:none">Geri</button>
+  <button class="btn btn-primary"   id="btnNext" onclick="goNext()">Başla</button>
 </div>
 
 <script>
-// ─── Config ─────────────────────────────────────────────────────────────────
-// Bu URL'yi Google Apps Script deploy ettikten sonra güncelleyin
+// ── Config ────────────────────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
 
-// ─── State ───────────────────────────────────────────────────────────────────
-let currentSection = 0;
-const totalSections = 9; // 0-8
+// ── URL Params ────────────────────────────────────────────────────────────────
+const params         = new URLSearchParams(window.location.search);
+const patientName    = params.get('name')      || 'Hasta';
+const patientId      = params.get('id')        || '';
+const surgeryDateStr = params.get('surgery')   || '';
+const surgeryLeg     = params.get('leg')       || '';
+const procedureType  = params.get('procedure') || 'Kalsifik Tendinit';
 
-const scores = {
-  nrs: 5,
-  nrsWorst: 5,
-  ikdc1: null, ikdc2: null, ikdc3: null, ikdc4: null, ikdc5: null,
-  ikdc6: null, ikdc7: null, ikdc8: null, ikdc9: null, ikdc10: null,
-  ikdc11: null, ikdc12: null, ikdc13: null, ikdc14: null, ikdc15: null,
-  ikdc16: null, ikdcFunc: 5,
-  lys1: null, lys2: null, lys3: null, lys4: null,
-  lys5: null, lys6: null, lys7: null, lys8: null,
-  tegner: null
-};
+let activeLeg = surgeryLeg; // may be updated from demographics picker
 
-// ─── URL Params ──────────────────────────────────────────────────────────────
-const params = new URLSearchParams(window.location.search);
-const patientName   = params.get('name') || 'Hasta';
-const patientId     = params.get('id')   || 'DEMO';
-const surgeryDateStr = params.get('surgery') || '';
-const surgeryLeg    = params.get('leg') || 'sağ';
-
-function calcDaysPostOp(surgeryDateStr) {
-  if (!surgeryDateStr) return null;
-  const surgery = new Date(surgeryDateStr);
+let daysPostOp = null;
+if (surgeryDateStr) {
+  const sDate = new Date(surgeryDateStr);
   const today = new Date();
-  const diff = Math.floor((today - surgery) / (1000 * 60 * 60 * 24));
-  return diff;
+  sDate.setHours(0,0,0,0);
+  today.setHours(0,0,0,0);
+  daysPostOp = Math.round((today - sDate) / 86400000);
 }
 
-const daysPostOp = calcDaysPostOp(surgeryDateStr);
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentSection = 0;
+const scores = { vas: 5, rom_abduction: 0, rom_flexion: 0, rom_ir: 0, rom_ir_label: 'Kalça', rom_er: 0, dash: null, constant: null, sf12_pcs: null, sf12_mcs: null, sleep: 5 };
 
-// ─── Init ────────────────────────────────────────────────────────────────────
-window.onload = function() {
-  document.getElementById('patientNameDisplay').textContent = patientName;
-  document.getElementById('diagnosisDisplay').textContent = 'Menisküs Yırtığı';
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const f = n => (+n).toFixed(1);
+function sa(el, obj) { for (const [k,v] of Object.entries(obj)) el.setAttribute(k, v); }
+function formatDate(str) {
+  if (!str) return '—';
+  const parts = str.split('-');
+  if (parts.length !== 3) return str;
+  return `${parts[2]}.${parts[1]}.${parts[0]}`;
+}
 
-  if (surgeryDateStr) {
-    const d = new Date(surgeryDateStr);
-    document.getElementById('surgeryDateDisplay').textContent =
-      d.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
-  } else {
-    document.getElementById('surgeryDateDisplay').textContent = 'Belirtilmemiş';
-  }
-
-  if (daysPostOp !== null) {
-    const label = daysPostOp === 0 ? 'Bugün' :
-                  daysPostOp < 0  ? 'Ameliyat öncesi' :
-                  `Ameliyat sonrası ${daysPostOp}. gün`;
-    document.getElementById('daysPostOpDisplay').textContent = label;
-  } else {
-    document.getElementById('daysPostOpDisplay').textContent = 'Tarih girilmemiş';
-  }
-
-  updateProgress();
-};
-
-// ─── NRS Helpers ─────────────────────────────────────────────────────────────
-const nrsLabels = [
-  'Ağrı yok', 'Çok hafif', 'Hafif', 'Orta-hafif', 'Hafif-orta',
-  'Orta şiddette', 'Orta-yüksek', 'Şiddetli', 'Çok şiddetli', 'Dayanılmaz', 'Dayanılmaz – en kötü'
+// ── VAS ───────────────────────────────────────────────────────────────────────
+const vasTextLabels = [
+  'Hiç ağrı yok', 'Çok hafif ağrı', 'Hafif ağrı', 'Hafif-orta ağrı',
+  'Orta şiddette ağrı', 'Orta şiddette ağrı', 'Şiddetli ağrı',
+  'Çok şiddetli ağrı', 'Çok şiddetli ağrı', 'Dayanılmaz ağrı', 'Dayanılmaz ağrı'
+];
+const vasColors = [
+  '#22c55e','#16a34a','#65a30d','#a3a50a','#ca8a04',
+  '#d97706','#ea580c','#e04018','#ef4444','#b91c1c','#7f1d1d'
 ];
 
-function updateNRS(v) {
-  scores.nrs = parseInt(v);
-  document.getElementById('nrsDisplay').textContent = v;
-  document.getElementById('nrsLabel').textContent = nrsLabels[v];
-}
-function updateNRSWorst(v) {
-  scores.nrsWorst = parseInt(v);
-  document.getElementById('nrsWorstDisplay').textContent = v;
-  document.getElementById('nrsWorstLabel').textContent = nrsLabels[v];
-}
-function updateIkdcFunc(v) {
-  scores.ikdcFunc = parseInt(v);
-  document.getElementById('ikdcFuncDisplay').textContent = v;
-  const labels = ['Hiç çalışmıyor','','','','','Orta fonksiyon','','','','','Tam normal'];
-  document.getElementById('ikdcFuncLabel').textContent = labels[v] || '';
-}
+const vasSlider  = document.getElementById('vasSlider');
+const vasDisplay = document.getElementById('vasDisplay');
+const vasLabelEl = document.getElementById('vasLabel');
 
-// ─── Option Selection ────────────────────────────────────────────────────────
-function selectOption(groupId, index, value) {
-  scores[groupId] = value;
-  const group = document.getElementById(groupId);
-  group.querySelectorAll('.option-label').forEach((el, i) => {
-    el.classList.toggle('selected', i === index);
-  });
-  updateNextButton();
+function updateVAS(val) {
+  val = parseInt(val);
+  scores.vas = val;
+  vasDisplay.textContent = val;
+  vasDisplay.style.color = vasColors[val];
+  vasLabelEl.textContent = vasTextLabels[val];
+  vasLabelEl.style.color = vasColors[val];
+  vasSlider.style.setProperty('--thumb-color', vasColors[val]);
 }
+vasSlider.addEventListener('input', e => updateVAS(e.target.value));
 
-function selectTegner(value) {
-  scores.tegner = value;
-  document.querySelectorAll('.tegner-option').forEach((el, i) => {
-    el.classList.toggle('selected', i === value);
-  });
-  updateNextButton();
+// ── Uyku VAS (Visual Analog Sleep Scale) — 0 = kötü, 10 = mükemmel ─────────────
+const sleepTextLabels = [
+  'Hiç uyuyamadım', 'Çok kötü uyku', 'Çok kötü uyku', 'Kötü uyku',
+  'Orta kalitede uyku', 'Orta kalitede uyku', 'Orta-iyi uyku',
+  'İyi uyku', 'Çok iyi uyku', 'Mükemmel uyku', 'Mükemmel uyku'
+];
+const sleepColors = [
+  '#7f1d1d','#b91c1c','#ef4444','#e04018','#ea580c',
+  '#d97706','#ca8a04','#a3a50a','#65a30d','#16a34a','#22c55e'
+];
+
+const sleepSlider  = document.getElementById('sleepSlider');
+const sleepDisplay = document.getElementById('sleepDisplay');
+const sleepLabelEl = document.getElementById('sleepLabel');
+
+function updateSleepVAS(val) {
+  val = parseInt(val);
+  scores.sleep = val;
+  sleepDisplay.textContent = val;
+  sleepDisplay.style.color = sleepColors[val];
+  sleepLabelEl.textContent = sleepTextLabels[val];
+  sleepLabelEl.style.color = sleepColors[val];
+  sleepSlider.style.setProperty('--thumb-color', sleepColors[val]);
 }
+sleepSlider.addEventListener('input', e => updateSleepVAS(e.target.value));
 
-// ─── Validation ──────────────────────────────────────────────────────────────
-const sectionRequiredFields = {
-  0: [],
-  1: [], // NRS — always has value (slider)
-  2: ['ikdc1','ikdc2','ikdc3','ikdc4','ikdc5'],
-  3: ['ikdc6','ikdc7','ikdc8','ikdc9','ikdc10','ikdc11','ikdc12','ikdc13'],
-  4: ['ikdc14','ikdc15','ikdc16'],
-  5: ['lys1','lys2','lys3','lys4','lys5','lys6','lys7','lys8'],
-  6: ['tegner'],
-  7: [],
-  8: []
-};
-
-function isSectionValid(s) {
-  return sectionRequiredFields[s].every(f => scores[f] !== null);
+// ── Demographics ──────────────────────────────────────────────────────────────
+function selectLeg(leg) {
+  activeLeg = leg;
+  document.getElementById('btnSag').classList.toggle('on', leg === 'Sağ omuz');
+  document.getElementById('btnSol').classList.toggle('on', leg === 'Sol omuz');
+  document.getElementById('demoLeg').textContent = leg;
 }
 
-function updateNextButton() {
-  const btn = document.getElementById('btnNext');
-  btn.disabled = !isSectionValid(currentSection);
-}
+function initDemographics() {
+  document.getElementById('demoName').textContent      = patientName;
+  document.getElementById('demoProcedure').textContent = procedureType;
+  document.getElementById('demoDate').textContent      = formatDate(surgeryDateStr) || '—';
+  document.getElementById('demoDays').textContent      = daysPostOp !== null ? daysPostOp + '. gün' : '—';
 
-// ─── Navigation ──────────────────────────────────────────────────────────────
-function updateProgress() {
-  const pct = (currentSection / (totalSections - 1)) * 100;
-  document.getElementById('progressBar').style.width = pct + '%';
-  updateNextButton();
-
-  const sectionTitles = [
-    'Hoş Geldiniz', 'Ağrı', 'IKDC – Semptomlar', 'IKDC – Aktiviteler',
-    'IKDC – Spor', 'Lysholm', 'Tegner', 'Gönder', 'Tamamlandı'
-  ];
-  const headerLabel = document.querySelector('.header-section-label');
-  const headerTitle = document.querySelector('.header-section-title');
-  const headerProg  = document.querySelector('.header-progress-text');
-  if (headerLabel) {
-    headerLabel.textContent = currentSection === 0 ? 'Menisküs PROM Takip' :
-                              currentSection === 8 ? '' : 'Soru Seti';
-    headerTitle.textContent = sectionTitles[currentSection];
-    headerProg.textContent  = currentSection > 0 && currentSection < 8 ?
-      `${currentSection} / 7 bölüm tamamlandı` : '';
+  if (activeLeg) {
+    document.getElementById('demoLeg').textContent        = activeLeg;
+    document.getElementById('sidePicker').style.display   = 'none';
+  } else {
+    document.getElementById('demoLeg').textContent        = 'Seçilmedi';
+    document.getElementById('sidePicker').style.display   = 'block';
   }
+}
 
-  document.getElementById('btnBack').style.display =
-    (currentSection > 0 && currentSection < 8) ? 'block' : 'none';
+// ── ROM ───────────────────────────────────────────────────────────────────────
+const ROM_SY = 88, ROM_R = 76, ROM_UAL = 43;
+let romSign = 1, romSX = 194, romDragging = false;
 
+const romTrack = document.getElementById('romTrack');
+const romSec   = document.getElementById('romSec');
+const romArc   = document.getElementById('romArc');
+const romTicks = document.getElementById('romTicks');
+const romAUA   = document.getElementById('romAUA');
+const romAEL   = document.getElementById('romAEL');
+const romAFA   = document.getElementById('romAFA');
+const romAHD   = document.getElementById('romAHD');
+const romAH2   = document.getElementById('romAH2');
+const romTT    = document.getElementById('romTT');
+const romASH   = document.getElementById('romASH');
+const romASH2  = document.getElementById('romASH2');
+const romSUA   = document.getElementById('romSUA');
+const romSEL   = document.getElementById('romSEL');
+const romSFA   = document.getElementById('romSFA');
+const romSHD   = document.getElementById('romSHD');
+const romSSH   = document.getElementById('romSSH');
+const romSvg   = document.getElementById('romSvg');
+const romDegEl = document.getElementById('romDeg');
+
+function makeROMPaths(d) {
+  if (d <= 0) return ['', ''];
+  const steps = Math.min(d, 180);
+  let s = `M ${romSX} ${ROM_SY} L ${romSX} ${f(ROM_SY + ROM_R)}`;
+  let a = `M ${romSX} ${f(ROM_SY + ROM_R)}`;
+  for (let i = 1; i <= steps; i++) {
+    const g = (d * i / steps) * Math.PI / 180;
+    const px = f(romSX + romSign * ROM_R * Math.sin(g));
+    const py = f(ROM_SY + ROM_R * Math.cos(g));
+    s += ` L ${px} ${py}`;
+    a += ` L ${px} ${py}`;
+  }
+  return [s + ' Z', a];
+}
+
+function updateROM(d) {
+  d = Math.max(0, Math.min(180, Math.round(d)));
+  scores.rom_abduction = d;
+  const r = d * Math.PI / 180;
+  const ex = romSX + romSign * ROM_UAL * Math.sin(r);
+  const ey = ROM_SY + ROM_UAL * Math.cos(r);
+  const hx = romSX + romSign * ROM_R * Math.sin(r);
+  const hy = ROM_SY + ROM_R * Math.cos(r);
+  sa(romAUA, {x1: romSX, y1: ROM_SY, x2: f(ex), y2: f(ey)});
+  sa(romAEL, {cx: f(ex), cy: f(ey)});
+  sa(romAFA, {x1: f(ex), y1: f(ey), x2: f(hx), y2: f(hy)});
+  [romAHD, romAH2, romTT].forEach(e => sa(e, {cx: f(hx), cy: f(hy)}));
+  const [sp, ap] = makeROMPaths(d);
+  romSec.setAttribute('d', sp);
+  romArc.setAttribute('d', ap);
+  const col = d >= 90 ? '#1e6fff' : d >= 45 ? '#2563eb' : '#16a34a';
+  romDegEl.textContent  = d + '°';
+  romDegEl.style.color  = col;
+}
+
+function drawROMStaticArm() {
+  // Opposite shoulder hangs naturally with a slight outward angle
+  const ssx = romSign === 1 ? 140 : 194;
+  const hangRad = (romSign === 1 ? -12 : 12) * Math.PI / 180;
+  const sex = ssx + Math.sin(hangRad) * ROM_UAL;
+  const sey = ROM_SY + Math.cos(hangRad) * ROM_UAL;
+  const shx = ssx + Math.sin(hangRad) * ROM_R;
+  const shy = ROM_SY + Math.cos(hangRad) * ROM_R;
+  sa(romSSH, {cx: ssx, cy: ROM_SY});
+  sa(romSUA, {x1: ssx, y1: ROM_SY, x2: f(sex), y2: f(sey)});
+  sa(romSEL, {cx: f(sex), cy: f(sey)});
+  sa(romSFA, {x1: f(sex), y1: f(sey), x2: f(shx), y2: f(shy)});
+  sa(romSHD, {cx: f(shx), cy: f(shy)});
+}
+
+function drawROMTicks() {
+  romTicks.innerHTML = '';
+  [0, 45, 90, 135, 180].forEach(d => {
+    const r   = d * Math.PI / 180;
+    const tx  = romSX + romSign * ROM_R * Math.sin(r);
+    const ty  = ROM_SY + ROM_R * Math.cos(r);
+    const ox  = romSign * Math.sin(r);
+    const oy  = Math.cos(r);
+    // Tick end (7px outward)
+    const tex = tx + ox * 7, tey = ty + oy * 7;
+    // Label (14px outward, clamped to SVG bounds)
+    let lx = Math.max(4, Math.min(336, tx + ox * 18));
+    let ly = Math.max(10, Math.min(280, ty + oy * 14));
+    // Text anchor: for 0° and 180° (nearly vertical) use middle; else match arm side
+    const anchor = Math.abs(Math.sin(r)) < 0.3 ? 'middle'
+                 : romSign === 1 ? 'start' : 'end';
+    const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    sa(tick, {x1: f(tx), y1: f(ty), x2: f(tex), y2: f(tey),
+              stroke: '#b0bec5', 'stroke-width': '1.5'});
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    sa(txt, {x: f(lx), y: f(ly + 3), 'font-size': '10', fill: '#90a4ae',
+             'font-family': 'sans-serif', 'text-anchor': anchor});
+    txt.textContent = d + '°';
+    romTicks.appendChild(tick);
+    romTicks.appendChild(txt);
+  });
+}
+
+function initROM() {
+  const isLeft = /sol|left/i.test(activeLeg);
+  romSign = isLeft ? -1 : 1;
+  romSX   = isLeft ? 140 : 194;
+
+  const trackD = romSign === 1
+    ? `M ${romSX} ${ROM_SY+ROM_R} A ${ROM_R} ${ROM_R} 0 0 0 ${romSX+ROM_R} ${ROM_SY} A ${ROM_R} ${ROM_R} 0 0 0 ${romSX} ${ROM_SY-ROM_R}`
+    : `M ${romSX} ${ROM_SY+ROM_R} A ${ROM_R} ${ROM_R} 0 0 1 ${romSX-ROM_R} ${ROM_SY} A ${ROM_R} ${ROM_R} 0 0 1 ${romSX} ${ROM_SY-ROM_R}`;
+  romTrack.setAttribute('d', trackD);
+
+  sa(romASH,  {cx: romSX, cy: ROM_SY});
+  sa(romASH2, {cx: romSX, cy: ROM_SY});
+  drawROMStaticArm();
+  drawROMTicks();
+  updateROM(scores.rom_abduction || 0);
+}
+
+function romGetAngle(cx, cy) {
+  const rect = romSvg.getBoundingClientRect();
+  const x = (cx - rect.left) * (340 / rect.width) - romSX;
+  const y = (cy - rect.top)  * (290 / rect.height) - ROM_SY;
+  return romSign * Math.atan2(x, y) * 180 / Math.PI;
+}
+
+romSvg.addEventListener('mousedown',  e => { romDragging = true;  updateROM(romGetAngle(e.clientX, e.clientY)); });
+document.addEventListener('mousemove', e => { if (romDragging) updateROM(romGetAngle(e.clientX, e.clientY)); });
+document.addEventListener('mouseup',   () => { romDragging = false; });
+romSvg.addEventListener('touchstart',  e => { romDragging = true;  updateROM(romGetAngle(e.touches[0].clientX, e.touches[0].clientY)); }, { passive: true });
+romSvg.addEventListener('touchmove',   e => { if (romDragging) { e.preventDefault(); updateROM(romGetAngle(e.touches[0].clientX, e.touches[0].clientY)); } }, { passive: false });
+romSvg.addEventListener('touchend',    () => { romDragging = false; });
+
+// ── Forward Flexion (öne fleksiyon) ──────────────────────────────────────────
+// The SVG group #ffGrp is drawn in LOCAL right-arm space (shoulder at SX_L=168, SY_L=84).
+// For left-arm patients, JS applies a horizontal flip transform to the group so the
+// figure faces left and the arc sweeps forward-left automatically — no separate path math needed.
+
+const FF_SX_L = 168, FF_SY = 84, FF_R = 76, FF_UAL = 43;
+let ffSign = 1, ffDragging = false;
+
+const ffGrp   = document.getElementById('ffGrp');
+const ffSec   = document.getElementById('ffSec');
+const ffArc   = document.getElementById('ffArc');
+const ffTicks = document.getElementById('ffTicks');
+const ffUA    = document.getElementById('ffUA');
+const ffEL    = document.getElementById('ffEL');
+const ffFA    = document.getElementById('ffFA');
+const ffHD    = document.getElementById('ffHD');
+const ffH2    = document.getElementById('ffH2');
+const ffTT    = document.getElementById('ffTT');
+const ffSvg   = document.getElementById('ffSvg');
+const ffDegEl = document.getElementById('ffDeg');
+
+function makeFFPaths(d) {
+  // Sector fill + active arc — always in LOCAL right-arm space
+  if (d <= 0) return ['', ''];
+  const steps = Math.min(d, 180);
+  let s = `M ${FF_SX_L} ${FF_SY} L ${FF_SX_L} ${f(FF_SY + FF_R)}`;
+  let a = `M ${FF_SX_L} ${f(FF_SY + FF_R)}`;
+  for (let i = 1; i <= steps; i++) {
+    const g = (d * i / steps) * Math.PI / 180;
+    const px = f(FF_SX_L + FF_R * Math.sin(g));
+    const py = f(FF_SY    + FF_R * Math.cos(g));
+    s += ` L ${px} ${py}`;
+    a += ` L ${px} ${py}`;
+  }
+  return [s + ' Z', a];
+}
+
+function updateFF(d) {
+  d = Math.max(0, Math.min(180, Math.round(d)));
+  scores.rom_flexion = d;
+  const r  = d * Math.PI / 180;
+  const ex = f(FF_SX_L + FF_UAL * Math.sin(r));
+  const ey = f(FF_SY   + FF_UAL * Math.cos(r));
+  const hx = f(FF_SX_L + FF_R   * Math.sin(r));
+  const hy = f(FF_SY   + FF_R   * Math.cos(r));
+  sa(ffUA, {x1: FF_SX_L, y1: FF_SY, x2: ex, y2: ey});
+  sa(ffEL, {cx: ex, cy: ey});
+  sa(ffFA, {x1: ex, y1: ey, x2: hx, y2: hy});
+  [ffHD, ffH2, ffTT].forEach(el => sa(el, {cx: hx, cy: hy}));
+  const [sp, ap] = makeFFPaths(d);
+  ffSec.setAttribute('d', sp);
+  ffArc.setAttribute('d', ap);
+  const col = d >= 90 ? '#1e6fff' : d >= 45 ? '#2563eb' : '#16a34a';
+  ffDegEl.textContent = d + '°';
+  ffDegEl.style.color = col;
+}
+
+function drawFFTicks() {
+  ffTicks.innerHTML = '';
+  const isLeft = ffSign === -1;
+  [0, 45, 90, 135, 180].forEach(d => {
+    const r = d * Math.PI / 180;
+    // LOCAL position (right-arm space)
+    const lx = FF_SX_L + FF_R * Math.sin(r);
+    const ly = FF_SY   + FF_R * Math.cos(r);
+    // SVG position (flip for left arm: x → 340 − x)
+    const sx = isLeft ? 340 - lx : lx;
+    const sy = ly;
+    // Outward unit vector in SVG space
+    const ox = isLeft ? -Math.sin(r) : Math.sin(r);
+    const oy = Math.cos(r);
+    const tex = sx + ox * 7;
+    const tey = sy + oy * 7;
+    const labX = Math.max(4,  Math.min(336, sx + ox * 18));
+    const labY = Math.max(10, Math.min(280, sy + oy * 14));
+    const anchor = Math.abs(Math.sin(r)) < 0.3 ? 'middle' : isLeft ? 'end' : 'start';
+    const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    sa(tick, {x1: f(sx), y1: f(sy), x2: f(tex), y2: f(tey),
+              stroke: '#b0bec5', 'stroke-width': '1.5'});
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    sa(txt, {x: f(labX), y: f(labY + 3), 'font-size': '10', fill: '#90a4ae',
+             'font-family': 'sans-serif', 'text-anchor': anchor});
+    txt.textContent = d + '°';
+    ffTicks.appendChild(tick);
+    ffTicks.appendChild(txt);
+  });
+}
+
+function initFFlex() {
+  const isLeft = /sol|left/i.test(activeLeg);
+  ffSign = isLeft ? -1 : 1;
+  // Flip the entire group for left arm so figure faces left & arc sweeps left
+  ffGrp.setAttribute('transform', isLeft ? 'translate(340,0) scale(-1,1)' : '');
+  drawFFTicks();
+  updateFF(scores.rom_flexion);
+}
+
+function ffGetAngle(cx, cy) {
+  const rect = ffSvg.getBoundingClientRect();
+  const svgX = (cx - rect.left) * (340 / rect.width);
+  const svgY = (cy - rect.top)  * (290 / rect.height);
+  // Convert viewport x to LOCAL space so angle math always runs in right-arm coords
+  const localX = ffSign === -1 ? 340 - svgX : svgX;
+  return Math.atan2(localX - FF_SX_L, svgY - FF_SY) * 180 / Math.PI;
+}
+
+ffSvg.addEventListener('mousedown',  e => { ffDragging = true;  updateFF(ffGetAngle(e.clientX, e.clientY)); });
+document.addEventListener('mousemove', e => { if (ffDragging) updateFF(ffGetAngle(e.clientX, e.clientY)); });
+document.addEventListener('mouseup',   () => { ffDragging = false; });
+ffSvg.addEventListener('touchstart',  e => { ffDragging = true;  updateFF(ffGetAngle(e.touches[0].clientX, e.touches[0].clientY)); }, { passive: true });
+ffSvg.addEventListener('touchmove',   e => { if (ffDragging) { e.preventDefault(); updateFF(ffGetAngle(e.touches[0].clientX, e.touches[0].clientY)); } }, { passive: false });
+ffSvg.addEventListener('touchend',    () => { ffDragging = false; });
+
+// ── Internal Rotation (İç Rotasyon — el arkada) ───────────────────────────────
+// Posterior view. Active arm: shoulder → elbow (sticking out to side) →
+// forearm inward to spine. Hand snaps to anatomical landmark on the spine.
+
+const IR_SPINE_X = 170;
+const IR_SH_Y    = 88;
+const IR_EL_Y    = 145; // elbow fixed at mid-back height
+
+const IR_LANDMARKS = [
+  { label: 'Kalça',         y: 197, score: 2  },
+  { label: 'Kuyruk sokumu', y: 178, score: 4  },
+  { label: 'Bel',           y: 158, score: 6  },
+  { label: 'Üst bel',       y: 137, score: 8  },
+  { label: 'Kürek kemiği',  y: 108, score: 10 },
+];
+
+let irSign = 1, irCurrentIdx = 0, irDragging = false;
+
+const irSvg        = document.getElementById('irSvg');
+const irASH        = document.getElementById('irASH');
+const irASH2       = document.getElementById('irASH2');
+const irUA         = document.getElementById('irUA');
+const irEL         = document.getElementById('irEL');
+const irFA         = document.getElementById('irFA');
+const irHD         = document.getElementById('irHD');
+const irH2         = document.getElementById('irH2');
+const irTT         = document.getElementById('irTT');
+const irPassUA     = document.getElementById('irPassUA');
+const irPassFA     = document.getElementById('irPassFA');
+const irLandmarksG = document.getElementById('irLandmarks');
+const irLabelDisp  = document.getElementById('irLabelDisplay');
+const irSideGrp    = document.getElementById('irSideGrp');
+const irSideSH     = document.getElementById('irSideSH');
+const irSideUA     = document.getElementById('irSideUA');
+const irSideEL     = document.getElementById('irSideEL');
+const irSideFA     = document.getElementById('irSideFA');
+const irSideHD     = document.getElementById('irSideHD');
+const irSideH2     = document.getElementById('irSideH2');
+
+function drawIRLandmarks() {
+  irLandmarksG.innerHTML = '';
+  IR_LANDMARKS.forEach((lm, i) => {
+    const active = i === irCurrentIdx;
+    const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    sa(tick, {
+      x1: IR_SPINE_X, y1: lm.y, x2: IR_SPINE_X + 14, y2: lm.y,
+      stroke: active ? '#1e6fff' : '#b0bec5',
+      'stroke-width': active ? '2.5' : '1.5'
+    });
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    sa(txt, {
+      x: IR_SPINE_X + 18, y: lm.y + 4,
+      'font-size': active ? '11' : '10',
+      fill: active ? '#1e6fff' : '#90a4ae',
+      'font-family': 'sans-serif',
+      'text-anchor': 'start',
+      'font-weight': active ? '700' : '400'
+    });
+    txt.textContent = lm.label;
+    irLandmarksG.appendChild(tick);
+    irLandmarksG.appendChild(txt);
+  });
+}
+
+function updateIR(idx) {
+  idx = Math.max(0, Math.min(IR_LANDMARKS.length - 1, idx));
+  irCurrentIdx = idx;
+  const lm = IR_LANDMARKS[idx];
+  scores.rom_ir       = lm.score;
+  scores.rom_ir_label = lm.label;
+
+  const shx = irSign === 1 ? 194 : 140;
+  const elx = irSign === 1 ? 230 : 110;
+
+  sa(irASH,  {cx: shx, cy: IR_SH_Y});
+  sa(irASH2, {cx: shx, cy: IR_SH_Y});
+  sa(irUA,   {x1: shx, y1: IR_SH_Y, x2: elx, y2: IR_EL_Y});
+  sa(irEL,   {cx: elx, cy: IR_EL_Y});
+  sa(irFA,   {x1: elx, y1: IR_EL_Y, x2: IR_SPINE_X, y2: lm.y});
+  [irHD, irH2, irTT].forEach(el => sa(el, {cx: IR_SPINE_X, cy: lm.y}));
+
+  // Passive arm (opposite side, hanging naturally)
+  const psx   = irSign === 1 ? 140 : 194;
+  const phRad = (irSign === 1 ? -12 : 12) * Math.PI / 180;
+  const pex   = f(psx + Math.sin(phRad) * 43);
+  const pey   = f(IR_SH_Y + Math.cos(phRad) * 43);
+  const phx   = f(psx + Math.sin(phRad) * 76);
+  const phy   = f(IR_SH_Y + Math.cos(phRad) * 76);
+  sa(irPassUA, {x1: psx, y1: IR_SH_Y, x2: pex, y2: pey});
+  sa(irPassFA, {x1: pex, y1: pey,     x2: phx, y2: phy});
+
+  // Side view sync (shoulder at back edge, elbow sticking out behind, forearm to spine)
+  sa(irSideSH, {cx: 109, cy: 80});
+  sa(irSideUA, {x1: 109, y1: 80,  x2: 147, y2: 118});
+  sa(irSideEL, {cx: 147, cy: 118});
+  sa(irSideFA, {x1: 147, y1: 118, x2: 109, y2: lm.y});
+  [irSideHD, irSideH2].forEach(el => sa(el, {cx: 109, cy: lm.y}));
+
+  drawIRLandmarks();
+  irLabelDisp.textContent  = lm.label;
+  irLabelDisp.style.color  = '#1e6fff';
+}
+
+function irSnapToNearest(svgY) {
+  let best = 0, bestDist = Infinity;
+  IR_LANDMARKS.forEach((lm, i) => {
+    const d = Math.abs(lm.y - svgY);
+    if (d < bestDist) { bestDist = d; best = i; }
+  });
+  return best;
+}
+
+function irSvgY(clientY) {
+  const rect = irSvg.getBoundingClientRect();
+  return (clientY - rect.top) * (290 / rect.height);
+}
+
+function initIR() {
+  const isLeft = /sol|left/i.test(activeLeg);
+  irSign = isLeft ? -1 : 1;
+  irSideGrp.setAttribute('transform', isLeft ? 'translate(200,0) scale(-1,1)' : '');
+  updateIR(irCurrentIdx);
+}
+
+irSvg.addEventListener('mousedown',   e => { irDragging = true;  updateIR(irSnapToNearest(irSvgY(e.clientY))); });
+document.addEventListener('mousemove', e => { if (irDragging) updateIR(irSnapToNearest(irSvgY(e.clientY))); });
+document.addEventListener('mouseup',   () => { irDragging = false; });
+irSvg.addEventListener('touchstart',   e => { irDragging = true;  updateIR(irSnapToNearest(irSvgY(e.touches[0].clientY))); }, { passive: true });
+irSvg.addEventListener('touchmove',    e => { if (irDragging) { e.preventDefault(); updateIR(irSnapToNearest(irSvgY(e.touches[0].clientY))); } }, { passive: false });
+irSvg.addEventListener('touchend',     () => { irDragging = false; });
+
+// ── External Rotation (Dış Rotasyon — üstten bakış / axial) ──────────────────
+// Top-down view. Arm abducted 90°, elbow at 90° flexion.
+// 0° = forearm pointing FORWARD (toward head = upward in SVG, y decreases).
+// 90° ER = forearm pointing LATERAL (outward, away from body).
+// ── External Rotation (sec 6) — circular compass / saat kadranı ─────────────
+// Pivot always at SVG center. 0° = 12 o'clock (önde), 90° = 3 o'clock (sağ)
+// or 9 o'clock (sol). erSign controls sweep direction.
+
+const ER_CX    = 170;   // compass center X (always mid-SVG)
+const ER_PIV_Y = 150;   // compass center Y
+const ER_FAL   = 96;    // compass radius
+
+let erSign = 1, erDragging = false;
+
+const erSvg   = document.getElementById('erSvg');
+const erTrack = document.getElementById('erTrack');
+const erSec   = document.getElementById('erSec');
+const erArc   = document.getElementById('erArc');
+const erTicks = document.getElementById('erTicks');
+const erFA    = document.getElementById('erFA');
+const erHD    = document.getElementById('erHD');
+const erH2    = document.getElementById('erH2');
+const erTT    = document.getElementById('erTT');
+const erDegEl = document.getElementById('erDeg');
+
+function makeERPaths(d) {
+  if (d <= 0) return ['', ''];
+  let s = `M ${ER_CX} ${ER_PIV_Y} L ${f(ER_CX)} ${f(ER_PIV_Y - ER_FAL)}`;
+  let a = `M ${f(ER_CX)} ${f(ER_PIV_Y - ER_FAL)}`;
+  for (let i = 1; i <= Math.min(d, 90); i++) {
+    const g  = i * Math.PI / 180;
+    const px = f(ER_CX + erSign * ER_FAL * Math.sin(g));
+    const py = f(ER_PIV_Y - ER_FAL * Math.cos(g));
+    s += ` L ${px} ${py}`;
+    a += ` L ${px} ${py}`;
+  }
+  return [s + ' Z', a];
+}
+
+function updateER(d) {
+  d = Math.max(0, Math.min(90, Math.round(d)));
+  scores.rom_er = d;
+  const r  = d * Math.PI / 180;
+  const hx = f(ER_CX + erSign * ER_FAL * Math.sin(r));
+  const hy = f(ER_PIV_Y - ER_FAL * Math.cos(r));
+  sa(erFA, {x1: ER_CX, y1: ER_PIV_Y, x2: hx, y2: hy});
+  [erHD, erH2, erTT].forEach(el => sa(el, {cx: hx, cy: hy}));
+  const [sp, ap] = makeERPaths(d);
+  erSec.setAttribute('d', sp);
+  erArc.setAttribute('d', ap);
+  const col = d >= 60 ? '#1e6fff' : d >= 30 ? '#2563eb' : '#16a34a';
+  erDegEl.textContent = d + '°';
+  erDegEl.style.color = col;
+}
+
+function drawERTicks() {
+  erTicks.innerHTML = '';
+  const mkEl = tag => document.createElementNS('http://www.w3.org/2000/svg', tag);
+
+  [0, 30, 60, 90].forEach(d => {
+    const r   = d * Math.PI / 180;
+    const tx  = ER_CX + erSign * ER_FAL * Math.sin(r);
+    const ty  = ER_PIV_Y - ER_FAL * Math.cos(r);
+    const ox  = erSign * Math.sin(r);
+    const oy  = -Math.cos(r);
+    const isKey = d === 0 || d === 90;
+    const len = isKey ? 10 : 6;
+
+    const tick = mkEl('line');
+    sa(tick, {x1: f(tx), y1: f(ty), x2: f(tx + ox * len), y2: f(ty + oy * len),
+              stroke: '#94a3b8', 'stroke-width': isKey ? '2' : '1.5'});
+    erTicks.appendChild(tick);
+
+    if (!isKey) {
+      // Intermediate labels: just the degree number
+      const lx = Math.max(8, Math.min(332, tx + ox * (len + 10)));
+      const ly = Math.max(12, Math.min(278, ty + oy * (len + 8)));
+      const t = mkEl('text');
+      sa(t, {x: f(lx), y: f(ly + 4), 'font-size': '10', fill: '#94a3b8',
+             'font-family': 'sans-serif',
+             'text-anchor': erSign === 1 ? 'start' : 'end'});
+      t.textContent = d + '°';
+      erTicks.appendChild(t);
+    }
+  });
+
+  // Key endpoint labels: bold degree + direction on a second line
+  const addPair = (deg, dir, x, y, anchor) => {
+    const t1 = mkEl('text');
+    sa(t1, {x: f(x), y: f(y), 'font-size': '11', fill: '#475569',
+            'font-family': 'sans-serif', 'text-anchor': anchor, 'font-weight': '600'});
+    t1.textContent = deg;
+    erTicks.appendChild(t1);
+    const t2 = mkEl('text');
+    sa(t2, {x: f(x), y: f(y + 13), 'font-size': '9', fill: '#94a3b8',
+            'font-family': 'sans-serif', 'text-anchor': anchor});
+    t2.textContent = dir;
+    erTicks.appendChild(t2);
+  };
+
+  // 0° — top center
+  addPair('0°', 'önde', ER_CX, ER_PIV_Y - ER_FAL - 17, 'middle');
+  // 90° — lateral side
+  const x90    = ER_CX + erSign * (ER_FAL + 13);
+  const a90    = erSign === 1 ? 'start' : 'end';
+  addPair('90°', 'dışarı', x90, ER_PIV_Y - 7, a90);
+}
+
+function initER() {
+  const isLeft = /sol|left/i.test(activeLeg);
+  erSign = isLeft ? -1 : 1;
+
+  const sweep = erSign === 1 ? 1 : 0;
+  erTrack.setAttribute('d',
+    `M ${ER_CX} ${f(ER_PIV_Y - ER_FAL)} A ${ER_FAL} ${ER_FAL} 0 0 ${sweep} ${f(ER_CX + erSign * ER_FAL)} ${ER_PIV_Y}`);
+
+  drawERTicks();
+  updateER(scores.rom_er || 0);
+}
+
+function erGetAngle(cx, cy) {
+  const rect = erSvg.getBoundingClientRect();
+  const svgX = (cx - rect.left) * (340 / rect.width);
+  const svgY = (cy - rect.top)  * (290 / rect.height);
+  return Math.atan2(erSign * (svgX - ER_CX), ER_PIV_Y - svgY) * 180 / Math.PI;
+}
+
+erSvg.addEventListener('mousedown',   e => { erDragging = true;  updateER(erGetAngle(e.clientX, e.clientY)); });
+document.addEventListener('mousemove', e => { if (erDragging) updateER(erGetAngle(e.clientX, e.clientY)); });
+document.addEventListener('mouseup',   () => { erDragging = false; });
+erSvg.addEventListener('touchstart',   e => { erDragging = true;  updateER(erGetAngle(e.touches[0].clientX, e.touches[0].clientY)); }, { passive: true });
+erSvg.addEventListener('touchmove',    e => { if (erDragging) { e.preventDefault(); updateER(erGetAngle(e.touches[0].clientX, e.touches[0].clientY)); } }, { passive: false });
+erSvg.addEventListener('touchend',     () => { erDragging = false; });
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById('welcomeName').textContent = patientName;
+document.getElementById('chipDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
+document.getElementById('chipLeg').textContent     = activeLeg || '—';
+updateVAS(5);
+updateSleepVAS(5);
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+const headerMeta = [
+  { label: 'Omuz Değerlendirmesi',  title: 'Hoş Geldiniz'              },  // 0
+  { label: 'Hasta Bilgileri',       title: 'Bilgilerinizi Doğrulayın'  },  // 1
+  { label: 'Bölüm 1 / 3',          title: 'Ağrı Değerlendirmesi'      },  // 2
+  { label: 'EHA — Abduksiyon',      title: 'Eklem Hareket Açıklığı'    },  // 3
+  { label: 'EHA — Öne Fleksiyon',   title: 'Eklem Hareket Açıklığı'    },  // 4
+  { label: 'EHA — İç Rotasyon',     title: 'Eklem Hareket Açıklığı'    },  // 5
+  { label: 'EHA — Dış Rotasyon',    title: 'Eklem Hareket Açıklığı'    },  // 6
+  { label: 'DASH Anketi',           title: 'Kol, Omuz ve El Skoru'     },  // 7
+  { label: 'Constant Score',        title: 'Omuz Fonksiyon Skoru'      },  // 8
+  { label: 'SF-12 Anketi',          title: 'Genel Sağlık Ölçeği'       },  // 9
+  { label: 'Uyku Kalitesi',         title: 'Visual Analog Sleep Scale' },  // 10
+  { label: '',                      title: ''                          },  // 11
+];
+const btnLabels = ['Başla', 'Devam →', 'İleri →', 'İleri →', 'İleri →', 'İleri →', 'İleri →', 'İleri →', 'İleri →', 'İleri →', 'Gönder', ''];
+
+function showSection(n) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec' + n).classList.add('active');
+  currentSection = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const navBar  = document.getElementById('navBar');
+  const btnBack = document.getElementById('btnBack');
   const btnNext = document.getElementById('btnNext');
-  if (currentSection === 0) btnNext.textContent = 'Ankete Başla →';
-  else if (currentSection === 7) btnNext.textContent = '✓ Gönder';
-  else if (currentSection === 8) btnNext.style.display = 'none';
-  else btnNext.textContent = 'Devam →';
 
-  document.getElementById('navFooter').style.display =
-    currentSection === 8 ? 'none' : 'flex';
+  if (n === 11) { navBar.style.display = 'none'; return; }
+
+  navBar.style.display  = 'flex';
+  btnBack.style.display = n > 0 ? 'block' : 'none';
+  btnNext.textContent   = btnLabels[n] || 'İleri →';
+  btnNext.disabled      = false;
+
+  document.getElementById('headerLabel').textContent = headerMeta[n]?.label || '';
+  document.getElementById('headerTitle').textContent = headerMeta[n]?.title || '';
+  document.getElementById('headerSub').textContent   = '';
+
+  const pctMap = [2, 12, 22, 32, 42, 52, 60, 68, 76, 84, 92, 96];
+  document.getElementById('progressFill').style.width = (pctMap[n] ?? 2) + '%';
+
+  if (n === 1) initDemographics();
+  if (n === 3) initROM();
+  if (n === 4) initFFlex();
+  if (n === 5) initIR();
+  if (n === 6) initER();
+  if (n === 7) initDASH();
+  if (n === 8) initConstant();
+  if (n === 9) initSF12();
 }
 
 function goNext() {
-  if (currentSection === 7) { submitForm(); return; }
-  if (currentSection === 6) { populateSummary(); }
-  showSection(currentSection + 1);
+  // Require side selection if missing
+  if (currentSection === 1 && !activeLeg) {
+    const picker = document.getElementById('sidePicker');
+    picker.style.animation = 'none';
+    picker.offsetHeight; // reflow to restart animation
+    picker.style.animation = 'shake 0.35s ease';
+    return;
+  }
+  if (currentSection < 7) { showSection(currentSection + 1); return; }
+  if (currentSection === 7) {
+    const answered = dashAnswers.slice(1).filter(v => v > 0).length;
+    if (answered < 27) {
+      alert(`En az 27 soru yanıtlanmalıdır. Şu an ${answered}/30 yanıtlandı.`);
+      return;
+    }
+    showSection(8);
+    return;
+  }
+  if (currentSection === 8) {
+    if (constAnswers.pain === null || constAnswers.position === null || constAnswers.strength === null) {
+      alert('Lütfen Ağrı, El Konumu ve Kuvvet sorularını yanıtlayın.');
+      return;
+    }
+    showSection(9);
+    return;
+  }
+  if (currentSection === 9) {
+    const answered = sf12Answers.slice(1).filter(v => v > 0).length;
+    if (answered < 12) {
+      alert(`SF-12: lütfen tüm soruları yanıtlayın. Şu an ${answered}/12 yanıtlandı.`);
+      return;
+    }
+    showSection(10);
+    return;
+  }
+  if (currentSection === 10) {
+    submitForm();
+  }
 }
 
 function goBack() {
   if (currentSection > 0) showSection(currentSection - 1);
 }
 
-function showSection(n) {
-  document.getElementById('section-' + currentSection).classList.remove('active');
-  currentSection = n;
-  document.getElementById('section-' + currentSection).classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  updateProgress();
-}
-
-// ─── Score Calculation ────────────────────────────────────────────────────────
-function calcIKDC() {
-  const fields = ['ikdc1','ikdc2','ikdc3','ikdc4','ikdc5',
-                  'ikdc6','ikdc7','ikdc8','ikdc9','ikdc10',
-                  'ikdc11','ikdc12','ikdc13','ikdc14','ikdc15','ikdc16'];
-  const sum = fields.reduce((acc, f) => acc + (scores[f] ?? 0), 0) + scores.ikdcFunc;
-  const maxPossible = 4+4+4+1+4 + 4*9 + 4+4+4 + 10;
-  return Math.round((sum / maxPossible) * 100);
-}
-
-function calcLysholm() {
-  return (scores.lys1 ?? 0) + (scores.lys2 ?? 0) + (scores.lys3 ?? 0) +
-         (scores.lys4 ?? 0) + (scores.lys5 ?? 0) + (scores.lys6 ?? 0) +
-         (scores.lys7 ?? 0) + (scores.lys8 ?? 0);
-}
-
-function populateSummary() {
-  const ikdc = calcIKDC();
-  const lysholm = calcLysholm();
-  document.getElementById('sumNRS').textContent = scores.nrs + ' / 10';
-  document.getElementById('sumIKDC').textContent = ikdc + ' / 100';
-  document.getElementById('sumLysholm').textContent = lysholm + ' / 100';
-  document.getElementById('sumTegner').textContent = scores.tegner + ' / 10';
-  document.getElementById('sumDaysPostOp').textContent =
-    daysPostOp !== null ? daysPostOp + '. gün' : '—';
-}
-
-// ─── Submit ───────────────────────────────────────────────────────────────────
+// ── Submit ────────────────────────────────────────────────────────────────────
 function submitForm() {
   const btn = document.getElementById('btnNext');
   btn.innerHTML = '<span class="spinner"></span>Gönderiliyor...';
-  btn.disabled = true;
-  document.getElementById('errorBanner').style.display = 'none';
+  btn.disabled  = true;
 
-  const ikdc = calcIKDC();
-  const lysholm = calcLysholm();
   const now = new Date();
-
   const payload = {
-    timestamp: now.toISOString(),
-    date: now.toLocaleDateString('tr-TR'),
-    time: now.toLocaleTimeString('tr-TR'),
+    timestamp:     now.toISOString(),
+    date:          now.toLocaleDateString('tr-TR'),
+    time:          now.toLocaleTimeString('tr-TR'),
     patientId,
     patientName,
-    diagnosis: 'Menisküs Yırtığı',
-    surgeryDate: surgeryDateStr,
-    daysPostOp: daysPostOp !== null ? daysPostOp : '',
-    surgeryLeg,
-    nrs_avg: scores.nrs,
-    nrs_worst: scores.nrsWorst,
-    ikdc_score: ikdc,
-    ikdc_raw: JSON.stringify({
-      q1:scores.ikdc1, q2:scores.ikdc2, q3:scores.ikdc3, q4:scores.ikdc4, q5:scores.ikdc5,
-      q6:scores.ikdc6, q7:scores.ikdc7, q8:scores.ikdc8, q9:scores.ikdc9, q10:scores.ikdc10,
-      q11:scores.ikdc11, q12:scores.ikdc12, q13:scores.ikdc13, q14:scores.ikdc14,
-      q15:scores.ikdc15, q16:scores.ikdc16, func:scores.ikdcFunc
-    }),
-    lysholm_score: lysholm,
-    lysholm_raw: JSON.stringify({
-      limp:scores.lys1, support:scores.lys2, locking:scores.lys3, instability:scores.lys4,
-      pain:scores.lys5, swelling:scores.lys6, stairs:scores.lys7, squat:scores.lys8
-    }),
-    tegner: scores.tegner
+    diagnosis:     procedureType,
+    surgeryDate:   surgeryDateStr,
+    daysPostOp:    daysPostOp !== null ? daysPostOp : '',
+    surgeryLeg:    activeLeg,
+    vas:           scores.vas,
+    rom_abduction: scores.rom_abduction,
+    rom_flexion:   scores.rom_flexion,
+    rom_ir:        scores.rom_ir,
+    rom_ir_label:  scores.rom_ir_label,
+    rom_er:        scores.rom_er,
+    dash:          scores.dash,
+    constant:      scores.constant,
+    sleep_vas:     scores.sleep,
+    sf12_pcs:      scores.sf12_pcs,
+    sf12_mcs:      scores.sf12_mcs
   };
 
-  // If no URL configured yet, show demo mode
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    setTimeout(() => {
-      showSuccess(ikdc, lysholm, now);
-    }, 800);
+    setTimeout(() => showSuccess(now), 800);
     return;
   }
 
   const getUrl = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
-  const popup = window.open(getUrl, 'prom_submit', 'width=1,height=1,left=0,top=0');
+  const popup  = window.open(getUrl, 'prom_submit', 'width=1,height=1,left=0,top=0');
   setTimeout(() => {
     try { if (popup) popup.close(); } catch(e) {}
-    showSuccess(ikdc, lysholm, now);
+    showSuccess(now);
   }, 2500);
 }
 
-function showSuccess(ikdc, lysholm, now) {
-  document.getElementById('finalDate').textContent = now.toLocaleDateString('tr-TR');
-  document.getElementById('finalIKDC').textContent = ikdc + ' / 100';
-  document.getElementById('finalLysholm').textContent = lysholm + ' / 100';
-  document.getElementById('finalTegner').textContent = (scores.tegner ?? '—') + ' / 10';
-  showSection(8);
+// ── DASH ──────────────────────────────────────────────────────────────────────
+const dashAnswers = new Array(31).fill(0); // index 1-30, 0 = unanswered
+
+// Colour palette: vibrant / pastel / text on vibrant / text on pastel
+const DC = [
+  { bg:'#22c55e', dim:'#d1fae5', tx:'white', dtx:'#065f46' }, // 1 green
+  { bg:'#84cc16', dim:'#ecfccb', tx:'white', dtx:'#3f6212' }, // 2 lime
+  { bg:'#eab308', dim:'#fef9c3', tx:'white', dtx:'#713f12' }, // 3 amber
+  { bg:'#f97316', dim:'#ffedd5', tx:'white', dtx:'#7c2d12' }, // 4 orange
+  { bg:'#ef4444', dim:'#fee2e2', tx:'white', dtx:'#7f1d1d' }, // 5 red
+];
+
+function initDASH() {
+  const cont = document.getElementById('dashContainer');
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+
+  const groups = [
+    {
+      title: 'A — Aktiviteler',
+      intro: 'Son bir haftada aşağıdaki faaliyetleri yaparken ne kadar güçlük çektiniz?',
+      labels: ['Güçlük yok','Hafif güçlük','Orta güçlük','Ciddi güçlük','Yapamıyorum'],
+      qs: [
+        [1,  'Sıkı veya yeni bir kapak açmak'],
+        [2,  'Yazmak'],
+        [3,  'Anahtar çevirmek'],
+        [4,  'Yemek hazırlamak'],
+        [5,  'Ağır bir kapıyı itmek'],
+        [6,  'Başınızın üzerindeki bir rafa nesne koymak'],
+        [7,  'Ağır ev işleri yapmak (örn. duvar boyama, zemin yıkama)'],
+        [8,  'Bahçe veya çim işleri yapmak'],
+        [9,  'Yatak yapmak'],
+        [10, 'Alışveriş veya evrak çantası taşımak'],
+        [11, 'Ağır nesne taşımak (4,5 kg üzerinde)'],
+        [12, 'Baş üzerindeki bir ampulü değiştirmek'],
+        [13, 'Saçı yıkamak veya kurutmak'],
+        [14, 'Sırtı yıkamak'],
+        [15, 'Kazak veya süveter giymek'],
+        [16, 'Bıçakla yemek kesmek'],
+        [17, 'Az çabayla yapılan eğlence aktiviteleri (örn. kart oynamak, örgü örmek)'],
+        [18, 'Kola kuvvet veya darbe uygulayan eğlence aktiviteleri (örn. golf, tenis, çekiç kullanma)'],
+        [19, 'Kolu serbest hareket ettiren eğlence aktiviteleri (örn. frizbi, badminton)'],
+        [20, 'Ulaşım gereksinimlerini karşılamak (bir yerden bir yere gitmek)'],
+        [21, 'Cinsel aktiviteler'],
+      ],
+    },
+    {
+      title: 'B — Semptomlar',
+      intro: 'Geçen hafta kol, omuz veya elinizdeki belirtilerin şiddetini değerlendirin:',
+      labels: ['Yok','Hafif','Orta','Şiddetli','Aşırı şiddetli'],
+      qs: [
+        [22, 'Kol, omuz veya el ağrısı'],
+        [23, 'Belirli bir aktivite sırasında kol, omuz veya el ağrısı'],
+        [24, 'Kol, omuz veya elde uyuşma / karıncalanma'],
+        [25, 'Kol, omuz veya elde güçsüzlük'],
+        [26, 'Kol, omuz veya elde tutukluk / sertlik'],
+      ],
+    },
+    {
+      title: 'C — Genel Etkiler',
+      mixed: true,
+      qs: [
+        [27, 'Kol, omuz veya el ağrınız nedeniyle uyumakta ne kadar güçlük çektiniz?',
+             ['Güçlük yok','Hafif','Orta','Ciddi','Uyuyamadım']],
+        [28, 'Kol, omuz veya el sorunum nedeniyle kendimi daha az yetenekli, özgüvensiz veya yararsız hissettim.',
+             ['Hiç katılmıyorum','Katılmıyorum','Kararsızım','Katılıyorum','Kesinlikle katılıyorum']],
+        [29, 'Kol, omuz veya el sorunum nedeniyle aile, arkadaş veya sosyal gruplarla aktivitelerimi kısıtladım.',
+             ['Hiç katılmıyorum','Katılmıyorum','Kararsızım','Katılıyorum','Kesinlikle katılıyorum']],
+        [30, 'Kol, omuz veya el sorunum iş veya günlük aktivitelerimi olumsuz etkiledi.',
+             ['Hiç katılmıyorum','Katılmıyorum','Kararsızım','Katılıyorum','Kesinlikle katılıyorum']],
+      ],
+    },
+  ];
+
+  let h = `
+    <div class="dash-intro">
+      <strong>Kol, Omuz ve El Anketi (DASH)</strong><br>
+      Lütfen son bir haftayı düşünerek yanıtlayın. 30 sorudan en az 27'si yanıtlanmalıdır.
+    </div>
+    <div class="dash-score-card">
+      <div>
+        <div class="dash-score-title">DASH Skoru</div>
+        <div class="dash-score-prog" id="dashProg">0 / 30 soru yanıtlandı</div>
+      </div>
+      <div style="text-align:right">
+        <div class="dash-score-val" id="dashScoreVal">—</div>
+        <div class="dash-score-sub">/ 100</div>
+      </div>
+    </div>`;
+
+  for (const g of groups) {
+    h += `<div class="dash-group">
+      <div class="dash-group-hd">
+        <div class="dash-group-title">${g.title}</div>
+        ${g.intro ? `<div class="dash-group-intro">${g.intro}</div>` : ''}
+      </div>`;
+
+    for (const qd of g.qs) {
+      const n      = qd[0], q = qd[1];
+      const labels = g.mixed ? qd[2] : g.labels;
+      const segs   = DC.map((c, i) =>
+        `<div class="dseg" data-v="${i+1}" style="background:${c.dim}">
+           <span class="dseg-num" style="color:${c.dtx}">${i+1}</span>
+         </div>`
+      ).join('');
+      h += `
+        <div class="dash-q">
+          <div class="dash-q-text"><span class="dash-q-num">${n}.</span> ${q}</div>
+          <div class="dbar" id="dbar${n}" data-n="${n}" data-labels='${JSON.stringify(labels)}'>${segs}</div>
+          <div class="dqlbl" id="dqlbl${n}"></div>
+        </div>`;
+    }
+    h += `</div>`;
+  }
+
+  cont.innerHTML = h;
+
+  // Pointer-drag events — each bar works like a slider
+  cont.querySelectorAll('.dbar').forEach(bar => {
+    const n      = parseInt(bar.dataset.n);
+    const labels = JSON.parse(bar.dataset.labels);
+    let active   = false;
+
+    function pick(clientX) {
+      const r = bar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width, clientX - r.left));
+      const v = Math.min(5, Math.ceil((x / r.width) * 5)) || 1;
+      setDashVal(n, v, labels);
+    }
+
+    bar.addEventListener('pointerdown', e => {
+      active = true;
+      bar.setPointerCapture(e.pointerId);
+      pick(e.clientX);
+      e.preventDefault();
+    });
+    bar.addEventListener('pointermove', e => { if (active) pick(e.clientX); });
+    bar.addEventListener('pointerup',   () => { active = false; });
+  });
+}
+
+function setDashVal(n, v, labels) {
+  dashAnswers[n] = v;
+  const bar = document.getElementById(`dbar${n}`);
+  if (!bar) return;
+  bar.classList.add('touched');
+  bar.querySelectorAll('.dseg').forEach(s => {
+    const sv = parseInt(s.dataset.v);
+    const c  = DC[sv - 1];
+    const on = sv === v;
+    s.classList.toggle('sel', on);
+    s.style.background = on ? c.bg : c.dim;
+    s.querySelector('.dseg-num').style.color = on ? c.tx : c.dtx;
+  });
+  const lbl = document.getElementById(`dqlbl${n}`);
+  if (lbl) { lbl.textContent = labels[v - 1]; lbl.style.color = DC[v - 1].bg; }
+  updateDASHScore();
+}
+
+function updateDASHScore() {
+  const vals  = dashAnswers.slice(1).filter(v => v > 0);
+  const n     = vals.length;
+  const prog  = document.getElementById('dashProg');
+  const valEl = document.getElementById('dashScoreVal');
+  if (!prog) return;
+  prog.textContent = `${n} / 30 soru yanıtlandı`;
+  if (n < 27) {
+    valEl.textContent = '—';
+    valEl.style.color = 'var(--muted)';
+    scores.dash = null;
+  } else {
+    const sum  = vals.reduce((a, b) => a + b, 0);
+    const dash = Math.round(((sum / n) - 1) * 25);
+    valEl.textContent = dash;
+    valEl.style.color = dash < 25 ? '#16a34a' : dash < 50 ? '#d97706' : '#dc2626';
+    scores.dash = dash;
+  }
+}
+
+// ── CONSTANT SCORE ────────────────────────────────────────────────────────────
+
+// Reversed gradient: left = bad/red, right = good/green
+const CC_PAIN = [
+  { bg:'#ef4444', dim:'#fee2e2', tx:'white', dtx:'#7f1d1d' },  // Şiddetli → 0 pt
+  { bg:'#f97316', dim:'#ffedd5', tx:'white', dtx:'#7c2d12' },  // Orta     → 5 pt
+  { bg:'#eab308', dim:'#fef9c3', tx:'white', dtx:'#713f12' },  // Hafif    → 10 pt
+  { bg:'#22c55e', dim:'#d1fae5', tx:'white', dtx:'#065f46' },  // Yok      → 15 pt
+];
+const CC5 = [
+  { bg:'#ef4444', dim:'#fee2e2', tx:'white', dtx:'#7f1d1d' },
+  { bg:'#f97316', dim:'#ffedd5', tx:'white', dtx:'#7c2d12' },
+  { bg:'#eab308', dim:'#fef9c3', tx:'white', dtx:'#713f12' },
+  { bg:'#84cc16', dim:'#ecfccb', tx:'white', dtx:'#3f6212' },
+  { bg:'#22c55e', dim:'#d1fae5', tx:'white', dtx:'#065f46' },
+];
+
+const C_BARS = {
+  pain:     { colors: CC_PAIN, pts: [0, 5, 10, 15],   labels: ['Şiddetli', 'Orta', 'Hafif', 'Yok'] },
+  position: { colors: CC5,     pts: [2, 4, 6, 8, 10], labels: ['Bele kadar', 'Göğüse kadar', 'Boyuna kadar', 'Başın tepesine', 'Baş üstünde'] },
+};
+
+const constAnswers = { pain: null, work: false, sport: false, sleep: false, position: null, strength: null };
+
+function initConstant() {
+  const cont = document.getElementById('constantContainer');
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+
+  const rom = calcConstantROM();
+  const romTotal = rom.flex + rom.abd + rom.ir + rom.er;
+
+  function segs(key) {
+    return C_BARS[key].colors.map((c, i) =>
+      `<div class="dseg" data-i="${i}" style="background:${c.dim}">
+         <span class="dseg-num" style="color:${c.dtx}">${i + 1}</span>
+       </div>`
+    ).join('');
+  }
+
+  cont.innerHTML = `
+    <div class="dash-intro">
+      <strong>Constant-Murley Omuz Skoru</strong><br>
+      Son 4 haftayı düşünerek yanıtlayın. Toplam 100 puan — yüksek = iyi.
+    </div>
+    <div class="dash-score-card">
+      <div>
+        <div class="dash-score-title">Constant Skoru</div>
+        <div class="const-sub-row" id="constSubRow">Ağrı: —/15 · Aktivite: —/20 · ROM: ${romTotal}/40 · Güç: —/25</div>
+      </div>
+      <div style="text-align:right">
+        <div class="dash-score-val" id="constScoreVal">—</div>
+        <div class="dash-score-sub">/ 100</div>
+      </div>
+    </div>
+
+    <div class="dash-group">
+      <div class="dash-group-hd">
+        <div class="dash-group-title">A — Ağrı (0–15 puan)</div>
+        <div class="dash-group-intro">Son 4 haftada omuz ağrınızı en iyi tanımlayan seçeneği işaretleyin:</div>
+      </div>
+      <div class="dash-q">
+        <div class="dbar" id="cbar_pain" data-key="pain">${segs('pain')}</div>
+        <div class="dqlbl" id="cqlbl_pain"></div>
+      </div>
+    </div>
+
+    <div class="dash-group">
+      <div class="dash-group-hd">
+        <div class="dash-group-title">B — Günlük Aktiviteler (0–20 puan)</div>
+        <div class="dash-group-intro">Yapabildiğiniz aktiviteleri seçin (birden fazla seçilebilir):</div>
+      </div>
+      <div class="dash-q">
+        <div class="const-toggle-group">
+          <div class="const-toggle" id="ctog_work"  onclick="constToggle('work')">
+            <span>💼</span> Tüm mesai saatlerinde çalışabiliyorum
+            <span class="const-toggle-pts">+4 pt</span>
+          </div>
+          <div class="const-toggle" id="ctog_sport" onclick="constToggle('sport')">
+            <span>🏃</span> Tüm spor / rekreasyon aktivitelerimi yapabiliyorum
+            <span class="const-toggle-pts">+4 pt</span>
+          </div>
+          <div class="const-toggle" id="ctog_sleep" onclick="constToggle('sleep')">
+            <span>😴</span> Omuz ağrısı uykumu etkilemiyor
+            <span class="const-toggle-pts">+2 pt</span>
+          </div>
+        </div>
+      </div>
+      <div class="dash-q" style="border-top:1px solid var(--border); padding-top:14px;">
+        <div class="dash-q-text">Omuzunuzu zorlamadan elinizi en yüksek nereye götürebilirsiniz?</div>
+        <div class="dbar" id="cbar_position" data-key="position">${segs('position')}</div>
+        <div class="dqlbl" id="cqlbl_position"></div>
+      </div>
+    </div>
+
+    <div class="dash-group">
+      <div class="dash-group-hd">
+        <div class="dash-group-title">C — Hareket Açıklığı (${romTotal}/40 puan)</div>
+        <div class="dash-group-intro">Önceki bölümde girilen ölçümlerden otomatik hesaplanmıştır.</div>
+      </div>
+      <div class="const-rom-grid">
+        <div class="const-rom-item">
+          <span class="const-rom-label">Öne Fleksiyon<br><small>${scores.rom_flexion}°</small></span>
+          <span class="const-rom-score">${rom.flex}/10</span>
+        </div>
+        <div class="const-rom-item">
+          <span class="const-rom-label">Yana Abduksiyon<br><small>${scores.rom_abduction}°</small></span>
+          <span class="const-rom-score">${rom.abd}/10</span>
+        </div>
+        <div class="const-rom-item">
+          <span class="const-rom-label">İç Rotasyon<br><small>${scores.rom_ir_label}</small></span>
+          <span class="const-rom-score">${rom.ir}/10</span>
+        </div>
+        <div class="const-rom-item">
+          <span class="const-rom-label">Dış Rotasyon<br><small>${scores.rom_er}°</small></span>
+          <span class="const-rom-score">${rom.er}/10</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-group">
+      <div class="dash-group-hd">
+        <div class="dash-group-title">D — Kuvvet (0–25 puan)</div>
+        <div class="dash-group-intro">Kolunuzu 90° yana açık tutarken ne kadar ağırlık kaldırabilirsiniz?</div>
+      </div>
+      <div class="dash-q">
+        <div class="str-track" id="strTrack">
+          <div class="str-thumb" id="strThumb"></div>
+        </div>
+        <div class="str-ticks" id="strTicks"></div>
+        <div class="str-val" id="strVal" style="color:var(--muted)">← Kaydırarak seçin</div>
+      </div>
+    </div>`;
+
+  ['pain', 'position'].forEach(key => {
+    const bar = document.getElementById(`cbar_${key}`);
+    let active = false;
+    function pick(clientX) {
+      const r = bar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width, clientX - r.left));
+      const n = C_BARS[key].colors.length;
+      const i = Math.min(n - 1, Math.floor((x / r.width) * n));
+      setConstBarVal(key, i);
+    }
+    bar.addEventListener('pointerdown', e => { active = true; bar.setPointerCapture(e.pointerId); pick(e.clientX); e.preventDefault(); });
+    bar.addEventListener('pointermove', e => { if (active) pick(e.clientX); });
+    bar.addEventListener('pointerup',   () => { active = false; });
+  });
+
+  // ── Strength slider (10 kategori, 0–12 kg → 0–25 puan) ──
+  const STRENGTH_CATS = [
+    { label: '0 kg',    pts:  0 },
+    { label: '~1 kg',   pts:  3 },
+    { label: '~2.5 kg', pts:  6 },
+    { label: '~4 kg',   pts:  9 },
+    { label: '~5 kg',   pts: 12 },
+    { label: '~6.5 kg', pts: 15 },
+    { label: '~8 kg',   pts: 18 },
+    { label: '~9.5 kg', pts: 21 },
+    { label: '~11 kg',  pts: 24 },
+    { label: '≥12 kg',  pts: 25 },
+  ];
+  document.getElementById('strTicks').innerHTML =
+    STRENGTH_CATS.map(c => `<span class="str-tick">${c.label}</span>`).join('');
+
+  const STR_GRAD = ['#ef4444','#f97316','#fb923c','#f59e0b','#eab308','#a3e635','#84cc16','#4ade80','#22c55e','#16a34a'];
+
+  function setStrengthVal(idx) {
+    constAnswers.strength = STRENGTH_CATS[idx].pts;
+    const thumb = document.getElementById('strThumb');
+    const valEl = document.getElementById('strVal');
+    thumb.style.display = 'block';
+    thumb.style.left = (idx / 9 * 100) + '%';
+    valEl.textContent = `${STRENGTH_CATS[idx].label} — ${STRENGTH_CATS[idx].pts} puan`;
+    valEl.style.color  = STR_GRAD[idx];
+    updateConstantScore();
+  }
+
+  const strTrack = document.getElementById('strTrack');
+  let strActive = false;
+  function pickStrength(clientX) {
+    const r   = strTrack.getBoundingClientRect();
+    const x   = Math.max(0, Math.min(r.width, clientX - r.left));
+    const idx = Math.min(9, Math.round((x / r.width) * 9));
+    setStrengthVal(idx);
+  }
+  strTrack.addEventListener('pointerdown', e => { strActive = true; strTrack.setPointerCapture(e.pointerId); pickStrength(e.clientX); e.preventDefault(); });
+  strTrack.addEventListener('pointermove', e => { if (strActive) pickStrength(e.clientX); });
+  strTrack.addEventListener('pointerup',   () => { strActive = false; });
+}
+
+function setConstBarVal(key, idx) {
+  constAnswers[key] = C_BARS[key].pts[idx];
+  const bar = document.getElementById(`cbar_${key}`);
+  if (!bar) return;
+  bar.classList.add('touched');
+  bar.querySelectorAll('.dseg').forEach(s => {
+    const si = parseInt(s.dataset.i);
+    const c  = C_BARS[key].colors[si];
+    const on = si === idx;
+    s.classList.toggle('sel', on);
+    s.style.background = on ? c.bg : c.dim;
+    s.querySelector('.dseg-num').style.color = on ? c.tx : c.dtx;
+  });
+  const lbl = document.getElementById(`cqlbl_${key}`);
+  if (lbl) { lbl.textContent = C_BARS[key].labels[idx]; lbl.style.color = C_BARS[key].colors[idx].bg; }
+  updateConstantScore();
+}
+
+function constToggle(key) {
+  constAnswers[key] = !constAnswers[key];
+  document.getElementById(`ctog_${key}`).classList.toggle('active', constAnswers[key]);
+  updateConstantScore();
+}
+
+function calcConstantROM() {
+  function degPts(deg) {
+    if (!deg || deg <= 30) return 0;
+    if (deg <= 60)  return 2;
+    if (deg <= 90)  return 4;
+    if (deg <= 120) return 6;
+    if (deg <= 150) return 8;
+    return 10;
+  }
+  const IR_MAP = { 'Kalça': 0, 'Kuyruk sokumu': 2, 'Bel': 4, 'Üst bel': 8, 'Kürek kemiği': 10 };
+  function erPts(deg) {
+    if (!deg || deg < 15) return 0;
+    if (deg < 30) return 2;
+    if (deg < 45) return 4;
+    if (deg < 60) return 6;
+    if (deg < 90) return 8;
+    return 10;
+  }
+  return {
+    flex: degPts(scores.rom_flexion),
+    abd:  degPts(scores.rom_abduction),
+    ir:   IR_MAP[scores.rom_ir_label] ?? 0,
+    er:   erPts(scores.rom_er),
+  };
+}
+
+function updateConstantScore() {
+  const pain     = constAnswers.pain;
+  const position = constAnswers.position;
+  const strength = constAnswers.strength;
+  const adlActs  = (constAnswers.work ? 4 : 0) + (constAnswers.sport ? 4 : 0) + (constAnswers.sleep ? 2 : 0);
+  const adlTotal = adlActs + (position ?? 0);
+  const rom      = calcConstantROM();
+  const romTotal = rom.flex + rom.abd + rom.ir + rom.er;
+
+  const subRow = document.getElementById('constSubRow');
+  const valEl  = document.getElementById('constScoreVal');
+  if (!subRow) return;
+
+  subRow.textContent = `Ağrı: ${pain ?? '—'}/15 · Aktivite: ${adlTotal}/20 · ROM: ${romTotal}/40 · Güç: ${strength ?? '—'}/25`;
+
+  if (pain === null || position === null || strength === null) {
+    valEl.textContent  = '—';
+    valEl.style.color  = 'var(--muted)';
+    scores.constant    = null;
+    return;
+  }
+
+  const total = pain + adlTotal + romTotal + strength;
+  valEl.textContent = total;
+  valEl.style.color = total >= 80 ? '#16a34a' : total >= 60 ? '#d97706' : '#dc2626';
+  scores.constant   = total;
+}
+
+// ── SF-12 ─────────────────────────────────────────────────────────────────────
+// Resmi SF-12v1 puanlama algoritması: Ware JE, Kosinski M, Keller SD (1996),
+// "How to Score the SF-12 Physical and Mental Health Summary Scales" (QualityMetric).
+// Her yanıt seçeneğinin [PCS, MCS] regresyon ağırlığı; sabitler PCS +56.57706, MCS +60.75781.
+// Ağırlıklar görüntüleme sırasına göre dizilmiştir (ters kodlama önceden uygulanmış).
+const SFC = {
+  g:  { bg:'#22c55e', dim:'#d1fae5', tx:'white', dtx:'#065f46' }, // yeşil
+  l:  { bg:'#84cc16', dim:'#ecfccb', tx:'white', dtx:'#3f6212' }, // açık yeşil
+  y:  { bg:'#eab308', dim:'#fef9c3', tx:'white', dtx:'#713f12' }, // sarı
+  o:  { bg:'#f97316', dim:'#ffedd5', tx:'white', dtx:'#7c2d12' }, // turuncu
+  r:  { bg:'#ef4444', dim:'#fee2e2', tx:'white', dtx:'#7f1d1d' }, // kırmızı
+  dr: { bg:'#b91c1c', dim:'#fecaca', tx:'white', dtx:'#7f1d1d' }, // koyu kırmızı
+};
+const SF_GOOD5 = [SFC.g, SFC.l, SFC.y, SFC.o, SFC.r];
+const SF_BAD5  = [SFC.r, SFC.o, SFC.y, SFC.l, SFC.g];
+const SF_BAD3  = [SFC.r, SFC.y, SFC.g];
+const SF_BAD2  = [SFC.r, SFC.g];
+const SF_GOOD6 = [SFC.g, SFC.l, SFC.y, SFC.o, SFC.r, SFC.dr];
+const SF_BAD6  = [SFC.dr, SFC.r, SFC.o, SFC.y, SFC.l, SFC.g];
+
+const SF12Q = {
+  1:  { text: 'Genel olarak sağlığınız için aşağıdakilerden hangisini söyleyebilirsiniz?',
+        opts: ['Mükemmel', 'Çok iyi', 'İyi', 'Orta', 'Kötü'],
+        colors: SF_GOOD5,
+        w: [[0,0], [-1.31872,-0.06064], [-3.02396,0.03482], [-5.56461,-0.16891], [-8.37399,-1.71175]] },
+  2:  { text: 'Orta düzeyde aktiviteler: masa taşımak, elektrik süpürgesiyle temizlik, bahçe işleri gibi',
+        opts: ['Evet, çok kısıtlıyor', 'Evet, biraz kısıtlıyor', 'Hayır, hiç kısıtlamıyor'],
+        colors: SF_BAD3,
+        w: [[-7.23216,3.93115], [-3.45555,1.8684], [0,0]] },
+  3:  { text: 'Birkaç kat merdiven çıkmak',
+        opts: ['Evet, çok kısıtlıyor', 'Evet, biraz kısıtlıyor', 'Hayır, hiç kısıtlamıyor'],
+        colors: SF_BAD3,
+        w: [[-6.24397,2.68282], [-2.73557,1.43103], [0,0]] },
+  4:  { text: 'İstediğinizden daha azını başardınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[-4.61617,1.4406], [0,0]] },
+  5:  { text: 'İşinizde veya diğer aktivitelerinizde kısıtlandınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[-5.51747,1.66968], [0,0]] },
+  6:  { text: 'İstediğinizden daha azını başardınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[3.04365,-6.82672], [0,0]] },
+  7:  { text: 'İşinizi veya diğer aktivitelerinizi her zamanki kadar dikkatli yapamadınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[2.32091,-5.69921], [0,0]] },
+  8:  { text: 'Son 4 hafta içinde ağrı, normal işinizi (hem ev dışında hem ev işlerinde) ne kadar etkiledi?',
+        opts: ['Hiç etkilemedi', 'Çok az', 'Orta derecede', 'Oldukça', 'Aşırı derecede'],
+        colors: SF_GOOD5,
+        w: [[0,0], [-3.80130,0.90384], [-6.50522,1.49384], [-8.38063,1.76691], [-11.25544,1.48619]] },
+  9:  { text: 'Kendinizi sakin ve huzurlu hissettiniz',
+        opts: ['Her zaman', 'Çoğu zaman', 'Oldukça sık', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_GOOD6,
+        w: [[0,0], [0.66514,-1.94949], [1.36689,-4.09842], [2.37241,-6.31121], [2.90426,-7.92717], [3.46638,-10.19085]] },
+  10: { text: 'Kendinizi enerjik hissettiniz',
+        opts: ['Her zaman', 'Çoğu zaman', 'Oldukça sık', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_GOOD6,
+        w: [[0,0], [-0.42251,-0.92057], [-1.14387,-1.65178], [-1.6185,-3.29805], [-2.02168,-4.88962], [-2.44706,-6.02409]] },
+  11: { text: 'Kendinizi kederli ve hüzünlü hissettiniz',
+        opts: ['Her zaman', 'Çoğu zaman', 'Oldukça sık', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_BAD6,
+        w: [[4.61446,-16.15395], [3.41593,-10.77911], [2.34247,-8.09914], [1.28044,-4.59055], [0.41188,-1.95934], [0,0]] },
+  12: { text: 'Son 4 hafta içinde fiziksel sağlığınız veya duygusal sorunlarınız, sosyal aktivitelerinizi (arkadaş veya akraba ziyareti gibi) ne kadar süreyle engelledi?',
+        opts: ['Her zaman', 'Çoğu zaman', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_BAD5,
+        w: [[-0.33682,-6.29724], [-0.94342,-8.26066], [-0.56193,-6.94676], [-0.18043,-5.63286], [0.11038,-3.13896]] },
+};
+
+const SF12_GROUPS = [
+  { title: 'A — Genel Sağlık',          intro: '',                                                                                              qs: [1] },
+  { title: 'B — Fiziksel Aktiviteler',  intro: 'Sağlığınız şu anda sizi bu aktivitelerde kısıtlıyor mu?',                                       qs: [2, 3] },
+  { title: 'C — Fiziksel Sağlık',       intro: 'Son 4 hafta içinde, fiziksel sağlığınız nedeniyle işinizde veya günlük aktivitelerinizde:',     qs: [4, 5] },
+  { title: 'D — Duygusal Durum',        intro: 'Son 4 hafta içinde, duygusal sorunlarınız (üzüntü, sıkıntı gibi) nedeniyle:',                   qs: [6, 7] },
+  { title: 'E — Ağrı',                  intro: '',                                                                                              qs: [8] },
+  { title: 'F — Duygular ve Enerji',    intro: 'Son 4 hafta içinde ne kadar süreyle…',                                                          qs: [9, 10, 11] },
+  { title: 'G — Sosyal Aktiviteler',    intro: '',                                                                                              qs: [12] },
+];
+
+const sf12Answers = new Array(13).fill(0); // index 1-12, 0 = yanıtsız
+
+function initSF12() {
+  const cont = document.getElementById('sf12Container');
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+
+  function segs(n) {
+    const q = SF12Q[n];
+    const two = q.opts.length === 2;
+    return q.colors.map((c, i) =>
+      `<div class="dseg" data-i="${i}" style="background:${c.dim}">
+         <span class="dseg-num" style="color:${c.dtx}${two ? ';font-size:15px' : ''}">${two ? q.opts[i] : i + 1}</span>
+       </div>`
+    ).join('');
+  }
+
+  cont.innerHTML = `
+    <div class="dash-intro">
+      <strong>SF-12 Genel Sağlık Anketi</strong><br>
+      Son 4 haftayı düşünerek yanıtlayın. Fiziksel (PCS) ve Mental (MCS) sağlık puanı
+      hesaplanır — toplum ortalaması 50'dir, yüksek puan iyidir.
+    </div>
+    <div class="dash-score-card">
+      <div>
+        <div class="dash-score-title">SF-12 Skoru</div>
+        <div class="const-sub-row" id="sf12Prog">0 / 12 soru yanıtlandı</div>
+      </div>
+      <div style="display:flex; gap:18px;">
+        <div style="text-align:center">
+          <div class="dash-score-val" id="sf12PcsVal" style="font-size:30px; color:var(--muted)">—</div>
+          <div class="dash-score-sub">Fiziksel</div>
+        </div>
+        <div style="text-align:center">
+          <div class="dash-score-val" id="sf12McsVal" style="font-size:30px; color:var(--muted)">—</div>
+          <div class="dash-score-sub">Mental</div>
+        </div>
+      </div>
+    </div>
+    ${SF12_GROUPS.map(g => `
+      <div class="dash-group">
+        <div class="dash-group-hd">
+          <div class="dash-group-title">${g.title}</div>
+          ${g.intro ? `<div class="dash-group-intro">${g.intro}</div>` : ''}
+        </div>
+        ${g.qs.map(n => `
+          <div class="dash-q">
+            <div class="dash-q-text"><span class="dash-q-num">${n}.</span> ${SF12Q[n].text}</div>
+            <div class="dbar" id="sfbar${n}" data-n="${n}">${segs(n)}</div>
+            <div class="dqlbl" id="sflbl${n}"></div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('')}`;
+
+  cont.querySelectorAll('.dbar').forEach(bar => {
+    const n = parseInt(bar.dataset.n);
+    let active = false;
+    function pick(clientX) {
+      const r = bar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width, clientX - r.left));
+      const cnt = SF12Q[n].opts.length;
+      const i = Math.min(cnt - 1, Math.floor((x / r.width) * cnt));
+      setSF12Val(n, i);
+    }
+    bar.addEventListener('pointerdown', e => { active = true; bar.setPointerCapture(e.pointerId); pick(e.clientX); e.preventDefault(); });
+    bar.addEventListener('pointermove', e => { if (active) pick(e.clientX); });
+    bar.addEventListener('pointerup',   () => { active = false; });
+  });
+}
+
+function setSF12Val(n, idx) {
+  sf12Answers[n] = idx + 1;
+  const q   = SF12Q[n];
+  const bar = document.getElementById(`sfbar${n}`);
+  bar.classList.add('touched');
+  bar.querySelectorAll('.dseg').forEach(s => {
+    const si = parseInt(s.dataset.i);
+    const c  = q.colors[si];
+    const on = si === idx;
+    s.classList.toggle('sel', on);
+    s.style.background = on ? c.bg : c.dim;
+    s.querySelector('.dseg-num').style.color = on ? c.tx : c.dtx;
+  });
+  const lbl = document.getElementById(`sflbl${n}`);
+  if (lbl) { lbl.textContent = q.opts[idx]; lbl.style.color = q.colors[idx].bg; }
+  updateSF12Score();
+}
+
+function sf12Color(v) { return v >= 50 ? '#16a34a' : v >= 40 ? '#d97706' : '#dc2626'; }
+
+function updateSF12Score() {
+  const answered = sf12Answers.slice(1).filter(v => v > 0).length;
+  const progEl = document.getElementById('sf12Prog');
+  const pcsEl  = document.getElementById('sf12PcsVal');
+  const mcsEl  = document.getElementById('sf12McsVal');
+  if (progEl) progEl.textContent = `${answered} / 12 soru yanıtlandı`;
+
+  if (answered < 12) {
+    scores.sf12_pcs = null;
+    scores.sf12_mcs = null;
+    if (pcsEl) { pcsEl.textContent = '—'; pcsEl.style.color = 'var(--muted)'; }
+    if (mcsEl) { mcsEl.textContent = '—'; mcsEl.style.color = 'var(--muted)'; }
+    return;
+  }
+
+  let pcs = 56.57706, mcs = 60.75781;
+  for (let n = 1; n <= 12; n++) {
+    const w = SF12Q[n].w[sf12Answers[n] - 1];
+    pcs += w[0];
+    mcs += w[1];
+  }
+  scores.sf12_pcs = Math.round(pcs * 10) / 10;
+  scores.sf12_mcs = Math.round(mcs * 10) / 10;
+  if (pcsEl) { pcsEl.textContent = scores.sf12_pcs; pcsEl.style.color = sf12Color(scores.sf12_pcs); }
+  if (mcsEl) { mcsEl.textContent = scores.sf12_mcs; mcsEl.style.color = sf12Color(scores.sf12_mcs); }
+}
+
+function showSuccess(now) {
+  document.getElementById('finalDash').textContent      = scores.dash !== null ? scores.dash + ' / 100' : '—';
+  document.getElementById('finalConstant').textContent  = scores.constant !== null ? scores.constant + ' / 100' : '—';
+  document.getElementById('finalVas').textContent       = (scores.vas ?? '—') + ' / 10';
+  document.getElementById('finalSleep').textContent     = (scores.sleep ?? '—') + ' / 10';
+  document.getElementById('finalPCS').textContent       = scores.sf12_pcs !== null ? scores.sf12_pcs : '—';
+  document.getElementById('finalMCS').textContent       = scores.sf12_mcs !== null ? scores.sf12_mcs : '—';
+  document.getElementById('finalDays').textContent      = daysPostOp !== null ? daysPostOp + '. gün' : '—';
+  document.getElementById('finalAbduction').textContent = scores.rom_abduction + '°';
+  document.getElementById('finalFlexion').textContent   = scores.rom_flexion + '°';
+  document.getElementById('finalIR').textContent        = scores.rom_ir_label || '—';
+  document.getElementById('finalER').textContent        = scores.rom_er + '°';
+  showSection(11);
 }
 </script>
 </body>
