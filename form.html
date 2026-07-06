@@ -562,6 +562,10 @@
     </p>
     <div class="info-row">
       <div class="info-chip">
+        <div class="info-chip-label">Dönem</div>
+        <div class="info-chip-value" id="chipFU">—</div>
+      </div>
+      <div class="info-chip">
         <div class="info-chip-label">Post-op Gün</div>
         <div class="info-chip-value" id="chipDays">—</div>
       </div>
@@ -1084,6 +1088,18 @@ const patientId      = params.get('id')        || '';
 const surgeryDateStr = params.get('surgery')   || '';
 const surgeryLeg     = params.get('leg')       || '';
 const procedureType  = params.get('procedure') || 'Kalsifik Tendinit';
+
+// Takip dönemi: linkteki fu parametresi (preop | 6w | 6m), yoksa post-op günden türetilir
+const FU_MAP = { preop: 'Pre-op', '6w': '6. Hafta', '6m': '6. Ay' };
+const fuParam = params.get('fu') || '';
+const followupLabel = FU_MAP[fuParam] || fuParam || '';
+
+function getFollowup() {
+  if (followupLabel) return followupLabel;
+  if (daysPostOp === null || daysPostOp <= 0) return 'Pre-op';
+  if (daysPostOp <= 100) return '6. Hafta';
+  return '6. Ay';
+}
 
 let activeLeg = surgeryLeg; // may be updated from demographics picker
 
@@ -1700,6 +1716,7 @@ erSvg.addEventListener('touchend',     () => { erDragging = false; });
 document.getElementById('welcomeName').textContent = patientName;
 document.getElementById('chipDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
 document.getElementById('chipLeg').textContent     = activeLeg || '—';
+document.getElementById('chipFU').textContent      = getFollowup() || '—';
 updateVAS(5);
 updateSleepVAS(5);
 
@@ -1826,7 +1843,8 @@ function submitForm() {
     constant:      scores.constant,
     sleep_vas:     scores.sleep,
     sf12_pcs:      scores.sf12_pcs,
-    sf12_mcs:      scores.sf12_mcs
+    sf12_mcs:      scores.sf12_mcs,
+    followup:      getFollowup()
   };
 
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {

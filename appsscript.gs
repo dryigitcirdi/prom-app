@@ -42,28 +42,33 @@ function saveToSheet(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
 
+  // Sütun sırası (0-based index):
+  // 0:timestamp  1:date      2:time       3:patientId  4:patientName  5:diagnosis
+  // 6:surgeryDate 7:daysPostOp 8:surgeryLeg
+  // 9:vas  10:rom_abduction  11:rom_flexion  12:rom_ir  13:rom_ir_label  14:rom_er
+  // 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs  20:followup
+  const headers = [
+    'Zaman Damgası', 'Tarih', 'Saat', 'Hasta ID', 'Hasta Adı', 'Tanı',
+    'Girişim Tarihi', 'Post-op Gün', 'Taraf',
+    'VAS (0-10)', 'Abduksiyon (°)', 'Öne Fleksiyon (°)', 'İç Rotasyon', 'İR Pozisyon', 'Dış Rotasyon (°)',
+    'DASH (0-100)', 'Constant (0-100)', 'Uyku VAS (0-10)', 'SF-12 PCS', 'SF-12 MCS', 'Takip',
+  ];
+
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    // Sütun sırası (0-based index):
-    // 0:timestamp  1:date      2:time       3:patientId  4:patientName  5:diagnosis
-    // 6:surgeryDate 7:daysPostOp 8:surgeryLeg
-    // 9:vas  10:rom_abduction  11:rom_flexion  12:rom_ir  13:rom_ir_label  14:rom_er
-    // 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs
-    const headers = [
-      'Zaman Damgası', 'Tarih', 'Saat', 'Hasta ID', 'Hasta Adı', 'Tanı',
-      'Girişim Tarihi', 'Post-op Gün', 'Taraf',
-      'VAS (0-10)', 'Abduksiyon (°)', 'Öne Fleksiyon (°)', 'İç Rotasyon', 'İR Pozisyon', 'Dış Rotasyon (°)',
-      'DASH (0-100)', 'Constant (0-100)', 'Uyku VAS (0-10)', 'SF-12 PCS', 'SF-12 MCS',
-    ];
+    sheet.setFrozenRows(1);
+    sheet.setColumnWidth(1, 160);  // Zaman Damgası
+    sheet.setColumnWidth(5, 160);  // Hasta Adı
+  }
+
+  // Başlık satırını yaz / yeni sütun eklendiğinde mevcut sayfada tamamla
+  if (sheet.getRange(1, headers.length).getValue() !== headers[headers.length - 1]) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     const hr = sheet.getRange(1, 1, 1, headers.length);
     hr.setBackground('#1e6fff');
     hr.setFontColor('#ffffff');
     hr.setFontWeight('bold');
     hr.setFontSize(11);
-    sheet.setFrozenRows(1);
-    sheet.setColumnWidth(1, 160);  // Zaman Damgası
-    sheet.setColumnWidth(5, 160);  // Hasta Adı
   }
 
   const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
@@ -89,6 +94,7 @@ function saveToSheet(data) {
     n(data.sleep_vas),
     n(data.sf12_pcs),
     n(data.sf12_mcs),
+    data.followup || '',
   ];
 
   sheet.appendRow(row);

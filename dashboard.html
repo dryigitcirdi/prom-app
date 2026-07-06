@@ -78,6 +78,22 @@
     .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
     .filter-bar input { max-width: 200px; }
     .count-badge { font-size: 12px; color: var(--muted); margin-left: auto; }
+    /* Takip dönemi rozetleri */
+    .fu-badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .fu-preop { background: #e8f0fe; color: #1e6fff; }
+    .fu-6w    { background: #f3e8ff; color: #7c3aed; }
+    .fu-6m    { background: #ccfbf1; color: #0d9488; }
+    .fu-none  { background: #f3f4f6; color: #9ca3af; }
+    /* Dönem filtre çipleri */
+    .fu-chips { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .fu-chip { padding: 7px 16px; border-radius: 99px; border: 1px solid var(--border); background: white;
+               font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .fu-chip:hover { border-color: var(--primary); color: var(--primary); }
+    .fu-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+    /* Hasta takip matrisi */
+    .matrix-cell { line-height: 1.7; font-size: 12px; white-space: nowrap; }
+    .m-muted { color: #c4c8cf; }
+    .matrix-count { font-size: 10px; color: var(--muted); margin-left: 4px; }
   </style>
 </head>
 <body>
@@ -156,6 +172,25 @@
     </div>
   </div>
 
+  <!-- Hasta bazında takip matrisi -->
+  <div class="card table-card" style="margin-bottom:24px;">
+    <div class="section-title">🧭 Hasta Bazında Takip</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Hasta</th>
+          <th>Taraf</th>
+          <th><span class="fu-badge fu-preop">Pre-op</span></th>
+          <th><span class="fu-badge fu-6w">6. Hafta</span></th>
+          <th><span class="fu-badge fu-6m">6. Ay</span></th>
+        </tr>
+      </thead>
+      <tbody id="matrixBody">
+        <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- Link üretici -->
   <div class="card link-card" style="margin-bottom:24px;">
     <div class="section-title">🔗 Hasta Anketi Linki Oluştur</div>
@@ -179,6 +214,14 @@
           <option value="sol">Sol</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Takip Dönemi</label>
+        <select id="pFU">
+          <option value="preop">Pre-op</option>
+          <option value="6w">6. Hafta</option>
+          <option value="6m">6. Ay</option>
+        </select>
+      </div>
       <div>
         <button class="btn btn-primary" onclick="generateLink()">Link Oluştur</button>
       </div>
@@ -196,6 +239,12 @@
   <!-- Kayıt tablosu -->
   <div class="card table-card">
     <div class="section-title">📋 Hasta Kayıtları</div>
+    <div class="fu-chips">
+      <button class="fu-chip active" onclick="setFU('Tümü', this)">Tümü</button>
+      <button class="fu-chip" onclick="setFU('Pre-op', this)">Pre-op</button>
+      <button class="fu-chip" onclick="setFU('6. Hafta', this)">6. Hafta</button>
+      <button class="fu-chip" onclick="setFU('6. Ay', this)">6. Ay</button>
+    </div>
     <div class="filter-bar">
       <input type="text" id="filterName" placeholder="Hasta ara..." oninput="filterTable()" style="width:180px;">
       <input type="date" id="filterDate" oninput="filterTable()">
@@ -207,6 +256,7 @@
           <th>Tarih</th>
           <th>Hasta</th>
           <th>Taraf</th>
+          <th>Takip</th>
           <th>Post-op Gün</th>
           <th>VAS</th>
           <th>Abduksiyon</th>
@@ -222,7 +272,7 @@
       </thead>
       <tbody id="tableBody">
         <tr>
-          <td colspan="14">
+          <td colspan="15">
             <div class="empty-state">
               <div class="empty-icon">📭</div>
               <div>Henüz kayıt yok veya veri yükleniyor...</div>
@@ -256,13 +306,28 @@ window.onload = function() {
 // ─── Demo veri ────────────────────────────────────────────────────────────────
 function loadDemoData() {
   allRows = [
-    { date:'20.06.2026', name:'Ahmet Yılmaz', leg:'sağ', daysPostOp:14,  vas:6, abduction:85,  flexion:100, ir_label:'Kuyruk sokumu', er:35, dash:65, constant:42, sleep:3,  sf12_pcs:31.5, sf12_mcs:42.3 },
-    { date:'18.06.2026', name:'Fatma Kaya',   leg:'sol', daysPostOp:42,  vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
-    { date:'15.06.2026', name:'Mehmet Demir', leg:'sağ', daysPostOp:90,  vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
-    { date:'10.06.2026', name:'Ayşe Çelik',  leg:'sol', daysPostOp:180, vas:0, abduction:178, flexion:180, ir_label:'Kürek kemiği',   er:82, dash:5,  constant:94, sleep:10, sf12_pcs:55.8, sf12_mcs:56.9 },
+    // Fatma — 3 dönem tam (Pre-op → 6. Hafta → 6. Ay iyileşme seyri)
+    { date:'20.12.2025', name:'Fatma Kaya',   pid:'22222', leg:'sol', daysPostOp:0,   followup:'Pre-op',   vas:7, abduction:80,  flexion:95,  ir_label:'Kuyruk sokumu', er:30, dash:68, constant:34, sleep:3,  sf12_pcs:30.9, sf12_mcs:42.4 },
+    { date:'05.02.2026', name:'Fatma Kaya',   pid:'22222', leg:'sol', daysPostOp:44,  followup:'6. Hafta', vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
+    { date:'22.06.2026', name:'Fatma Kaya',   pid:'22222', leg:'sol', daysPostOp:182, followup:'6. Ay',    vas:1, abduction:170, flexion:175, ir_label:'Kürek kemiği',   er:78, dash:9,  constant:90, sleep:9,  sf12_pcs:53.6, sf12_mcs:55.8 },
+    // Ahmet — Pre-op + 6. Hafta
+    { date:'01.05.2026', name:'Ahmet Yılmaz', pid:'11111', leg:'sağ', daysPostOp:-2,  followup:'Pre-op',   vas:8, abduction:70,  flexion:85,  ir_label:'Kalça',          er:25, dash:74, constant:28, sleep:2,  sf12_pcs:28.4, sf12_mcs:39.6 },
+    { date:'17.06.2026', name:'Ahmet Yılmaz', pid:'11111', leg:'sağ', daysPostOp:45,  followup:'6. Hafta', vas:4, abduction:120, flexion:130, ir_label:'Bel',            er:45, dash:41, constant:58, sleep:6,  sf12_pcs:39.8, sf12_mcs:47.2 },
+    // Mehmet — 6. Hafta + 6. Ay
+    { date:'10.03.2026', name:'Mehmet Demir', pid:'33333', leg:'sağ', daysPostOp:41,  followup:'6. Hafta', vas:5, abduction:110, flexion:125, ir_label:'Bel',            er:40, dash:48, constant:52, sleep:5,  sf12_pcs:37.2, sf12_mcs:45.9 },
+    { date:'28.06.2026', name:'Mehmet Demir', pid:'33333', leg:'sağ', daysPostOp:151, followup:'6. Ay',    vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
+    // Ayşe — henüz sadece Pre-op
+    { date:'02.07.2026', name:'Ayşe Çelik',  pid:'44444', leg:'sol', daysPostOp:-6,  followup:'Pre-op',   vas:6, abduction:95,  flexion:110, ir_label:'Kuyruk sokumu', er:35, dash:59, constant:40, sleep:4,  sf12_pcs:33.5, sf12_mcs:44.0 },
   ];
-  renderTable(allRows);
-  updateStats(allRows);
+  refreshAll();
+}
+
+// Tablo + istatistik + matris — tek noktadan tazele
+function refreshAll() {
+  document.getElementById('totalBadge').textContent = allRows.length + ' kayıt';
+  filterTable();
+  updateStats(activeFU === 'Tümü' ? allRows : allRows.filter(r => fuOf(r) === activeFU));
+  renderMatrix(allRows);
 }
 
 // ─── Google Sheets'ten veri yükle ────────────────────────────────────────────
@@ -270,7 +335,7 @@ function loadDemoData() {
 // 0:timestamp  1:date       2:time        3:patientId   4:patientName  5:diagnosis
 // 6:surgeryDate 7:daysPostOp 8:surgeryLeg
 // 9:vas  10:rom_abduction  11:rom_flexion  12:rom_ir  13:rom_ir_label  14:rom_er
-// 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs
+// 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs  20:followup
 function loadData() {
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') { loadDemoData(); return; }
   fetch(APPS_SCRIPT_URL + '?action=getData')
@@ -280,6 +345,7 @@ function loadData() {
       allRows = d.rows.slice(1).map(r => ({
         date:       r[1]  || '',
         name:       r[4]  || '',
+        pid:        r[3]  !== undefined && r[3] !== '' ? String(r[3]) : '',
         leg:        r[8]  || '',
         daysPostOp: r[7]  !== '' ? Number(r[7])  : null,
         vas:        r[9]  !== '' ? Number(r[9])  : null,
@@ -292,11 +358,39 @@ function loadData() {
         sleep:      r[17] !== undefined && r[17] !== '' ? Number(r[17]) : null,
         sf12_pcs:   r[18] !== undefined && r[18] !== '' ? Number(r[18]) : null,
         sf12_mcs:   r[19] !== undefined && r[19] !== '' ? Number(r[19]) : null,
+        followup:   r[20] !== undefined ? String(r[20] || '') : '',
       }));
-      renderTable(allRows);
-      updateStats(allRows);
+      refreshAll();
     })
     .catch(() => loadDemoData());
+}
+
+// ─── Takip dönemi yardımcıları ────────────────────────────────────────────────
+const FU_SEGMENTS = ['Pre-op', '6. Hafta', '6. Ay'];
+
+// Kayıttaki açık etiket; yoksa post-op günden türet (eski kayıtlar için)
+function fuOf(r) {
+  if (r.followup && FU_SEGMENTS.includes(r.followup)) return r.followup;
+  const d = r.daysPostOp;
+  if (d === null || d <= 0) return 'Pre-op';
+  if (d <= 100) return '6. Hafta';
+  return '6. Ay';
+}
+
+function fuBadge(seg) {
+  const cls = seg === 'Pre-op' ? 'fu-preop' : seg === '6. Hafta' ? 'fu-6w' : seg === '6. Ay' ? 'fu-6m' : 'fu-none';
+  return `<span class="fu-badge ${cls}">${seg}</span>`;
+}
+
+// Sheets bazen tarihi ISO string döndürür — tr-TR biçimine çevir
+function fmtDate(v) {
+  if (!v) return '—';
+  const s = String(v);
+  if (s.includes('T')) {
+    const d = new Date(s);
+    if (!isNaN(d)) return d.toLocaleDateString('tr-TR');
+  }
+  return s;
 }
 
 // ─── Pill yardımcıları ────────────────────────────────────────────────────────
@@ -339,20 +433,20 @@ function sf12Pill(val) {
 
 // ─── Tablo render ─────────────────────────────────────────────────────────────
 function renderTable(rows) {
-  document.getElementById('totalBadge').textContent = rows.length + ' kayıt';
   document.getElementById('countBadge').textContent = rows.length + ' sonuç';
   const tbody = document.getElementById('tableBody');
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state"><div class="empty-icon">📭</div><div>Kayıt bulunamadı</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">📭</div><div>Kayıt bulunamadı</div></div></td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(r => `
     <tr>
-      <td>${r.date}</td>
+      <td>${fmtDate(r.date)}</td>
       <td><strong>${r.name}</strong></td>
       <td>${r.leg || '—'}</td>
+      <td>${fuBadge(fuOf(r))}</td>
       <td>${r.daysPostOp !== null ? `<span class="days-pill">${r.daysPostOp}. gün</span>` : '—'}</td>
       <td>${vasPill(r.vas)}</td>
       <td>${romPill(r.abduction, 150, 90)}</td>
@@ -368,12 +462,68 @@ function renderTable(rows) {
   `).join('');
 }
 
+// ─── Dönem filtresi ───────────────────────────────────────────────────────────
+let activeFU = 'Tümü';
+
+function setFU(seg, btn) {
+  activeFU = seg;
+  document.querySelectorAll('.fu-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filterTable();
+  updateStats(seg === 'Tümü' ? allRows : allRows.filter(r => fuOf(r) === seg));
+}
+
 function filterTable() {
   const name = document.getElementById('filterName').value.toLowerCase();
   const date = document.getElementById('filterDate').value;
   renderTable(allRows.filter(r =>
-    r.name.toLowerCase().includes(name) && (!date || r.date.includes(date))
+    (activeFU === 'Tümü' || fuOf(r) === activeFU) &&
+    r.name.toLowerCase().includes(name) && (!date || fmtDate(r.date).includes(date))
   ));
+}
+
+// ─── Hasta bazında takip matrisi ──────────────────────────────────────────────
+function renderMatrix(rows) {
+  const tbody = document.getElementById('matrixBody');
+
+  const byPatient = new Map();
+  rows.forEach(r => {
+    const key = (r.pid || r.name).toString().toLowerCase().trim();
+    if (!key) return;
+    if (!byPatient.has(key)) byPatient.set(key, { name: r.name, leg: r.leg, segs: {} });
+    const p = byPatient.get(key);
+    if (r.leg) p.leg = r.leg;
+    const seg = fuOf(r);
+    (p.segs[seg] = p.segs[seg] || []).push(r);
+  });
+
+  if (!byPatient.size) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>`;
+    return;
+  }
+
+  // Aynı dönemde birden çok gönderim varsa sonuncusu gösterilir (×n işaretiyle)
+  const cell = list => {
+    if (!list || !list.length) return '<span class="m-muted">—</span>';
+    const r = list[list.length - 1];
+    const more = list.length > 1 ? `<span class="matrix-count">×${list.length}</span>` : '';
+    return `<div class="matrix-cell">
+      VAS ${r.vas ?? '—'} · DASH ${r.dash ?? '—'} · Constant ${r.constant ?? '—'}${more}<br>
+      Uyku ${r.sleep ?? '—'} · PCS ${r.sf12_pcs ?? '—'} · MCS ${r.sf12_mcs ?? '—'}
+    </div>`;
+  };
+
+  tbody.innerHTML = [...byPatient.values()]
+    .sort((a, b) => a.name.localeCompare(b.name, 'tr'))
+    .map(p => `
+      <tr>
+        <td><strong>${p.name}</strong></td>
+        <td>${p.leg || '—'}</td>
+        <td>${cell(p.segs['Pre-op'])}</td>
+        <td>${cell(p.segs['6. Hafta'])}</td>
+        <td>${cell(p.segs['6. Ay'])}</td>
+      </tr>
+    `).join('');
 }
 
 // ─── İstatistikler ────────────────────────────────────────────────────────────
@@ -400,20 +550,22 @@ function generateLink() {
   const id      = document.getElementById('pId').value.trim() || ('P' + Date.now());
   const surgery = document.getElementById('pSurgery').value;
   const leg     = document.getElementById('pLeg').value;
+  const fu      = document.getElementById('pFU').value;
 
   if (!name)    { alert('Lütfen hasta adını girin.'); return; }
   if (!surgery) { alert('Lütfen girişim tarihini girin.'); return; }
 
-  const params = new URLSearchParams({ name, id, surgery, leg });
+  const params = new URLSearchParams({ name, id, surgery, leg, fu });
   const url = FORM_BASE_URL + '?' + params.toString();
 
   document.getElementById('linkText').textContent = url;
   document.getElementById('linkResult').style.display = 'block';
 
+  const FU_LABELS = { preop: 'Pre-op', '6w': '6. Hafta', '6m': '6. Ay' };
   const d    = new Date(surgery);
   const days = Math.floor((new Date() - d) / 86400000);
   document.getElementById('linkMeta').textContent =
-    `${name} · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
+    `${name} · ${FU_LABELS[fu]} değerlendirmesi · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
 }
 
 function copyLink() {
