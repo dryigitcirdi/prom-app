@@ -94,6 +94,11 @@
     .matrix-cell { line-height: 1.7; font-size: 12px; white-space: nowrap; }
     .m-muted { color: #c4c8cf; }
     .matrix-count { font-size: 10px; color: var(--muted); margin-left: 4px; }
+    /* Seyir grafiği */
+    .spark { display: block; }
+    .spark-legend { display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--muted); margin: -6px 0 12px; flex-wrap: wrap; }
+    .sl-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+    .sl-note { margin-left: auto; color: #9ca3af; }
   </style>
 </head>
 <body>
@@ -175,6 +180,12 @@
   <!-- Hasta bazında takip matrisi -->
   <div class="card table-card" style="margin-bottom:24px;">
     <div class="section-title">🧭 Hasta Bazında Takip</div>
+    <div class="spark-legend">
+      <span><span class="sl-dot" style="background:#16a34a"></span>Constant</span>
+      <span><span class="sl-dot" style="background:#dc2626"></span>DASH</span>
+      <span><span class="sl-dot" style="background:#d97706"></span>VAS ×10</span>
+      <span class="sl-note">Seyir: 0–100 ölçeği · Pre-op → 6. Hafta → 6. Ay</span>
+    </div>
     <table>
       <thead>
         <tr>
@@ -183,11 +194,12 @@
           <th><span class="fu-badge fu-preop">Pre-op</span></th>
           <th><span class="fu-badge fu-6w">6. Hafta</span></th>
           <th><span class="fu-badge fu-6m">6. Ay</span></th>
+          <th>Seyir</th>
           <th>Sonraki Takip</th>
         </tr>
       </thead>
       <tbody id="matrixBody">
-        <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>
+        <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -516,6 +528,43 @@ function nextFUBadge(p) {
   return '<span class="score-pill score-good">Takip tamam ✓</span>';
 }
 
+// Mini seyir grafiği: 3 dönem noktası, 3 skor çizgisi (0-100 ölçeği, VAS ×10)
+function sparkSVG(p) {
+  const SEGS = ['Pre-op', '6. Hafta', '6. Ay'];
+  const SERIES = [
+    { key: 'constant', mul: 1,  color: '#16a34a', label: 'Constant' },
+    { key: 'dash',     mul: 1,  color: '#dc2626', label: 'DASH' },
+    { key: 'vas',      mul: 10, color: '#d97706', label: 'VAS ×10' },
+  ];
+  const W = 132, H = 48, PX = 12, PT = 6, PB = 8;
+  const xs = [PX, W / 2, W - PX];
+  const yOf = v => PT + (100 - Math.max(0, Math.min(100, v))) * (H - PT - PB) / 100;
+
+  const latest = seg => { const l = p.segs[seg]; return l && l.length ? l[l.length - 1] : null; };
+  const segRows = SEGS.map(latest);
+  if (!segRows.some(r => r)) return '<span class="m-muted">—</span>';
+
+  let out = '';
+  xs.forEach(x => { out += `<line x1="${x}" y1="${PT}" x2="${x}" y2="${H - PB}" stroke="#eef0f3" stroke-width="1"/>`; });
+
+  SERIES.forEach(s => {
+    const pts = [];
+    segRows.forEach((r, i) => {
+      if (!r || r[s.key] === null || r[s.key] === undefined) return;
+      pts.push({ x: xs[i], y: yOf(r[s.key] * s.mul), val: r[s.key], seg: SEGS[i] });
+    });
+    if (!pts.length) return;
+    if (pts.length > 1) {
+      out += `<polyline points="${pts.map(pt => pt.x + ',' + pt.y).join(' ')}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+    pts.forEach(pt => {
+      out += `<circle cx="${pt.x}" cy="${pt.y}" r="2.6" fill="${s.color}"><title>${s.label} · ${pt.seg}: ${pt.val}</title></circle>`;
+    });
+  });
+
+  return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${out}</svg>`;
+}
+
 function renderMatrix(rows) {
   const tbody = document.getElementById('matrixBody');
 
@@ -532,7 +581,7 @@ function renderMatrix(rows) {
   });
 
   if (!byPatient.size) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>`;
     return;
   }
 
@@ -556,6 +605,7 @@ function renderMatrix(rows) {
         <td>${cell(p.segs['Pre-op'])}</td>
         <td>${cell(p.segs['6. Hafta'])}</td>
         <td>${cell(p.segs['6. Ay'])}</td>
+        <td>${sparkSVG(p)}</td>
         <td>${nextFUBadge(p)}</td>
       </tr>
     `).join('');
