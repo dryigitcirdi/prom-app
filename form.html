@@ -225,6 +225,17 @@
       20%,60%  { transform: translateX(-6px); }
       40%,80%  { transform: translateX(6px); }
     }
+    /* ── Takip dönemi seçici ─────────────────────── */
+    .fu-pick {
+      margin-top: 14px;
+      padding: 14px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .fu-pick-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+    .fu-pick-note  { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    .fu-pick .side-btn { font-size: 14px; padding: 11px 6px; }
 
     /* ── ROM ──────────────────────────────────────── */
     .rom-note {
@@ -612,6 +623,17 @@
         <td class="demo-val" id="demoLeg">—</td>
       </tr>
     </table>
+
+    <!-- Takip dönemi — hasta hangi değerlendirmeyi doldurduğunu belirtir -->
+    <div class="fu-pick">
+      <div class="fu-pick-title">Hangi dönemin değerlendirmesini dolduruyorsunuz?</div>
+      <div class="side-btns">
+        <button class="side-btn" id="fuBtn0" onclick="selectFUOpt('Pre-op')">Girişim Öncesi</button>
+        <button class="side-btn" id="fuBtn1" onclick="selectFUOpt('6. Hafta')">6. Hafta</button>
+        <button class="side-btn" id="fuBtn2" onclick="selectFUOpt('6. Ay')">6. Ay</button>
+      </div>
+      <div class="fu-pick-note">Takip randevunuzu kaçırdıysanız ve geçmiş bir dönemi sonradan dolduruyorsanız, o dönemi seçerek yanıtlarınızı ilgili döneme kaydedebilirsiniz.</div>
+    </div>
 
     <!-- Shown only when leg is missing from URL -->
     <div id="sidePicker" style="display:none;">
@@ -1095,10 +1117,20 @@ const fuParam = params.get('fu') || '';
 const followupLabel = FU_MAP[fuParam] || fuParam || '';
 
 function getFollowup() {
+  if (selectedFU) return selectedFU;
   if (followupLabel) return followupLabel;
   if (daysPostOp === null || daysPostOp <= 0) return 'Pre-op';
   if (daysPostOp <= 100) return '6. Hafta';
   return '6. Ay';
+}
+
+// Hastanın sec1'deki dönem seçimi — link parametresini geçersiz kılar
+let selectedFU = '';
+function selectFUOpt(seg) {
+  selectedFU = seg;
+  ['Pre-op', '6. Hafta', '6. Ay'].forEach((s, i) =>
+    document.getElementById('fuBtn' + i).classList.toggle('on', s === seg));
+  document.getElementById('chipFU').textContent = seg;
 }
 
 let activeLeg = surgeryLeg; // may be updated from demographics picker
@@ -1719,6 +1751,7 @@ document.getElementById('chipLeg').textContent     = activeLeg || '—';
 document.getElementById('chipFU').textContent      = getFollowup() || '—';
 updateVAS(5);
 updateSleepVAS(5);
+selectFUOpt(getFollowup()); // dönem seçiciyi linkten/türetmeden ön-seç
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 const headerMeta = [

@@ -183,10 +183,11 @@
           <th><span class="fu-badge fu-preop">Pre-op</span></th>
           <th><span class="fu-badge fu-6w">6. Hafta</span></th>
           <th><span class="fu-badge fu-6m">6. Ay</span></th>
+          <th>Sonraki Takip</th>
         </tr>
       </thead>
       <tbody id="matrixBody">
-        <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>
+        <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -307,17 +308,17 @@ window.onload = function() {
 function loadDemoData() {
   allRows = [
     // Fatma — 3 dönem tam (Pre-op → 6. Hafta → 6. Ay iyileşme seyri)
-    { date:'20.12.2025', name:'Fatma Kaya',   pid:'22222', leg:'sol', daysPostOp:0,   followup:'Pre-op',   vas:7, abduction:80,  flexion:95,  ir_label:'Kuyruk sokumu', er:30, dash:68, constant:34, sleep:3,  sf12_pcs:30.9, sf12_mcs:42.4 },
-    { date:'05.02.2026', name:'Fatma Kaya',   pid:'22222', leg:'sol', daysPostOp:44,  followup:'6. Hafta', vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
-    { date:'22.06.2026', name:'Fatma Kaya',   pid:'22222', leg:'sol', daysPostOp:182, followup:'6. Ay',    vas:1, abduction:170, flexion:175, ir_label:'Kürek kemiği',   er:78, dash:9,  constant:90, sleep:9,  sf12_pcs:53.6, sf12_mcs:55.8 },
-    // Ahmet — Pre-op + 6. Hafta
-    { date:'01.05.2026', name:'Ahmet Yılmaz', pid:'11111', leg:'sağ', daysPostOp:-2,  followup:'Pre-op',   vas:8, abduction:70,  flexion:85,  ir_label:'Kalça',          er:25, dash:74, constant:28, sleep:2,  sf12_pcs:28.4, sf12_mcs:39.6 },
-    { date:'17.06.2026', name:'Ahmet Yılmaz', pid:'11111', leg:'sağ', daysPostOp:45,  followup:'6. Hafta', vas:4, abduction:120, flexion:130, ir_label:'Bel',            er:45, dash:41, constant:58, sleep:6,  sf12_pcs:39.8, sf12_mcs:47.2 },
-    // Mehmet — 6. Hafta + 6. Ay
-    { date:'10.03.2026', name:'Mehmet Demir', pid:'33333', leg:'sağ', daysPostOp:41,  followup:'6. Hafta', vas:5, abduction:110, flexion:125, ir_label:'Bel',            er:40, dash:48, constant:52, sleep:5,  sf12_pcs:37.2, sf12_mcs:45.9 },
-    { date:'28.06.2026', name:'Mehmet Demir', pid:'33333', leg:'sağ', daysPostOp:151, followup:'6. Ay',    vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
-    // Ayşe — henüz sadece Pre-op
-    { date:'02.07.2026', name:'Ayşe Çelik',  pid:'44444', leg:'sol', daysPostOp:-6,  followup:'Pre-op',   vas:6, abduction:95,  flexion:110, ir_label:'Kuyruk sokumu', er:35, dash:59, constant:40, sleep:4,  sf12_pcs:33.5, sf12_mcs:44.0 },
+    { date:'20.12.2025', name:'Fatma Kaya',   pid:'22222', surgery:'2025-12-20', leg:'sol', daysPostOp:0,   followup:'Pre-op',   vas:7, abduction:80,  flexion:95,  ir_label:'Kuyruk sokumu', er:30, dash:68, constant:34, sleep:3,  sf12_pcs:30.9, sf12_mcs:42.4 },
+    { date:'05.02.2026', name:'Fatma Kaya',   pid:'22222', surgery:'2025-12-20', leg:'sol', daysPostOp:44,  followup:'6. Hafta', vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
+    { date:'22.06.2026', name:'Fatma Kaya',   pid:'22222', surgery:'2025-12-20', leg:'sol', daysPostOp:182, followup:'6. Ay',    vas:1, abduction:170, flexion:175, ir_label:'Kürek kemiği',   er:78, dash:9,  constant:90, sleep:9,  sf12_pcs:53.6, sf12_mcs:55.8 },
+    // Ahmet — Pre-op + 6. Hafta (6. Ay yaklaşıyor)
+    { date:'01.05.2026', name:'Ahmet Yılmaz', pid:'11111', surgery:'2026-05-03', leg:'sağ', daysPostOp:-2,  followup:'Pre-op',   vas:8, abduction:70,  flexion:85,  ir_label:'Kalça',          er:25, dash:74, constant:28, sleep:2,  sf12_pcs:28.4, sf12_mcs:39.6 },
+    { date:'17.06.2026', name:'Ahmet Yılmaz', pid:'11111', surgery:'2026-05-03', leg:'sağ', daysPostOp:45,  followup:'6. Hafta', vas:4, abduction:120, flexion:130, ir_label:'Bel',            er:45, dash:41, constant:58, sleep:6,  sf12_pcs:39.8, sf12_mcs:47.2 },
+    // Mehmet — 6. Hafta + 6. Ay var, Pre-op kaçırılmış (gecikti örneği)
+    { date:'10.03.2026', name:'Mehmet Demir', pid:'33333', surgery:'2026-01-28', leg:'sağ', daysPostOp:41,  followup:'6. Hafta', vas:5, abduction:110, flexion:125, ir_label:'Bel',            er:40, dash:48, constant:52, sleep:5,  sf12_pcs:37.2, sf12_mcs:45.9 },
+    { date:'28.06.2026', name:'Mehmet Demir', pid:'33333', surgery:'2026-01-28', leg:'sağ', daysPostOp:151, followup:'6. Ay',    vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
+    // Ayşe — henüz sadece Pre-op (6. Hafta yaklaşıyor)
+    { date:'02.07.2026', name:'Ayşe Çelik',  pid:'44444', surgery:'2026-07-08', leg:'sol', daysPostOp:-6,  followup:'Pre-op',   vas:6, abduction:95,  flexion:110, ir_label:'Kuyruk sokumu', er:35, dash:59, constant:40, sleep:4,  sf12_pcs:33.5, sf12_mcs:44.0 },
   ];
   refreshAll();
 }
@@ -346,6 +347,7 @@ function loadData() {
         date:       r[1]  || '',
         name:       r[4]  || '',
         pid:        r[3]  !== undefined && r[3] !== '' ? String(r[3]) : '',
+        surgery:    r[6]  || '',
         leg:        r[8]  || '',
         daysPostOp: r[7]  !== '' ? Number(r[7])  : null,
         vas:        r[9]  !== '' ? Number(r[9])  : null,
@@ -483,6 +485,37 @@ function filterTable() {
 }
 
 // ─── Hasta bazında takip matrisi ──────────────────────────────────────────────
+// Esnek tarih ayrıştırma: ISO, yyyy-mm-dd veya gg.aa.yyyy
+function parseD(v) {
+  if (!v) return null;
+  const s = String(v);
+  const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+// Takip planı: Pre-op = girişim günü öncesi, 6. Hafta = +42 gün, 6. Ay = +180 gün
+function nextFUBadge(p) {
+  const surgery = parseD(p.surgery);
+  if (!surgery) return '<span class="m-muted">—</span>';
+  const plan = [['Pre-op', 0], ['6. Hafta', 42], ['6. Ay', 180]];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  for (const [seg, offset] of plan) {
+    if (p.segs[seg] && p.segs[seg].length) continue; // bu dönem doldurulmuş
+    const target = new Date(surgery);
+    target.setDate(target.getDate() + offset);
+    target.setHours(0, 0, 0, 0);
+    const days = Math.round((target - today) / 86400000);
+    if (days < 0)   return `<span class="score-pill score-bad">${seg} · ${-days} gün gecikti</span>`;
+    if (days === 0) return `<span class="score-pill score-mid">${seg} · bugün</span>`;
+    if (days <= 7)  return `<span class="score-pill score-mid">${seg} · ${days} gün kaldı</span>`;
+    return `<span class="score-pill" style="background:var(--primary-light);color:var(--primary)">${seg} · ${days} gün kaldı</span>`;
+  }
+  return '<span class="score-pill score-good">Takip tamam ✓</span>';
+}
+
 function renderMatrix(rows) {
   const tbody = document.getElementById('matrixBody');
 
@@ -490,15 +523,16 @@ function renderMatrix(rows) {
   rows.forEach(r => {
     const key = (r.pid || r.name).toString().toLowerCase().trim();
     if (!key) return;
-    if (!byPatient.has(key)) byPatient.set(key, { name: r.name, leg: r.leg, segs: {} });
+    if (!byPatient.has(key)) byPatient.set(key, { name: r.name, leg: r.leg, surgery: '', segs: {} });
     const p = byPatient.get(key);
     if (r.leg) p.leg = r.leg;
+    if (r.surgery) p.surgery = r.surgery;
     const seg = fuOf(r);
     (p.segs[seg] = p.segs[seg] || []).push(r);
   });
 
   if (!byPatient.size) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>`;
     return;
   }
 
@@ -522,6 +556,7 @@ function renderMatrix(rows) {
         <td>${cell(p.segs['Pre-op'])}</td>
         <td>${cell(p.segs['6. Hafta'])}</td>
         <td>${cell(p.segs['6. Ay'])}</td>
+        <td>${nextFUBadge(p)}</td>
       </tr>
     `).join('');
 }
