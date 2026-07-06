@@ -31,7 +31,8 @@
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
     .section-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
     /* Stats */
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+    .stats-grid-2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
     .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
     .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
     .stat-value { font-size: 28px; font-weight: 700; color: var(--text); }
@@ -77,18 +78,14 @@
     .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
     .filter-bar input { max-width: 200px; }
     .count-badge { font-size: 12px; color: var(--muted); margin-left: auto; }
-    /* Tabs */
-    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
-    .tab { padding: 10px 20px; font-size: 14px; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; }
-    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
   </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <div class="topbar-title">🦵 PROM Takip Sistemi</div>
-    <div class="topbar-sub">Menisküs Yırtığı – Hasta Bildirimi Sonuçları</div>
+    <div class="topbar-title">🦴 PROM Takip Sistemi</div>
+    <div class="topbar-sub">Omuz Kalsifik Tendinit – Hasta Bildirimi Sonuçları</div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
     <span class="badge badge-blue" id="totalBadge">0 kayıt</span>
@@ -108,26 +105,54 @@
     </div>
   </div>
 
-  <!-- Özet kartlar -->
-  <div class="stats-grid" id="statsGrid">
+  <!-- Özet kartlar — satır 1 -->
+  <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-label">Toplam Kayıt</div>
       <div class="stat-value" id="statTotal">—</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Ort. IKDC</div>
-      <div class="stat-value" id="statIKDC">—</div>
-      <div class="stat-sub">/ 100</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Ort. Lysholm</div>
-      <div class="stat-value" id="statLysholm">—</div>
-      <div class="stat-sub">/ 100</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Ort. NRS Ağrı</div>
-      <div class="stat-value" id="statNRS">—</div>
+      <div class="stat-label">Ort. VAS Ağrı</div>
+      <div class="stat-value" id="statVAS">—</div>
       <div class="stat-sub">/ 10</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ort. Abduksiyon</div>
+      <div class="stat-value" id="statAbduction">—</div>
+      <div class="stat-sub">derece</div>
+    </div>
+  </div>
+  <!-- Özet kartlar — satır 2 -->
+  <div class="stats-grid-2">
+    <div class="stat-card">
+      <div class="stat-label">Ort. Dış Rotasyon</div>
+      <div class="stat-value" id="statER">—</div>
+      <div class="stat-sub">derece</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ort. DASH Skoru</div>
+      <div class="stat-value" id="statDASH">—</div>
+      <div class="stat-sub">/ 100 ↓ iyi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ort. Constant Skoru</div>
+      <div class="stat-value" id="statConstant">—</div>
+      <div class="stat-sub">/ 100 ↑ iyi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ort. Uyku Kalitesi</div>
+      <div class="stat-value" id="statSleep">—</div>
+      <div class="stat-sub">/ 10 ↑ iyi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ort. SF-12 Fiziksel (PCS)</div>
+      <div class="stat-value" id="statPCS">—</div>
+      <div class="stat-sub">norm 50 ↑ iyi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ort. SF-12 Mental (MCS)</div>
+      <div class="stat-value" id="statMCS">—</div>
+      <div class="stat-sub">norm 50 ↑ iyi</div>
     </div>
   </div>
 
@@ -144,7 +169,7 @@
         <input type="text" id="pId" placeholder="12345">
       </div>
       <div class="form-group">
-        <label>Ameliyat Tarihi</label>
+        <label>Girişim Tarihi</label>
         <input type="date" id="pSurgery">
       </div>
       <div class="form-group">
@@ -170,7 +195,7 @@
 
   <!-- Kayıt tablosu -->
   <div class="card table-card">
-    <div class="section-title">📋 PROM Kayıtları</div>
+    <div class="section-title">📋 Hasta Kayıtları</div>
     <div class="filter-bar">
       <input type="text" id="filterName" placeholder="Hasta ara..." oninput="filterTable()" style="width:180px;">
       <input type="date" id="filterDate" oninput="filterTable()">
@@ -181,17 +206,23 @@
         <tr>
           <th>Tarih</th>
           <th>Hasta</th>
-          <th>Op. Tarafı</th>
+          <th>Taraf</th>
           <th>Post-op Gün</th>
-          <th>NRS Ort.</th>
-          <th>IKDC</th>
-          <th>Lysholm</th>
-          <th>Tegner</th>
+          <th>VAS</th>
+          <th>Abduksiyon</th>
+          <th>Öne Fleksiyon</th>
+          <th>İç Rotasyon</th>
+          <th>Dış Rotasyon</th>
+          <th>DASH</th>
+          <th>Constant</th>
+          <th>Uyku</th>
+          <th>PCS</th>
+          <th>MCS</th>
         </tr>
       </thead>
       <tbody id="tableBody">
         <tr>
-          <td colspan="8">
+          <td colspan="14">
             <div class="empty-state">
               <div class="empty-icon">📭</div>
               <div>Henüz kayıt yok veya veri yükleniyor...</div>
@@ -205,15 +236,11 @@
 </div>
 
 <script>
-// ─── Yapılandırma ────────────────────────────────────────────────────────────
-// form.html ile aynı URL olmalı
+// ─── Yapılandırma ─────────────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
+const FORM_BASE_URL   = window.location.href.replace('dashboard.html', 'form.html');
 
-// form.html'in tam URL'si (lokal veya hosting)
-// Örnek: 'http://localhost:8765/form.html' veya 'https://sizin-siteniz.com/form.html'
-const FORM_BASE_URL = window.location.href.replace('dashboard.html', 'form.html');
-
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── State ────────────────────────────────────────────────────────────────────
 let allRows = [];
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -226,35 +253,45 @@ window.onload = function() {
   }
 };
 
-// ─── Demo veri (Apps Script bağlanmadan önce) ─────────────────────────────────
+// ─── Demo veri ────────────────────────────────────────────────────────────────
 function loadDemoData() {
   allRows = [
-    { date:'20.06.2026', name:'Ahmet Yılmaz', leg:'sağ', daysPostOp:42, nrs:3, ikdc:72, lysholm:81, tegner:5 },
-    { date:'18.06.2026', name:'Fatma Kaya',   leg:'sol', daysPostOp:14, nrs:5, ikdc:48, lysholm:62, tegner:3 },
-    { date:'15.06.2026', name:'Mehmet Demir', leg:'sağ', daysPostOp:90, nrs:1, ikdc:88, lysholm:94, tegner:7 },
-    { date:'10.06.2026', name:'Ayşe Çelik',  leg:'sol', daysPostOp:180, nrs:0, ikdc:96, lysholm:99, tegner:8 },
+    { date:'20.06.2026', name:'Ahmet Yılmaz', leg:'sağ', daysPostOp:14,  vas:6, abduction:85,  flexion:100, ir_label:'Kuyruk sokumu', er:35, dash:65, constant:42, sleep:3,  sf12_pcs:31.5, sf12_mcs:42.3 },
+    { date:'18.06.2026', name:'Fatma Kaya',   leg:'sol', daysPostOp:42,  vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
+    { date:'15.06.2026', name:'Mehmet Demir', leg:'sağ', daysPostOp:90,  vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
+    { date:'10.06.2026', name:'Ayşe Çelik',  leg:'sol', daysPostOp:180, vas:0, abduction:178, flexion:180, ir_label:'Kürek kemiği',   er:82, dash:5,  constant:94, sleep:10, sf12_pcs:55.8, sf12_mcs:56.9 },
   ];
   renderTable(allRows);
   updateStats(allRows);
 }
 
 // ─── Google Sheets'ten veri yükle ────────────────────────────────────────────
+// Sütun sırası (appsscript.gs → sheet):
+// 0:timestamp  1:date       2:time        3:patientId   4:patientName  5:diagnosis
+// 6:surgeryDate 7:daysPostOp 8:surgeryLeg
+// 9:vas  10:rom_abduction  11:rom_flexion  12:rom_ir  13:rom_ir_label  14:rom_er
+// 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs
 function loadData() {
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') { loadDemoData(); return; }
   fetch(APPS_SCRIPT_URL + '?action=getData')
     .then(r => r.json())
     .then(d => {
       if (!d.rows || d.rows.length < 2) { renderTable([]); return; }
-      const headers = d.rows[0];
       allRows = d.rows.slice(1).map(r => ({
-        date:       r[0]  || '',
-        name:       r[3]  || '',
-        leg:        r[7]  || '',
-        daysPostOp: r[6]  !== '' ? Number(r[6])  : null,
-        nrs:        r[8]  !== '' ? Number(r[8])  : null,
-        ikdc:       r[10] !== '' ? Number(r[10]) : null,
-        lysholm:    r[12] !== '' ? Number(r[12]) : null,
-        tegner:     r[14] !== '' ? Number(r[14]) : null,
+        date:       r[1]  || '',
+        name:       r[4]  || '',
+        leg:        r[8]  || '',
+        daysPostOp: r[7]  !== '' ? Number(r[7])  : null,
+        vas:        r[9]  !== '' ? Number(r[9])  : null,
+        abduction:  r[10] !== '' ? Number(r[10]) : null,
+        flexion:    r[11] !== '' ? Number(r[11]) : null,
+        ir_label:   r[13] || '',
+        er:         r[14] !== '' ? Number(r[14]) : null,
+        dash:       r[15] !== '' ? Number(r[15]) : null,
+        constant:   r[16] !== '' ? Number(r[16]) : null,
+        sleep:      r[17] !== undefined && r[17] !== '' ? Number(r[17]) : null,
+        sf12_pcs:   r[18] !== undefined && r[18] !== '' ? Number(r[18]) : null,
+        sf12_mcs:   r[19] !== undefined && r[19] !== '' ? Number(r[19]) : null,
       }));
       renderTable(allRows);
       updateStats(allRows);
@@ -262,21 +299,52 @@ function loadData() {
     .catch(() => loadDemoData());
 }
 
-// ─── Tablo render ─────────────────────────────────────────────────────────────
-function scorePill(val, max) {
-  if (val === null || val === undefined || val === '') return '—';
-  const pct = val / max;
-  const cls = pct >= 0.8 ? 'score-good' : pct >= 0.6 ? 'score-mid' : 'score-bad';
+// ─── Pill yardımcıları ────────────────────────────────────────────────────────
+// VAS: düşük iyi
+function vasPill(val) {
+  if (val === null || val === undefined) return '—';
+  const cls = val <= 3 ? 'score-good' : val <= 6 ? 'score-mid' : 'score-bad';
+  return `<span class="score-pill ${cls}">${val}</span>`;
+}
+// ROM: yüksek iyi — eşikler derece cinsinden
+function romPill(val, good, mid) {
+  if (val === null || val === undefined) return '—';
+  const cls = val >= good ? 'score-good' : val >= mid ? 'score-mid' : 'score-bad';
+  return `<span class="score-pill ${cls}">${val}°</span>`;
+}
+// DASH: düşük iyi (0=bağımsız, 100=tam kısıtlı)
+function dashPill(val) {
+  if (val === null || val === undefined) return '—';
+  const cls = val <= 25 ? 'score-good' : val <= 50 ? 'score-mid' : 'score-bad';
+  return `<span class="score-pill ${cls}">${val}</span>`;
+}
+// Constant: yüksek iyi (≥80=iyi, ≥60=orta, <60=kötü)
+function constantPill(val) {
+  if (val === null || val === undefined) return '—';
+  const cls = val >= 80 ? 'score-good' : val >= 60 ? 'score-mid' : 'score-bad';
+  return `<span class="score-pill ${cls}">${val}</span>`;
+}
+// Uyku VAS: yüksek iyi (≥7=iyi, ≥4=orta, <4=kötü)
+function sleepPill(val) {
+  if (val === null || val === undefined) return '—';
+  const cls = val >= 7 ? 'score-good' : val >= 4 ? 'score-mid' : 'score-bad';
+  return `<span class="score-pill ${cls}">${val}</span>`;
+}
+// SF-12 PCS/MCS: norm 50 ± 10 (≥50=iyi, ≥40=orta, <40=kötü)
+function sf12Pill(val) {
+  if (val === null || val === undefined) return '—';
+  const cls = val >= 50 ? 'score-good' : val >= 40 ? 'score-mid' : 'score-bad';
   return `<span class="score-pill ${cls}">${val}</span>`;
 }
 
+// ─── Tablo render ─────────────────────────────────────────────────────────────
 function renderTable(rows) {
-  const tbody = document.getElementById('tableBody');
   document.getElementById('totalBadge').textContent = rows.length + ' kayıt';
   document.getElementById('countBadge').textContent = rows.length + ' sonuç';
+  const tbody = document.getElementById('tableBody');
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📭</div><div>Kayıt bulunamadı</div></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state"><div class="empty-icon">📭</div><div>Kayıt bulunamadı</div></div></td></tr>`;
     return;
   }
 
@@ -286,10 +354,16 @@ function renderTable(rows) {
       <td><strong>${r.name}</strong></td>
       <td>${r.leg || '—'}</td>
       <td>${r.daysPostOp !== null ? `<span class="days-pill">${r.daysPostOp}. gün</span>` : '—'}</td>
-      <td>${r.nrs !== null ? scorePill(r.nrs, 10) : '—'}</td>
-      <td>${r.ikdc !== null ? scorePill(r.ikdc, 100) : '—'}</td>
-      <td>${r.lysholm !== null ? scorePill(r.lysholm, 100) : '—'}</td>
-      <td>${r.tegner !== null ? r.tegner + ' / 10' : '—'}</td>
+      <td>${vasPill(r.vas)}</td>
+      <td>${romPill(r.abduction, 150, 90)}</td>
+      <td>${romPill(r.flexion, 150, 90)}</td>
+      <td>${r.ir_label || '—'}</td>
+      <td>${romPill(r.er, 60, 30)}</td>
+      <td>${dashPill(r.dash)}</td>
+      <td>${constantPill(r.constant)}</td>
+      <td>${sleepPill(r.sleep)}</td>
+      <td>${sf12Pill(r.sf12_pcs)}</td>
+      <td>${sf12Pill(r.sf12_mcs)}</td>
     </tr>
   `).join('');
 }
@@ -297,26 +371,27 @@ function renderTable(rows) {
 function filterTable() {
   const name = document.getElementById('filterName').value.toLowerCase();
   const date = document.getElementById('filterDate').value;
-  const filtered = allRows.filter(r => {
-    const nameMatch = r.name.toLowerCase().includes(name);
-    const dateMatch = !date || r.date.includes(date);
-    return nameMatch && dateMatch;
-  });
-  renderTable(filtered);
+  renderTable(allRows.filter(r =>
+    r.name.toLowerCase().includes(name) && (!date || r.date.includes(date))
+  ));
 }
 
-// ─── İstatistikler ──────────────────────────────────────────────────────────
+// ─── İstatistikler ────────────────────────────────────────────────────────────
 function avg(arr) {
   const valid = arr.filter(v => v !== null && v !== undefined && v !== '');
-  if (!valid.length) return null;
-  return Math.round(valid.reduce((a, b) => a + b, 0) / valid.length);
+  return valid.length ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length) : null;
 }
 
 function updateStats(rows) {
-  document.getElementById('statTotal').textContent   = rows.length;
-  document.getElementById('statIKDC').textContent    = avg(rows.map(r => r.ikdc))    ?? '—';
-  document.getElementById('statLysholm').textContent = avg(rows.map(r => r.lysholm)) ?? '—';
-  document.getElementById('statNRS').textContent     = avg(rows.map(r => r.nrs))     ?? '—';
+  document.getElementById('statTotal').textContent     = rows.length;
+  document.getElementById('statVAS').textContent       = avg(rows.map(r => r.vas))        ?? '—';
+  document.getElementById('statAbduction').textContent = avg(rows.map(r => r.abduction))  ?? '—';
+  document.getElementById('statER').textContent        = avg(rows.map(r => r.er))         ?? '—';
+  document.getElementById('statDASH').textContent      = avg(rows.map(r => r.dash))       ?? '—';
+  document.getElementById('statConstant').textContent  = avg(rows.map(r => r.constant))   ?? '—';
+  document.getElementById('statSleep').textContent     = avg(rows.map(r => r.sleep))      ?? '—';
+  document.getElementById('statPCS').textContent       = avg(rows.map(r => r.sf12_pcs))   ?? '—';
+  document.getElementById('statMCS').textContent       = avg(rows.map(r => r.sf12_mcs))   ?? '—';
 }
 
 // ─── Link üretici ─────────────────────────────────────────────────────────────
@@ -326,8 +401,8 @@ function generateLink() {
   const surgery = document.getElementById('pSurgery').value;
   const leg     = document.getElementById('pLeg').value;
 
-  if (!name) { alert('Lütfen hasta adını girin.'); return; }
-  if (!surgery) { alert('Lütfen ameliyat tarihini girin.'); return; }
+  if (!name)    { alert('Lütfen hasta adını girin.'); return; }
+  if (!surgery) { alert('Lütfen girişim tarihini girin.'); return; }
 
   const params = new URLSearchParams({ name, id, surgery, leg });
   const url = FORM_BASE_URL + '?' + params.toString();
@@ -335,23 +410,22 @@ function generateLink() {
   document.getElementById('linkText').textContent = url;
   document.getElementById('linkResult').style.display = 'block';
 
-  const d = new Date(surgery);
-  const today = new Date();
-  const days = Math.floor((today - d) / 86400000);
+  const d    = new Date(surgery);
+  const days = Math.floor((new Date() - d) / 86400000);
   document.getElementById('linkMeta').textContent =
-    `${name} · Ameliyat: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ameliyat sonrası ${days}. gün`;
+    `${name} · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
 }
 
 function copyLink() {
-  const text = document.getElementById('linkText').textContent;
-  navigator.clipboard.writeText(text).then(() => alert('Link kopyalandı!'));
+  navigator.clipboard.writeText(document.getElementById('linkText').textContent)
+    .then(() => alert('Link kopyalandı!'));
 }
 
 function whatsappShare() {
   const text = document.getElementById('linkText').textContent;
   const name = document.getElementById('pName').value.trim();
-  const msg = encodeURIComponent(
-    `Merhaba ${name},\n\nDizinizin iyileşme sürecini takip edebilmemiz için lütfen aşağıdaki kısa anketi doldurur musunuz? (3-4 dakika)\n\n${text}\n\nTeşekkürler.`
+  const msg  = encodeURIComponent(
+    `Merhaba ${name},\n\nOmzunuzun iyileşme sürecini takip edebilmemiz için lütfen aşağıdaki kısa anketi doldurur musunuz? (3-4 dakika)\n\n${text}\n\nTeşekkürler.`
   );
   window.open('https://wa.me/?text=' + msg, '_blank');
 }
