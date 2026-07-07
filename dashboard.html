@@ -106,9 +106,15 @@
 <div class="topbar">
   <div>
     <div class="topbar-title">🦴 PROM Takip Sistemi</div>
-    <div class="topbar-sub">Omuz Kalsifik Tendinit – Hasta Bildirimi Sonuçları</div>
+    <div class="topbar-sub">Omuz Hastalıkları – Hasta Bildirimi Sonuçları</div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
+    <select id="diagFilter" onchange="refreshAll()" style="padding:6px 10px;font-size:13px;">
+      <option value="Tümü">Tüm Tanılar</option>
+      <option value="Kalsifik Tendinit">Kalsifik Tendinit</option>
+      <option value="Rotator Manşet">Rotator Manşet</option>
+      <option value="Bankart Lezyonu">Bankart Lezyonu</option>
+    </select>
     <span class="badge badge-blue" id="totalBadge">0 kayıt</span>
     <button class="btn btn-ghost btn-sm" onclick="loadData()">↺ Yenile</button>
   </div>
@@ -228,6 +234,14 @@
         </select>
       </div>
       <div class="form-group">
+        <label>Tanı</label>
+        <select id="pDiag">
+          <option value="Kalsifik Tendinit">Kalsifik Tendinit</option>
+          <option value="Rotator Manşet">Rotator Manşet</option>
+          <option value="Bankart Lezyonu">Bankart Lezyonu</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Takip Dönemi</label>
         <select id="pFU">
           <option value="preop">Pre-op</option>
@@ -320,27 +334,34 @@ window.onload = function() {
 function loadDemoData() {
   allRows = [
     // Fatma — 3 dönem tam (Pre-op → 6. Hafta → 6. Ay iyileşme seyri)
-    { date:'20.12.2025', name:'Fatma Kaya',   pid:'22222', surgery:'2025-12-20', leg:'sol', daysPostOp:0,   followup:'Pre-op',   vas:7, abduction:80,  flexion:95,  ir_label:'Kuyruk sokumu', er:30, dash:68, constant:34, sleep:3,  sf12_pcs:30.9, sf12_mcs:42.4 },
-    { date:'05.02.2026', name:'Fatma Kaya',   pid:'22222', surgery:'2025-12-20', leg:'sol', daysPostOp:44,  followup:'6. Hafta', vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
-    { date:'22.06.2026', name:'Fatma Kaya',   pid:'22222', surgery:'2025-12-20', leg:'sol', daysPostOp:182, followup:'6. Ay',    vas:1, abduction:170, flexion:175, ir_label:'Kürek kemiği',   er:78, dash:9,  constant:90, sleep:9,  sf12_pcs:53.6, sf12_mcs:55.8 },
+    { date:'20.12.2025', name:'Fatma Kaya',   pid:'22222', diagnosis:'Kalsifik Tendinit', surgery:'2025-12-20', leg:'sol', daysPostOp:0,   followup:'Pre-op',   vas:7, abduction:80,  flexion:95,  ir_label:'Kuyruk sokumu', er:30, dash:68, constant:34, sleep:3,  sf12_pcs:30.9, sf12_mcs:42.4 },
+    { date:'05.02.2026', name:'Fatma Kaya',   pid:'22222', diagnosis:'Kalsifik Tendinit', surgery:'2025-12-20', leg:'sol', daysPostOp:44,  followup:'6. Hafta', vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
+    { date:'22.06.2026', name:'Fatma Kaya',   pid:'22222', diagnosis:'Kalsifik Tendinit', surgery:'2025-12-20', leg:'sol', daysPostOp:182, followup:'6. Ay',    vas:1, abduction:170, flexion:175, ir_label:'Kürek kemiği',   er:78, dash:9,  constant:90, sleep:9,  sf12_pcs:53.6, sf12_mcs:55.8 },
     // Ahmet — Pre-op + 6. Hafta (6. Ay yaklaşıyor)
-    { date:'01.05.2026', name:'Ahmet Yılmaz', pid:'11111', surgery:'2026-05-03', leg:'sağ', daysPostOp:-2,  followup:'Pre-op',   vas:8, abduction:70,  flexion:85,  ir_label:'Kalça',          er:25, dash:74, constant:28, sleep:2,  sf12_pcs:28.4, sf12_mcs:39.6 },
-    { date:'17.06.2026', name:'Ahmet Yılmaz', pid:'11111', surgery:'2026-05-03', leg:'sağ', daysPostOp:45,  followup:'6. Hafta', vas:4, abduction:120, flexion:130, ir_label:'Bel',            er:45, dash:41, constant:58, sleep:6,  sf12_pcs:39.8, sf12_mcs:47.2 },
+    { date:'01.05.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:-2,  followup:'Pre-op',   vas:8, abduction:70,  flexion:85,  ir_label:'Kalça',          er:25, dash:74, constant:28, sleep:2,  sf12_pcs:28.4, sf12_mcs:39.6 },
+    { date:'17.06.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:45,  followup:'6. Hafta', vas:4, abduction:120, flexion:130, ir_label:'Bel',            er:45, dash:41, constant:58, sleep:6,  sf12_pcs:39.8, sf12_mcs:47.2 },
     // Mehmet — 6. Hafta + 6. Ay var, Pre-op kaçırılmış (gecikti örneği)
-    { date:'10.03.2026', name:'Mehmet Demir', pid:'33333', surgery:'2026-01-28', leg:'sağ', daysPostOp:41,  followup:'6. Hafta', vas:5, abduction:110, flexion:125, ir_label:'Bel',            er:40, dash:48, constant:52, sleep:5,  sf12_pcs:37.2, sf12_mcs:45.9 },
-    { date:'28.06.2026', name:'Mehmet Demir', pid:'33333', surgery:'2026-01-28', leg:'sağ', daysPostOp:151, followup:'6. Ay',    vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
+    { date:'10.03.2026', name:'Mehmet Demir', pid:'33333', diagnosis:'Rotator Manşet', surgery:'2026-01-28', leg:'sağ', daysPostOp:41,  followup:'6. Hafta', vas:5, abduction:110, flexion:125, ir_label:'Bel',            er:40, dash:48, constant:52, sleep:5,  sf12_pcs:37.2, sf12_mcs:45.9 },
+    { date:'28.06.2026', name:'Mehmet Demir', pid:'33333', diagnosis:'Rotator Manşet', surgery:'2026-01-28', leg:'sağ', daysPostOp:151, followup:'6. Ay',    vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
     // Ayşe — henüz sadece Pre-op (6. Hafta yaklaşıyor)
-    { date:'02.07.2026', name:'Ayşe Çelik',  pid:'44444', surgery:'2026-07-08', leg:'sol', daysPostOp:-6,  followup:'Pre-op',   vas:6, abduction:95,  flexion:110, ir_label:'Kuyruk sokumu', er:35, dash:59, constant:40, sleep:4,  sf12_pcs:33.5, sf12_mcs:44.0 },
+    { date:'02.07.2026', name:'Ayşe Çelik',  pid:'44444', diagnosis:'Bankart Lezyonu', surgery:'2026-07-08', leg:'sol', daysPostOp:-6,  followup:'Pre-op',   vas:6, abduction:95,  flexion:110, ir_label:'Kuyruk sokumu', er:35, dash:59, constant:40, sleep:4,  sf12_pcs:33.5, sf12_mcs:44.0 },
   ];
   refreshAll();
 }
 
+// Aktif tanı filtresinden geçen kayıtlar — tüm görünümlerin tabanı
+function baseRows() {
+  const d = document.getElementById('diagFilter').value;
+  return d === 'Tümü' ? allRows : allRows.filter(r => (r.diagnosis || '') === d);
+}
+
 // Tablo + istatistik + matris — tek noktadan tazele
 function refreshAll() {
-  document.getElementById('totalBadge').textContent = allRows.length + ' kayıt';
+  const base = baseRows();
+  document.getElementById('totalBadge').textContent = base.length + ' kayıt';
   filterTable();
-  updateStats(activeFU === 'Tümü' ? allRows : allRows.filter(r => fuOf(r) === activeFU));
-  renderMatrix(allRows);
+  updateStats(activeFU === 'Tümü' ? base : base.filter(r => fuOf(r) === activeFU));
+  renderMatrix(base);
 }
 
 // ─── Google Sheets'ten veri yükle ────────────────────────────────────────────
@@ -359,6 +380,7 @@ function loadData() {
         date:       r[1]  || '',
         name:       r[4]  || '',
         pid:        r[3]  !== undefined && r[3] !== '' ? String(r[3]) : '',
+        diagnosis:  r[5]  || '',
         surgery:    r[6]  || '',
         leg:        r[8]  || '',
         daysPostOp: r[7]  !== '' ? Number(r[7])  : null,
@@ -483,14 +505,15 @@ function setFU(seg, btn) {
   activeFU = seg;
   document.querySelectorAll('.fu-chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
+  const base = baseRows();
   filterTable();
-  updateStats(seg === 'Tümü' ? allRows : allRows.filter(r => fuOf(r) === seg));
+  updateStats(seg === 'Tümü' ? base : base.filter(r => fuOf(r) === seg));
 }
 
 function filterTable() {
   const name = document.getElementById('filterName').value.toLowerCase();
   const date = document.getElementById('filterDate').value;
-  renderTable(allRows.filter(r =>
+  renderTable(baseRows().filter(r =>
     (activeFU === 'Tümü' || fuOf(r) === activeFU) &&
     r.name.toLowerCase().includes(name) && (!date || fmtDate(r.date).includes(date))
   ));
@@ -572,9 +595,10 @@ function renderMatrix(rows) {
   rows.forEach(r => {
     const key = (r.pid || r.name).toString().toLowerCase().trim();
     if (!key) return;
-    if (!byPatient.has(key)) byPatient.set(key, { name: r.name, leg: r.leg, surgery: '', segs: {} });
+    if (!byPatient.has(key)) byPatient.set(key, { name: r.name, leg: r.leg, diag: '', surgery: '', segs: {} });
     const p = byPatient.get(key);
     if (r.leg) p.leg = r.leg;
+    if (r.diagnosis) p.diag = r.diagnosis;
     if (r.surgery) p.surgery = r.surgery;
     const seg = fuOf(r);
     (p.segs[seg] = p.segs[seg] || []).push(r);
@@ -600,7 +624,7 @@ function renderMatrix(rows) {
     .sort((a, b) => a.name.localeCompare(b.name, 'tr'))
     .map(p => `
       <tr>
-        <td><strong>${p.name}</strong></td>
+        <td><strong>${p.name}</strong><div style="font-size:11px;color:var(--muted)">${p.diag || ''}</div></td>
         <td>${p.leg || '—'}</td>
         <td>${cell(p.segs['Pre-op'])}</td>
         <td>${cell(p.segs['6. Hafta'])}</td>
@@ -636,11 +660,12 @@ function generateLink() {
   const surgery = document.getElementById('pSurgery').value;
   const leg     = document.getElementById('pLeg').value;
   const fu      = document.getElementById('pFU').value;
+  const procedure = document.getElementById('pDiag').value;
 
   if (!name)    { alert('Lütfen hasta adını girin.'); return; }
   if (!surgery) { alert('Lütfen girişim tarihini girin.'); return; }
 
-  const params = new URLSearchParams({ name, id, surgery, leg, fu });
+  const params = new URLSearchParams({ name, id, surgery, leg, fu, procedure });
   const url = FORM_BASE_URL + '?' + params.toString();
 
   document.getElementById('linkText').textContent = url;
@@ -650,7 +675,7 @@ function generateLink() {
   const d    = new Date(surgery);
   const days = Math.floor((new Date() - d) / 86400000);
   document.getElementById('linkMeta').textContent =
-    `${name} · ${FU_LABELS[fu]} değerlendirmesi · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
+    `${name} · ${procedure} · ${FU_LABELS[fu]} değerlendirmesi · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
 }
 
 function copyLink() {

@@ -4,7 +4,29 @@
 // Bu kodu Google Apps Script'e yapıştırın ve deploy edin.
 // ============================================================
 
-const SHEET_NAME = 'PROM_Kayitlar';
+// Tanıya göre çizelge sayfası — her tanının verileri kendi sayfasında tutulur
+const DIAG_SHEETS = {
+  'Kalsifik Tendinit': 'PROM_Kalsifik_Tendinit',
+  'Rotator Manşet':    'PROM_Rotator_Manset',
+  'Bankart Lezyonu':   'PROM_Bankart',
+};
+const DEFAULT_SHEET = 'PROM_Kayitlar'; // eski kayıtlar + bilinmeyen tanılar
+
+function sheetNameFor(diag) {
+  return DIAG_SHEETS[diag] || DEFAULT_SHEET;
+}
+
+// Sütun sırası (0-based index):
+// 0:timestamp  1:date      2:time       3:patientId  4:patientName  5:diagnosis
+// 6:surgeryDate 7:daysPostOp 8:surgeryLeg
+// 9:vas  10:rom_abduction  11:rom_flexion  12:rom_ir  13:rom_ir_label  14:rom_er
+// 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs  20:followup
+const HEADERS = [
+  'Zaman Damgası', 'Tarih', 'Saat', 'Hasta ID', 'Hasta Adı', 'Tanı',
+  'Girişim Tarihi', 'Post-op Gün', 'Taraf',
+  'VAS (0-10)', 'Abduksiyon (°)', 'Öne Fleksiyon (°)', 'İç Rotasyon', 'İR Pozisyon', 'Dış Rotasyon (°)',
+  'DASH (0-100)', 'Constant (0-100)', 'Uyku VAS (0-10)', 'SF-12 PCS', 'SF-12 MCS', 'Takip',
+];
 
 function doPost(e) {
   try {
@@ -40,31 +62,20 @@ function doGet(e) {
 
 function saveToSheet(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-
-  // Sütun sırası (0-based index):
-  // 0:timestamp  1:date      2:time       3:patientId  4:patientName  5:diagnosis
-  // 6:surgeryDate 7:daysPostOp 8:surgeryLeg
-  // 9:vas  10:rom_abduction  11:rom_flexion  12:rom_ir  13:rom_ir_label  14:rom_er
-  // 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs  20:followup
-  const headers = [
-    'Zaman Damgası', 'Tarih', 'Saat', 'Hasta ID', 'Hasta Adı', 'Tanı',
-    'Girişim Tarihi', 'Post-op Gün', 'Taraf',
-    'VAS (0-10)', 'Abduksiyon (°)', 'Öne Fleksiyon (°)', 'İç Rotasyon', 'İR Pozisyon', 'Dış Rotasyon (°)',
-    'DASH (0-100)', 'Constant (0-100)', 'Uyku VAS (0-10)', 'SF-12 PCS', 'SF-12 MCS', 'Takip',
-  ];
+  const sheetName = sheetNameFor(data.diagnosis);
+  let sheet = ss.getSheetByName(sheetName);
 
   if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
+    sheet = ss.insertSheet(sheetName);
     sheet.setFrozenRows(1);
     sheet.setColumnWidth(1, 160);  // Zaman Damgası
     sheet.setColumnWidth(5, 160);  // Hasta Adı
   }
 
   // Başlık satırını yaz / yeni sütun eklendiğinde mevcut sayfada tamamla
-  if (sheet.getRange(1, headers.length).getValue() !== headers[headers.length - 1]) {
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    const hr = sheet.getRange(1, 1, 1, headers.length);
+  if (sheet.getRange(1, HEADERS.length).getValue() !== HEADERS[HEADERS.length - 1]) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    const hr = sheet.getRange(1, 1, 1, HEADERS.length);
     hr.setBackground('#1e6fff');
     hr.setFontColor('#ffffff');
     hr.setFontWeight('bold');
@@ -162,14 +173,16 @@ function colorSF12(sheet, row, col, score) {
 
 function getSheetData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ rows: [] }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-  const data = sheet.getDataRange().getValues();
+  // Tüm tanı sayfalarını tek listede birleştir (ilk satır ortak başlık)
+  const names = [DEFAULT_SHEET].concat(Object.keys(DIAG_SHEETS).map(k => DIAG_SHEETS[k]));
+  const rows = [HEADERS];
+  names.forEach(name => {
+    const sheet = ss.getSheetByName(name);
+    if (!sheet || sheet.getLastRow() < 2) return;
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) rows.push(data[i]); // başlığı atla
+  });
   return ContentService
-    .createTextOutput(JSON.stringify({ rows: data }))
+    .createTextOutput(JSON.stringify({ rows: rows }))
     .setMimeType(ContentService.MimeType.JSON);
 }

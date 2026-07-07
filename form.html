@@ -624,6 +624,17 @@
       </tr>
     </table>
 
+    <!-- Tanı seçimi — veriler ilgili tanının takip çizelgesine kaydedilir -->
+    <div class="fu-pick">
+      <div class="fu-pick-title">Tanınız</div>
+      <div class="side-btns">
+        <button class="side-btn" id="diagBtn0" onclick="selectDiagOpt('Kalsifik Tendinit')">Kalsifik<br>Tendinit</button>
+        <button class="side-btn" id="diagBtn1" onclick="selectDiagOpt('Rotator Manşet')">Rotator<br>Manşet</button>
+        <button class="side-btn" id="diagBtn2" onclick="selectDiagOpt('Bankart Lezyonu')">Bankart<br>Lezyonu</button>
+      </div>
+      <div class="fu-pick-note">Doktorunuzun belirttiği tanı seçili gelir; yanlışsa değiştirebilirsiniz.</div>
+    </div>
+
     <!-- Takip dönemi — hasta hangi değerlendirmeyi doldurduğunu belirtir -->
     <div class="fu-pick">
       <div class="fu-pick-title">Hangi dönemin değerlendirmesini dolduruyorsunuz?</div>
@@ -1131,6 +1142,17 @@ function selectFUOpt(seg) {
   ['Pre-op', '6. Hafta', '6. Ay'].forEach((s, i) =>
     document.getElementById('fuBtn' + i).classList.toggle('on', s === seg));
   document.getElementById('chipFU').textContent = seg;
+}
+
+// Tanı seçimi — veriler tanıya göre ayrı çizelge sayfasına kaydedilir
+const DIAG_OPTIONS = ['Kalsifik Tendinit', 'Rotator Manşet', 'Bankart Lezyonu'];
+let selectedDiag = procedureType;
+function selectDiagOpt(diag) {
+  selectedDiag = diag;
+  DIAG_OPTIONS.forEach((d, i) =>
+    document.getElementById('diagBtn' + i).classList.toggle('on', d === diag));
+  const el = document.getElementById('demoProcedure');
+  if (el) el.textContent = diag;
 }
 
 let activeLeg = surgeryLeg; // may be updated from demographics picker
@@ -1751,7 +1773,8 @@ document.getElementById('chipLeg').textContent     = activeLeg || '—';
 document.getElementById('chipFU').textContent      = getFollowup() || '—';
 updateVAS(5);
 updateSleepVAS(5);
-selectFUOpt(getFollowup()); // dönem seçiciyi linkten/türetmeden ön-seç
+selectFUOpt(getFollowup());   // dönem seçiciyi linkten/türetmeden ön-seç
+selectDiagOpt(selectedDiag);  // tanıyı linkteki procedure parametresinden ön-seç
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 const headerMeta = [
@@ -1862,7 +1885,7 @@ function submitForm() {
     time:          now.toLocaleTimeString('tr-TR'),
     patientId,
     patientName,
-    diagnosis:     procedureType,
+    diagnosis:     selectedDiag,
     surgeryDate:   surgeryDateStr,
     daysPostOp:    daysPostOp !== null ? daysPostOp : '',
     surgeryLeg:    activeLeg,
