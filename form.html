@@ -640,8 +640,9 @@
       <div class="fu-pick-title">Hangi dönemin değerlendirmesini dolduruyorsunuz?</div>
       <div class="side-btns">
         <button class="side-btn" id="fuBtn0" onclick="selectFUOpt('Pre-op')">Girişim Öncesi</button>
-        <button class="side-btn" id="fuBtn1" onclick="selectFUOpt('6. Hafta')">6. Hafta</button>
-        <button class="side-btn" id="fuBtn2" onclick="selectFUOpt('6. Ay')">6. Ay</button>
+        <button class="side-btn" id="fuBtn1" onclick="selectFUOpt('2. Hafta')" style="display:none">2. Hafta</button>
+        <button class="side-btn" id="fuBtn2" onclick="selectFUOpt('6. Hafta')">6. Hafta</button>
+        <button class="side-btn" id="fuBtn3" onclick="selectFUOpt('6. Ay')">6. Ay</button>
       </div>
       <div class="fu-pick-note">Takip randevunuzu kaçırdıysanız ve geçmiş bir dönemi sonradan dolduruyorsanız, o dönemi seçerek yanıtlarınızı ilgili döneme kaydedebilirsiniz.</div>
     </div>
@@ -1122,24 +1123,33 @@ const surgeryDateStr = params.get('surgery')   || '';
 const surgeryLeg     = params.get('leg')       || '';
 const procedureType  = params.get('procedure') || 'Kalsifik Tendinit';
 
-// Takip dönemi: linkteki fu parametresi (preop | 6w | 6m), yoksa post-op günden türetilir
-const FU_MAP = { preop: 'Pre-op', '6w': '6. Hafta', '6m': '6. Ay' };
+// Takip dönemi: linkteki fu parametresi (preop | 2w | 6w | 6m), yoksa post-op günden türetilir
+// 2. Hafta yalnızca Kalsifik Tendinit takip planında vardır.
+const FU_MAP = { preop: 'Pre-op', '2w': '2. Hafta', '6w': '6. Hafta', '6m': '6. Ay' };
+const FU_BTNS = ['Pre-op', '2. Hafta', '6. Hafta', '6. Ay']; // fuBtn0..3 sırası
 const fuParam = params.get('fu') || '';
 const followupLabel = FU_MAP[fuParam] || fuParam || '';
 
+function has2W(diag) { return diag === 'Kalsifik Tendinit'; }
+
+function deriveFU(diag, d) {
+  if (d === null || d <= 0) return 'Pre-op';
+  if (has2W(diag) && d <= 28) return '2. Hafta';
+  if (d <= 100) return '6. Hafta';
+  return '6. Ay';
+}
+
 function getFollowup() {
   if (selectedFU) return selectedFU;
-  if (followupLabel) return followupLabel;
-  if (daysPostOp === null || daysPostOp <= 0) return 'Pre-op';
-  if (daysPostOp <= 100) return '6. Hafta';
-  return '6. Ay';
+  if (followupLabel && (followupLabel !== '2. Hafta' || has2W(selectedDiag))) return followupLabel;
+  return deriveFU(selectedDiag, daysPostOp);
 }
 
 // Hastanın sec1'deki dönem seçimi — link parametresini geçersiz kılar
 let selectedFU = '';
 function selectFUOpt(seg) {
   selectedFU = seg;
-  ['Pre-op', '6. Hafta', '6. Ay'].forEach((s, i) =>
+  FU_BTNS.forEach((s, i) =>
     document.getElementById('fuBtn' + i).classList.toggle('on', s === seg));
   document.getElementById('chipFU').textContent = seg;
 }
@@ -1153,6 +1163,11 @@ function selectDiagOpt(diag) {
     document.getElementById('diagBtn' + i).classList.toggle('on', d === diag));
   const el = document.getElementById('demoProcedure');
   if (el) el.textContent = diag;
+  // 2. Hafta butonu yalnızca Kalsifik Tendinit'te görünür
+  document.getElementById('fuBtn1').style.display = has2W(diag) ? '' : 'none';
+  if (!has2W(diag) && selectedFU === '2. Hafta') {
+    selectFUOpt(deriveFU(diag, daysPostOp));
+  }
 }
 
 let activeLeg = surgeryLeg; // may be updated from demographics picker

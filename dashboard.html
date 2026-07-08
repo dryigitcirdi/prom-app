@@ -81,6 +81,7 @@
     /* Takip dönemi rozetleri */
     .fu-badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
     .fu-preop { background: #e8f0fe; color: #1e6fff; }
+    .fu-2wk   { background: #fef3c7; color: #b45309; }
     .fu-6w    { background: #f3e8ff; color: #7c3aed; }
     .fu-6m    { background: #ccfbf1; color: #0d9488; }
     .fu-none  { background: #f3f4f6; color: #9ca3af; }
@@ -198,6 +199,7 @@
           <th>Hasta</th>
           <th>Taraf</th>
           <th><span class="fu-badge fu-preop">Pre-op</span></th>
+          <th id="th2w"><span class="fu-badge fu-2wk">2. Hafta</span></th>
           <th><span class="fu-badge fu-6w">6. Hafta</span></th>
           <th><span class="fu-badge fu-6m">6. Ay</span></th>
           <th>Seyir</th>
@@ -205,7 +207,7 @@
         </tr>
       </thead>
       <tbody id="matrixBody">
-        <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>
+        <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🧭</div><div>Henüz kayıt yok</div></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -235,7 +237,7 @@
       </div>
       <div class="form-group">
         <label>Tanı</label>
-        <select id="pDiag">
+        <select id="pDiag" onchange="syncFUOptions()">
           <option value="Kalsifik Tendinit">Kalsifik Tendinit</option>
           <option value="Rotator Manşet">Rotator Manşet</option>
           <option value="Bankart Lezyonu">Bankart Lezyonu</option>
@@ -245,6 +247,7 @@
         <label>Takip Dönemi</label>
         <select id="pFU">
           <option value="preop">Pre-op</option>
+          <option value="2w" id="fuOpt2w">2. Hafta</option>
           <option value="6w">6. Hafta</option>
           <option value="6m">6. Ay</option>
         </select>
@@ -269,6 +272,7 @@
     <div class="fu-chips">
       <button class="fu-chip active" onclick="setFU('Tümü', this)">Tümü</button>
       <button class="fu-chip" onclick="setFU('Pre-op', this)">Pre-op</button>
+      <button class="fu-chip" onclick="setFU('2. Hafta', this)">2. Hafta</button>
       <button class="fu-chip" onclick="setFU('6. Hafta', this)">6. Hafta</button>
       <button class="fu-chip" onclick="setFU('6. Ay', this)">6. Ay</button>
     </div>
@@ -339,6 +343,7 @@ function loadDemoData() {
     { date:'22.06.2026', name:'Fatma Kaya',   pid:'22222', diagnosis:'Kalsifik Tendinit', surgery:'2025-12-20', leg:'sol', daysPostOp:182, followup:'6. Ay',    vas:1, abduction:170, flexion:175, ir_label:'Kürek kemiği',   er:78, dash:9,  constant:90, sleep:9,  sf12_pcs:53.6, sf12_mcs:55.8 },
     // Ahmet — Pre-op + 6. Hafta (6. Ay yaklaşıyor)
     { date:'01.05.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:-2,  followup:'Pre-op',   vas:8, abduction:70,  flexion:85,  ir_label:'Kalça',          er:25, dash:74, constant:28, sleep:2,  sf12_pcs:28.4, sf12_mcs:39.6 },
+    { date:'17.05.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:14,  followup:'2. Hafta', vas:6, abduction:95,  flexion:105, ir_label:'Kuyruk sokumu',  er:32, dash:60, constant:40, sleep:4,  sf12_pcs:33.0, sf12_mcs:43.5 },
     { date:'17.06.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:45,  followup:'6. Hafta', vas:4, abduction:120, flexion:130, ir_label:'Bel',            er:45, dash:41, constant:58, sleep:6,  sf12_pcs:39.8, sf12_mcs:47.2 },
     // Mehmet — 6. Hafta + 6. Ay var, Pre-op kaçırılmış (gecikti örneği)
     { date:'10.03.2026', name:'Mehmet Demir', pid:'33333', diagnosis:'Rotator Manşet', surgery:'2026-01-28', leg:'sağ', daysPostOp:41,  followup:'6. Hafta', vas:5, abduction:110, flexion:125, ir_label:'Bel',            er:40, dash:48, constant:52, sleep:5,  sf12_pcs:37.2, sf12_mcs:45.9 },
@@ -402,19 +407,22 @@ function loadData() {
 }
 
 // ─── Takip dönemi yardımcıları ────────────────────────────────────────────────
-const FU_SEGMENTS = ['Pre-op', '6. Hafta', '6. Ay'];
+const FU_SEGMENTS = ['Pre-op', '2. Hafta', '6. Hafta', '6. Ay'];
+// 2. Hafta yalnızca Kalsifik Tendinit takip planında vardır
+function has2W(diag) { return diag === 'Kalsifik Tendinit'; }
 
-// Kayıttaki açık etiket; yoksa post-op günden türet (eski kayıtlar için)
+// Kayıttaki açık etiket; yoksa post-op günden ve tanıdan türet (eski kayıtlar için)
 function fuOf(r) {
   if (r.followup && FU_SEGMENTS.includes(r.followup)) return r.followup;
   const d = r.daysPostOp;
   if (d === null || d <= 0) return 'Pre-op';
+  if (has2W(r.diagnosis) && d <= 28) return '2. Hafta';
   if (d <= 100) return '6. Hafta';
   return '6. Ay';
 }
 
 function fuBadge(seg) {
-  const cls = seg === 'Pre-op' ? 'fu-preop' : seg === '6. Hafta' ? 'fu-6w' : seg === '6. Ay' ? 'fu-6m' : 'fu-none';
+  const cls = seg === 'Pre-op' ? 'fu-preop' : seg === '2. Hafta' ? 'fu-2wk' : seg === '6. Hafta' ? 'fu-6w' : seg === '6. Ay' ? 'fu-6m' : 'fu-none';
   return `<span class="fu-badge ${cls}">${seg}</span>`;
 }
 
@@ -534,7 +542,9 @@ function parseD(v) {
 function nextFUBadge(p) {
   const surgery = parseD(p.surgery);
   if (!surgery) return '<span class="m-muted">—</span>';
-  const plan = [['Pre-op', 0], ['6. Hafta', 42], ['6. Ay', 180]];
+  const plan = has2W(p.diag)
+    ? [['Pre-op', 0], ['2. Hafta', 14], ['6. Hafta', 42], ['6. Ay', 180]]
+    : [['Pre-op', 0], ['6. Hafta', 42], ['6. Ay', 180]];
   const today = new Date(); today.setHours(0, 0, 0, 0);
 
   for (const [seg, offset] of plan) {
@@ -553,14 +563,16 @@ function nextFUBadge(p) {
 
 // Mini seyir grafiği: 3 dönem noktası, 3 skor çizgisi (0-100 ölçeği, VAS ×10)
 function sparkSVG(p) {
-  const SEGS = ['Pre-op', '6. Hafta', '6. Ay'];
+  const SEGS = has2W(p.diag)
+    ? ['Pre-op', '2. Hafta', '6. Hafta', '6. Ay']
+    : ['Pre-op', '6. Hafta', '6. Ay'];
   const SERIES = [
     { key: 'constant', mul: 1,  color: '#16a34a', label: 'Constant' },
     { key: 'dash',     mul: 1,  color: '#dc2626', label: 'DASH' },
     { key: 'vas',      mul: 10, color: '#d97706', label: 'VAS ×10' },
   ];
   const W = 132, H = 48, PX = 12, PT = 6, PB = 8;
-  const xs = [PX, W / 2, W - PX];
+  const xs = SEGS.map((_, i) => PX + i * (W - 2 * PX) / (SEGS.length - 1));
   const yOf = v => PT + (100 - Math.max(0, Math.min(100, v))) * (H - PT - PB) / 100;
 
   const latest = seg => { const l = p.segs[seg]; return l && l.length ? l[l.length - 1] : null; };
@@ -609,6 +621,11 @@ function renderMatrix(rows) {
     return;
   }
 
+  // 2. Hafta kolonu yalnızca Tümü veya Kalsifik Tendinit görünümünde
+  const show2w = document.getElementById('diagFilter').value !== 'Rotator Manşet'
+              && document.getElementById('diagFilter').value !== 'Bankart Lezyonu';
+  document.getElementById('th2w').style.display = show2w ? '' : 'none';
+
   // Aynı dönemde birden çok gönderim varsa sonuncusu gösterilir (×n işaretiyle)
   const cell = list => {
     if (!list || !list.length) return '<span class="m-muted">—</span>';
@@ -627,6 +644,7 @@ function renderMatrix(rows) {
         <td><strong>${p.name}</strong><div style="font-size:11px;color:var(--muted)">${p.diag || ''}</div></td>
         <td>${p.leg || '—'}</td>
         <td>${cell(p.segs['Pre-op'])}</td>
+        ${show2w ? `<td>${has2W(p.diag) ? cell(p.segs['2. Hafta']) : '<span class="m-muted">–</span>'}</td>` : ''}
         <td>${cell(p.segs['6. Hafta'])}</td>
         <td>${cell(p.segs['6. Ay'])}</td>
         <td>${sparkSVG(p)}</td>
@@ -654,6 +672,15 @@ function updateStats(rows) {
 }
 
 // ─── Link üretici ─────────────────────────────────────────────────────────────
+// Link üreticide 2. Hafta seçeneği yalnızca Kalsifik Tendinit'te görünür
+function syncFUOptions() {
+  const diag = document.getElementById('pDiag').value;
+  const opt = document.getElementById('fuOpt2w');
+  opt.hidden = !has2W(diag);
+  const sel = document.getElementById('pFU');
+  if (opt.hidden && sel.value === '2w') sel.value = 'preop';
+}
+
 function generateLink() {
   const name    = document.getElementById('pName').value.trim();
   const id      = document.getElementById('pId').value.trim() || ('P' + Date.now());
