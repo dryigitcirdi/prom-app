@@ -16,6 +16,37 @@ function sheetNameFor(diag) {
   return DIAG_SHEETS[diag] || DEFAULT_SHEET;
 }
 
+// Takip dönemi sırası — aynı hastanın satırları tabloda bu sıraya göre alt alta dizilir
+const FU_ORDER = { 'Pre-op': 0, '2. Hafta': 1, '6. Hafta': 2, '6. Ay': 3 };
+function fuRank(label) {
+  return FU_ORDER.hasOwnProperty(label) ? FU_ORDER[label] : 99;
+}
+
+// Yeni kaydın gideceği satır numarası: aynı hastanın bloğu içinde dönem sırasına
+// göre konum bulur (hasta anahtarı: Hasta ID, yoksa ad). Hasta yoksa null → sona eklenir.
+function findInsertRow(sheet, data) {
+  const last = sheet.getLastRow();
+  if (last < 2) return null;
+  const values = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
+  const newId   = String(data.patientId || '').trim();
+  const newName = String(data.patientName || '').trim().toLowerCase();
+  const newRank = fuRank(String(data.followup || ''));
+
+  let lastMatch = -1; // hastanın son satırı (values dizini)
+  let insertAt  = -1; // dönem sırası daha büyük olan ilk satırı (onun üstüne girilir)
+  for (let i = 0; i < values.length; i++) {
+    const id   = String(values[i][3] || '').trim();
+    const name = String(values[i][4] || '').trim().toLowerCase();
+    const same = (newId && id) ? id === newId : (newName !== '' && name === newName);
+    if (!same) continue;
+    lastMatch = i;
+    if (insertAt === -1 && fuRank(String(values[i][20] || '')) > newRank) insertAt = i;
+  }
+  if (lastMatch === -1) return null;      // yeni hasta
+  if (insertAt !== -1) return insertAt + 2; // bu satırın üstüne (sheet satır no = dizin + 2)
+  return lastMatch + 3;                     // bloğun hemen altına
+}
+
 // Sütun sırası (0-based index):
 // 0:timestamp  1:date      2:time       3:patientId  4:patientName  5:diagnosis
 // 6:surgeryDate 7:daysPostOp 8:surgeryLeg
@@ -108,19 +139,28 @@ function saveToSheet(data) {
     data.followup || '',
   ];
 
-  sheet.appendRow(row);
+  // Aynı hastanın satırları dönem sırasıyla alt alta gelecek şekilde yerleştir
+  const target = findInsertRow(sheet, data);
+  let rowIdx;
+  if (target === null || target > sheet.getLastRow()) {
+    sheet.appendRow(row);
+    rowIdx = sheet.getLastRow();
+  } else {
+    sheet.insertRowsBefore(target, 1);
+    sheet.getRange(target, 1, 1, row.length).setValues([row]);
+    rowIdx = target;
+  }
 
-  const lastRow = sheet.getLastRow();
   // Sütun numaraları (1-based): VAS=10, Abd=11, Flex=12, ER=15, DASH=16, Constant=17, Uyku=18, PCS=19, MCS=20
-  colorVAS(sheet, lastRow, 10, data.vas);
-  colorROM(sheet, lastRow, 11, data.rom_abduction, 150, 90);
-  colorROM(sheet, lastRow, 12, data.rom_flexion,   150, 90);
-  colorROM(sheet, lastRow, 15, data.rom_er,          60, 30);
-  colorDASH(sheet, lastRow, 16, data.dash);
-  colorConstant(sheet, lastRow, 17, data.constant);
-  colorSleep(sheet, lastRow, 18, data.sleep_vas);
-  colorSF12(sheet, lastRow, 19, data.sf12_pcs);
-  colorSF12(sheet, lastRow, 20, data.sf12_mcs);
+  colorVAS(sheet, rowIdx, 10, data.vas);
+  colorROM(sheet, rowIdx, 11, data.rom_abduction, 150, 90);
+  colorROM(sheet, rowIdx, 12, data.rom_flexion,   150, 90);
+  colorROM(sheet, rowIdx, 15, data.rom_er,          60, 30);
+  colorDASH(sheet, rowIdx, 16, data.dash);
+  colorConstant(sheet, rowIdx, 17, data.constant);
+  colorSleep(sheet, rowIdx, 18, data.sleep_vas);
+  colorSF12(sheet, rowIdx, 19, data.sf12_pcs);
+  colorSF12(sheet, rowIdx, 20, data.sf12_mcs);
 }
 
 // VAS: düşük = iyi
