@@ -810,7 +810,13 @@ function loadData() {
         sf12_mcs:   r[19] !== undefined && r[19] !== '' ? Number(r[19]) : null,
         followup:   r[20] !== undefined ? String(r[20] || '') : '',
       }));
+      // Tümör ve kalça kartlarını da tablodan besle
+      try { hydrateTumor(d.tumorRows, d.tumorEventRows); } catch (e) { console.warn('tümör yükleme:', e); }
+      try { hydrateHip(d.hipOpRows, d.hipRows); } catch (e) { console.warn('kalça yükleme:', e); }
       refreshAll();
+      if (activeBranch === 'Tümör') renderTumorPatients();
+      if (activeBranch === 'Kalça Artroskopisi') renderHipPatients();
+      hydrateTumorDrawings();
     })
     .catch(() => loadDemoData());
 }
@@ -844,6 +850,116 @@ function fmtDate(v) {
     if (!isNaN(d)) return d.toLocaleDateString('tr-TR');
   }
   return s;
+}
+
+// ═══ Tablodan geri yükleme (hidratasyon) ═════════════════════════════════════
+function txt(v) { return v === undefined || v === null ? '' : String(v).trim(); }
+function num(v) { return v === '' || v === null || v === undefined ? null : Number(v); }
+function splitIds(v) { return txt(v) ? txt(v).split('|').map(x => x.trim()).filter(Boolean) : []; }
+function isoDay(v) { const t = txt(v); return t.includes('T') ? t.slice(0, 10) : t; }
+
+// "12:30" → yarım saat dilimi indeksi (0-23)
+function parseHipTime(lbl) {
+  const m = txt(lbl).match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return (parseInt(m[1], 10) % 12) * 2 + (parseInt(m[2], 10) >= 30 ? 1 : 0);
+}
+
+function hydrateTumor(rows, eventRows) {
+  if (!rows || rows.length < 2) return;
+  const byKey = new Map();
+  rows.slice(1).forEach(r => {
+    const key = (txt(r[1]) || txt(r[2])).toLowerCase();
+    if (!key) return;
+    byKey.set(key, {
+      id: txt(r[1]), name: txt(r[2]), age: num(r[3]),
+      ttype: txt(r[4]) === 'Yumuşak Doku' ? 'yumusak' : 'kemik',
+      preDx: txt(r[5]), biopsy: txt(r[6]), finalDx: txt(r[7]),
+      regions: splitIds(r[9]),
+      surgery: isoDay(r[10]), margin: txt(r[11]),
+      rec: txt(r[12]), recDate: isoDay(r[13]),
+      mets: splitIds(r[17]),
+      notes: txt(r[19]),
+      drawings: {}, events: [],
+    });
+  });
+  (eventRows || []).slice(1).forEach(r => {
+    const key = (txt(r[1]) || txt(r[2])).toLowerCase();
+    const p = byKey.get(key);
+    if (!p) return;
+    p.events.push({ date: isoDay(r[3]), type: txt(r[7]) || 'diger',
+                    note: txt(r[6]), regions: splitIds(r[8]) });
+  });
+  tumorPatients = [...byKey.values()];
+}
+
+// Çizimler ayrı uçtan gelir (boyut nedeniyle)
+function hydrateTumorDrawings() {
+  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+  fetch(APPS_SCRIPT_URL + '?action=tumorDrawings')
+    .then(r => r.json())
+    .then(d => {
+      const rows = (d.rows || []).slice(1);
+      if (!rows.length) return;
+      const labelToKey = {};
+      Object.keys(BRUSH_GROUPS).forEach(g => { labelToKey[BRUSH_GROUPS[g].label] = g; });
+      let changed = false;
+      rows.forEach(r => {
+        const key = (txt(r[1]) || txt(r[2])).toLowerCase();
+        const p = tumorPatients.find(x => (txt(x.id) || txt(x.name)).toLowerCase() === key);
+        const png = txt(r[4]);
+        if (!p || !png.startsWith('data:image')) return;
+        const lbl = txt(r[3]);
+        const sm = lbl.match(/^(.*?)\s*\((Sağ|Sol)\)$/);
+        const base = labelToKey[sm ? sm[1] : lbl];
+        if (!base) return;
+        p.drawings[base + (sm ? (sm[2] === 'Sağ' ? '_sag' : '_sol') : '')] = png;
+        changed = true;
+      });
+      if (changed && activeBranch === 'Tümör') renderTumorPatients();
+    })
+    .catch(() => {});
+}
+
+function hydrateHip(opRows, promRows) {
+  const byKey = new Map();
+  (opRows || []).slice(1).forEach(r => {
+    const key = (txt(r[1]) || txt(r[2])).toLowerCase();
+    if (!key) return;
+    const a = parseHipTime(r[15]);
+    const bEnd = parseHipTime(r[16]);
+    const anchors = txt(r[19]) ? txt(r[19]).split('|').map(x => {
+      const m = x.trim().match(/^(\d{1,2}:\d{2})\s+(\S+)/);
+      if (!m) return null;
+      const i = parseHipTime(m[1]);
+      return i === null ? null : { i: i, t: /üğüm|ugum|knot(?!less)/i.test(m[2]) ? 'knotted' : 'knotless' };
+    }).filter(Boolean) : [];
+    byKey.set(key, {
+      id: txt(r[1]), name: txt(r[2]), age: num(r[3]), side: txt(r[4]),
+      surgery: isoDay(r[5]),
+      ce: num(r[6]), alpha: num(r[8]), fai: txt(r[10]), clbPre: txt(r[11]),
+      traction: num(r[12]), clbIntra: txt(r[13]),
+      a: a, b: bEnd === null ? null : (bEnd - 1 + 24) % 24,
+      anchors: anchors, proc: txt(r[22]), notes: txt(r[23]),
+      fu: {},
+    });
+  });
+  // PROM satırları — cerrahi kaydı olmayan hasta için de kart oluştur
+  (promRows || []).slice(1).forEach(r => {
+    const key = (txt(r[3]) || txt(r[4])).toLowerCase();
+    if (!key) return;
+    if (!byKey.has(key)) {
+      byKey.set(key, { id: txt(r[3]), name: txt(r[4]), age: null, side: txt(r[8]),
+                       surgery: isoDay(r[6]), a: null, b: null, anchors: [], fu: {} });
+    }
+    const p = byKey.get(key);
+    const seg = txt(r[9]);
+    if (!seg) return;
+    p.fu[seg] = { date: isoDay(r[1]), vas: num(r[10]), ihot: num(r[11]), mhhs: num(r[12]),
+                  hosAdl: num(r[13]), hosSp: num(r[14]), rsi: num(r[15]),
+                  pcs: num(r[16]), mcs: num(r[17]) };
+  });
+  if (byKey.size) hipPatients = [...byKey.values()];
 }
 
 // ─── Pill yardımcıları ────────────────────────────────────────────────────────
@@ -1841,6 +1957,7 @@ async function sendTumorToSheet(p) {
       date: e.date, type: e.type,
       typeLabel: (EVENT_TYPES[e.type] || EVENT_TYPES.diger).label,
       regionLabels: tumorRegionLabels(e.regions),
+      regionIds: e.regions || [],
       note: e.note,
     })),
     drawings: drawings,

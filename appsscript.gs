@@ -144,11 +144,12 @@ const TUMOR_HEADERS = [
   'Lokalizasyon', 'Bölge Kodları',
   'Cerrahi Tarihi', 'Cerrahi Sınır',
   'Nüks', 'Nüks Tarihi', 'Nüks Süresi (ay)',
-  'Metastaz', 'Metastaz Bölgeleri',
+  'Metastaz', 'Metastaz Bölgeleri', 'Metastaz Kodları',
   'Olay Sayısı', 'Çizim Sayısı', 'Notlar',
 ];
 const TUMOR_EVENT_HEADERS = [
   'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Olay Tarihi', 'Olay Tipi', 'Bölgeler', 'Not',
+  'Olay Kodu', 'Bölge Kodları',
 ];
 const TUMOR_DRAW_HEADERS = [
   'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Bölge', 'Çizim (PNG)',
@@ -200,6 +201,7 @@ function saveTumorData(data) {
     data.surgery || '', data.margin || '',
     data.rec || '', data.recDate || '', n(data.recMonths),
     (data.mets && data.mets.length) ? 'Var' : 'Yok', data.metLabels || '',
+    (data.mets || []).join(' | '),
     n(data.eventCount), n(data.drawCount), data.notes || '',
   ];
   const last = sheet.getLastRow();
@@ -224,7 +226,8 @@ function saveTumorData(data) {
     clearPatientRows(ev, 2, id, 3, nameLc);
     data.events.forEach(function (e) {
       ev.appendRow([data.timestamp || '', data.patientId || '', data.patientName || '',
-                    e.date || '', e.typeLabel || e.type || '', e.regionLabels || '', e.note || '']);
+                    e.date || '', e.typeLabel || e.type || '', e.regionLabels || '', e.note || '',
+                    e.type || '', (e.regionIds || []).join(' | ')]);
     });
   }
 
@@ -336,6 +339,17 @@ function doGet(e) {
   }
   if (e.parameter.action === 'getData') {
     return getSheetData();
+  }
+  if (e.parameter.action === 'tumorDrawings') {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sh = ss.getSheetByName(TUMOR_DRAWS);
+    const rows = [TUMOR_DRAW_HEADERS];
+    if (sh && sh.getLastRow() >= 2) {
+      const d = sh.getDataRange().getValues();
+      for (let i = 1; i < d.length; i++) rows.push(d[i]);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ rows: rows }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'ok', message: 'PROM API çalışıyor' }))
