@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Kalça Değerlendirme Anketi</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #1e6fff; --primary-light: #e8f0fe;
+      --success: #16a34a; --success-light: #dcfce7;
+      --text: #1a1a2e; --muted: #6b7280; --border: #e5e7eb;
+      --bg: #f8fafc; --card: #ffffff; --danger: #dc2626;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: var(--bg); color: var(--text); min-height: 100vh; font-size: 16px; line-height: 1.5; }
+
+    .progress-bar-container { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--border); z-index: 100; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #1e6fff, #06b6d4); transition: width 0.4s ease; border-radius: 0 2px 2px 0; }
+
+    .header { background: white; padding: 16px 20px 12px; border-bottom: 1px solid var(--border); position: sticky; top: 4px; z-index: 99; }
+    .header-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .header-title { font-size: 20px; font-weight: 700; margin-top: 2px; }
+
+    .container { max-width: 640px; margin: 0 auto; padding: 20px 16px 110px; }
+    .section { display: none; animation: fade 0.3s ease; }
+    .section.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px 20px; margin-bottom: 16px; }
+    .card-label { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .card-question { font-size: 16px; line-height: 1.5; margin-bottom: 20px; }
+
+    /* Welcome */
+    .welcome-icon { font-size: 52px; text-align: center; margin-bottom: 14px; }
+    .welcome-title { font-size: 24px; font-weight: 700; text-align: center; }
+    .welcome-name { color: var(--primary); }
+    .welcome-sub { text-align: center; color: var(--muted); font-size: 14px; margin: 10px 0 22px; }
+    .info-row { display: flex; gap: 10px; }
+    .info-chip { flex: 1; background: var(--primary-light); border-radius: 12px; padding: 12px; text-align: center; }
+    .info-chip-label { font-size: 11px; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .info-chip-value { font-size: 15px; font-weight: 700; margin-top: 2px; }
+    .steps-list { list-style: none; margin-top: 20px; background: white; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .steps-list li { padding: 14px 18px; font-size: 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+    .steps-list li:last-child { border-bottom: none; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: white; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* Demografi */
+    .demo-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+    .demo-table td { padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .demo-lbl { color: var(--muted); }
+    .demo-val { text-align: right; font-weight: 600; }
+    .pick { margin-top: 14px; padding: 14px; background: #f9fafb; border: 1px solid var(--border); border-radius: 12px; }
+    .pick-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+    .pick-note { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    .pick-btns { display: flex; gap: 8px; }
+    .pick-btn { flex: 1; padding: 12px 4px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+                border: 2px solid var(--border); background: white; color: var(--text); transition: all .15s; -webkit-tap-highlight-color: transparent; }
+    .pick-btn.on { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+    @keyframes shake { 0%,100% { transform: translateX(0);} 20%,60% { transform: translateX(-6px);} 40%,80% { transform: translateX(6px);} }
+
+    /* VAS */
+    .vas-container { text-align: center; }
+    .vas-value-display { font-size: 72px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 4px; transition: color .3s; }
+    .vas-value-label { font-size: 15px; font-weight: 500; color: var(--muted); margin-bottom: 28px; min-height: 22px; transition: color .3s; }
+    .vas-slider-wrap { position: relative; padding: 0 4px; margin-bottom: 12px; }
+    .vas-slider { --thumb-color: #d97706; -webkit-appearance: none; width: 100%; height: 10px; border-radius: 5px; outline: none; cursor: pointer;
+      background: linear-gradient(90deg, #22c55e 0%, #84cc16 22%, #facc15 42%, #f97316 64%, #ef4444 82%, #991b1b 100%); }
+    .vas-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 34px; height: 34px; border-radius: 50%; background: white;
+      border: 3px solid var(--thumb-color); box-shadow: 0 2px 10px rgba(0,0,0,0.18); cursor: pointer; transition: transform .15s, border-color .2s; }
+    .vas-ticks { display: flex; justify-content: space-between; padding: 4px 2px 0; }
+    .vas-ticks span { font-size: 11px; color: var(--muted); width: 20px; text-align: center; }
+    .vas-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+    .vas-labels span { font-size: 12px; color: var(--muted); }
+
+    /* Anket grupları */
+    .q-intro { background: var(--primary-light); border-radius: 14px; padding: 14px 16px; font-size: 13.5px; line-height: 1.55; margin-bottom: 16px; }
+    .q-score-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px;
+                    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .q-score-title { font-size: 15px; font-weight: 700; }
+    .q-score-prog { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .q-score-val { font-size: 38px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .q-score-sub { font-size: 12px; color: var(--muted); text-align: right; }
+    .q-group { background: white; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
+    .q-item { padding: 15px 16px 13px; border-bottom: 1px solid #f3f4f6; }
+    .q-item:last-child { border-bottom: none; }
+    .q-text { font-size: 14.5px; line-height: 1.45; margin-bottom: 12px; }
+    .q-num { font-size: 11px; font-weight: 700; color: #9ca3af; margin-right: 5px; }
+
+    /* Likert gradient bar */
+    .lbar { display: flex; border-radius: 12px; overflow: hidden; height: 50px; gap: 2px; cursor: pointer;
+            user-select: none; -webkit-user-select: none; touch-action: none; }
+    .lseg { flex: 1; display: flex; align-items: center; justify-content: center; transition: transform .14s, opacity .14s; }
+    .lseg:first-child { border-radius: 12px 0 0 12px; }
+    .lseg:last-child { border-radius: 0 12px 12px 0; }
+    .lseg-num { font-size: 17px; font-weight: 800; transition: color .14s; }
+    .lbar.touched .lseg:not(.sel) { opacity: .28; }
+    .lseg.sel { transform: scaleY(1.08); }
+    .lbl-out { text-align: center; font-size: 12px; font-weight: 600; min-height: 20px; margin-top: 7px; transition: color .2s; }
+    .na-btn { display: block; margin: 8px auto 0; padding: 5px 14px; border-radius: 99px; border: 1px solid var(--border);
+              background: white; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
+    .na-btn.on { background: #f3f4f6; border-color: #9ca3af; color: #4b5563; }
+
+    /* iHOT slider */
+    .ih-slider { --thumb-color: #1e6fff; -webkit-appearance: none; width: 100%; height: 10px; border-radius: 5px; outline: none; cursor: pointer;
+      background: linear-gradient(90deg, #ef4444 0%, #f97316 25%, #facc15 50%, #84cc16 75%, #22c55e 100%); }
+    .ih-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%; background: white;
+      border: 3px solid var(--thumb-color); box-shadow: 0 2px 8px rgba(0,0,0,0.18); cursor: pointer; }
+    .ih-val { text-align: center; font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 6px; }
+    .ih-ends { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+    .ih-untouched .ih-val { color: #c4c8cf; }
+
+    /* mHHS seçenekleri */
+    .opt-list { display: flex; flex-direction: column; gap: 7px; }
+    .opt { padding: 11px 14px; border: 2px solid var(--border); border-radius: 11px; font-size: 13.5px; cursor: pointer;
+           background: white; transition: all .15s; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; gap: 8px; }
+    .opt.on { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 600; }
+    .opt-pts { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 700; }
+
+    /* Nav */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border);
+               padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); display: flex; gap: 10px; z-index: 100; }
+    .btn { flex: 1; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; transition: all .15s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:disabled { opacity: .6; }
+    .btn-secondary { flex: 0 0 90px; background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+    .spinner { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.35); border-top-color: white;
+               border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px; vertical-align: -2px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Success */
+    .success-wrap { text-align: center; padding-top: 30px; }
+    .success-check { font-size: 60px; margin-bottom: 14px; }
+    .success-title { font-size: 24px; font-weight: 700; }
+    .success-sub { color: var(--muted); font-size: 14px; margin: 8px 0 24px; }
+    .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+    .score-box { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 14px; text-align: center; }
+    .score-box-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .score-box-value { font-size: 28px; font-weight: 800; color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar-container"><div class="progress-bar-fill" id="progressFill" style="width:2%"></div></div>
+<div class="header">
+  <div class="header-label" id="headerLabel">Kalça Değerlendirmesi</div>
+  <div class="header-title" id="headerTitle">Hoş Geldiniz</div>
+</div>
+
+<div class="container">
+
+  <!-- 0: Karşılama -->
+  <div class="section active" id="sec0">
+    <div class="card">
+      <div class="welcome-icon">🦵</div>
+      <div class="welcome-title">Merhaba, <span class="welcome-name" id="welcomeName">Hasta</span></div>
+      <p class="welcome-sub">Kalçanızın iyileşme sürecini takip edebilmemiz için birkaç soru soracağız.<br>Yanıtlarınız doğrudan doktorunuza iletilir.</p>
+      <div class="info-row">
+        <div class="info-chip"><div class="info-chip-label">Dönem</div><div class="info-chip-value" id="chipFU">—</div></div>
+        <div class="info-chip"><div class="info-chip-label">Post-op Gün</div><div class="info-chip-value" id="chipDays">—</div></div>
+        <div class="info-chip"><div class="info-chip-label">Taraf</div><div class="info-chip-value" id="chipSide">—</div></div>
+      </div>
+    </div>
+    <ul class="steps-list">
+      <li><span class="step-num">1</span> Ağrı değerlendirmesi (VAS)</li>
+      <li><span class="step-num">2</span> iHOT-12 · Kalça yaşam kalitesi</li>
+      <li><span class="step-num">3</span> HOS · Günlük yaşam ve spor</li>
+      <li><span class="step-num">4</span> mHHS · Kalça fonksiyonu</li>
+      <li><span class="step-num">5</span> Hip-RSI · Spora dönüş hazırlığı</li>
+      <li><span class="step-num">6</span> SF-12 · Genel sağlık</li>
+    </ul>
+  </div>
+
+  <!-- 1: Bilgiler -->
+  <div class="section" id="sec1">
+    <div class="card">
+      <div class="card-label">Hasta Bilgileri</div>
+      <div class="card-question">Bilgilerinizi doğrulayın</div>
+      <table class="demo-table">
+        <tr><td class="demo-lbl">Ad Soyad</td><td class="demo-val" id="demoName">—</td></tr>
+        <tr><td class="demo-lbl">İşlem</td><td class="demo-val">Kalça Artroskopisi</td></tr>
+        <tr><td class="demo-lbl">Ameliyat tarihi</td><td class="demo-val" id="demoDate">—</td></tr>
+        <tr><td class="demo-lbl">Post-op süre</td><td class="demo-val" id="demoDays">—</td></tr>
+      </table>
+      <div class="pick">
+        <div class="pick-title">Hangi dönemin değerlendirmesini dolduruyorsunuz?</div>
+        <div class="pick-btns">
+          <button class="pick-btn" id="fuBtn0" onclick="selectFU('Pre-op')">Girişim<br>Öncesi</button>
+          <button class="pick-btn" id="fuBtn1" onclick="selectFU('1. Ay')">1. Ay</button>
+          <button class="pick-btn" id="fuBtn2" onclick="selectFU('3. Ay')">3. Ay</button>
+          <button class="pick-btn" id="fuBtn3" onclick="selectFU('6. Ay')">6. Ay</button>
+          <button class="pick-btn" id="fuBtn4" onclick="selectFU('12. Ay')">12. Ay</button>
+        </div>
+        <div class="pick-note">Takip randevunuzu kaçırdıysanız ve geçmiş bir dönemi sonradan dolduruyorsanız, o dönemi seçebilirsiniz.</div>
+      </div>
+      <div class="pick" id="sidePicker">
+        <div class="pick-title">Hangi kalçanız değerlendiriliyor?</div>
+        <div class="pick-btns">
+          <button class="pick-btn" id="sideBtnR" onclick="selectSide('Sağ kalça')">Sağ kalça</button>
+          <button class="pick-btn" id="sideBtnL" onclick="selectSide('Sol kalça')">Sol kalça</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: VAS -->
+  <div class="section" id="sec2">
+    <div class="card">
+      <div class="card-label">Bölüm 1 / 4 — Ağrı</div>
+      <div class="card-question">Son zamanlarda kalçanızdaki <strong>ortalama ağrı</strong> şiddetini aşağıdaki cetvelde işaretleyiniz.</div>
+      <div class="vas-container">
+        <div class="vas-value-display" id="vasDisplay">5</div>
+        <div class="vas-value-label" id="vasLabel">Orta şiddette ağrı</div>
+        <div class="vas-slider-wrap"><input type="range" class="vas-slider" id="vasSlider" min="0" max="10" step="1" value="5"></div>
+        <div class="vas-ticks"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+        <div class="vas-labels"><span>Ağrı yok</span><span>Dayanılmaz ağrı</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3: iHOT-12 -->
+  <div class="section" id="sec3"><div id="ihotContainer"></div></div>
+  <!-- 4: HOS-ADL -->
+  <div class="section" id="sec4"><div id="hosAdlContainer"></div></div>
+  <!-- 5: HOS-Spor -->
+  <div class="section" id="sec5"><div id="hosSportContainer"></div></div>
+  <!-- 6: mHHS -->
+  <div class="section" id="sec6"><div id="mhhsContainer"></div></div>
+  <!-- 7: Hip-RSI -->
+  <div class="section" id="sec7"><div id="rsiContainer"></div></div>
+  <!-- 8: SF-12 -->
+  <div class="section" id="sec8"><div id="sf12Container"></div></div>
+
+  <!-- 9: Başarılı -->
+  <div class="section" id="sec9">
+    <div class="success-wrap">
+      <div class="success-check">✅</div>
+      <div class="success-title">Teşekkürler!</div>
+      <p class="success-sub">Yanıtlarınız başarıyla kaydedildi.</p>
+      <div class="score-grid">
+        <div class="score-box"><div class="score-box-label">VAS Ağrı</div><div class="score-box-value" id="finalVas">—</div></div>
+        <div class="score-box"><div class="score-box-label">iHOT-12</div><div class="score-box-value" id="finalIhot">—</div></div>
+        <div class="score-box"><div class="score-box-label">HOS-ADL</div><div class="score-box-value" id="finalAdl">—</div></div>
+        <div class="score-box"><div class="score-box-label">HOS-Spor</div><div class="score-box-value" id="finalSport">—</div></div>
+        <div class="score-box"><div class="score-box-label">mHHS</div><div class="score-box-value" id="finalMhhs">—</div></div>
+        <div class="score-box"><div class="score-box-label">Hip-RSI</div><div class="score-box-value" id="finalRsi">—</div></div>
+        <div class="score-box"><div class="score-box-label">SF-12 Fiziksel</div><div class="score-box-value" id="finalPcs">—</div></div>
+        <div class="score-box"><div class="score-box-label">SF-12 Mental</div><div class="score-box-value" id="finalMcs">—</div></div>
+      </div>
+      <p style="font-size:13px; color:var(--muted);">Bu sayfayı kapatabilirsiniz.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav-bar" id="navBar">
+  <button class="btn btn-secondary" id="btnBack" onclick="goBack()" style="display:none">Geri</button>
+  <button class="btn btn-primary" id="btnNext" onclick="goNext()">Başla</button>
+</div>
+
+<script>
+// ── Yapılandırma ──────────────────────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
+
+const params         = new URLSearchParams(window.location.search);
+const patientName    = params.get('name')    || 'Hasta';
+const patientId      = params.get('id')      || '';
+const surgeryDateStr = params.get('surgery') || '';
+const sideParam      = params.get('leg')     || '';
+
+const FU_MAP = { preop: 'Pre-op', '1m': '1. Ay', '3m': '3. Ay', '6m': '6. Ay', '12m': '12. Ay' };
+const FU_BTNS = ['Pre-op', '1. Ay', '3. Ay', '6. Ay', '12. Ay'];
+const fuParam = params.get('fu') || '';
+
+let daysPostOp = null;
+if (surgeryDateStr) {
+  const sd = new Date(surgeryDateStr), td = new Date();
+  sd.setHours(0,0,0,0); td.setHours(0,0,0,0);
+  daysPostOp = Math.round((td - sd) / 86400000);
+}
+
+function deriveFU() {
+  if (daysPostOp === null || daysPostOp <= 0) return 'Pre-op';
+  if (daysPostOp <= 55)  return '1. Ay';
+  if (daysPostOp <= 135) return '3. Ay';
+  if (daysPostOp <= 270) return '6. Ay';
+  return '12. Ay';
+}
+
+let selectedFU = FU_MAP[fuParam] || deriveFU();
+let activeSide = sideParam ? (sideParam.toLowerCase().indexOf('sol') > -1 ? 'Sol kalça' : 'Sağ kalça') : '';
+
+const scores = { vas: 5, ihot12: null, mhhs: null, hos_adl: null, hos_sport: null,
+                 hip_rsi: null, sf12_pcs: null, sf12_mcs: null };
+
+function fmtDate(str) {
+  if (!str) return '—';
+  const p = String(str).split('-');
+  return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : str;
+}
+
+// ── VAS ───────────────────────────────────────────────────────────────────────
+const vasTextLabels = ['Hiç ağrı yok','Çok hafif ağrı','Hafif ağrı','Hafif-orta ağrı','Orta şiddette ağrı','Orta şiddette ağrı','Şiddetli ağrı','Çok şiddetli ağrı','Çok şiddetli ağrı','Dayanılmaz ağrı','Dayanılmaz ağrı'];
+const vasColors = ['#22c55e','#16a34a','#65a30d','#a3a50a','#ca8a04','#d97706','#ea580c','#e04018','#ef4444','#b91c1c','#7f1d1d'];
+const vasSlider = document.getElementById('vasSlider');
+function updateVAS(v) {
+  v = parseInt(v); scores.vas = v;
+  const d = document.getElementById('vasDisplay'), l = document.getElementById('vasLabel');
+  d.textContent = v; d.style.color = vasColors[v];
+  l.textContent = vasTextLabels[v]; l.style.color = vasColors[v];
+  vasSlider.style.setProperty('--thumb-color', vasColors[v]);
+}
+vasSlider.addEventListener('input', e => updateVAS(e.target.value));
+
+// ── Bilgiler ──────────────────────────────────────────────────────────────────
+function selectFU(seg) {
+  selectedFU = seg;
+  FU_BTNS.forEach((s, i) => document.getElementById('fuBtn' + i).classList.toggle('on', s === seg));
+  document.getElementById('chipFU').textContent = seg;
+}
+function selectSide(side) {
+  activeSide = side;
+  document.getElementById('sideBtnR').classList.toggle('on', side === 'Sağ kalça');
+  document.getElementById('sideBtnL').classList.toggle('on', side === 'Sol kalça');
+  document.getElementById('chipSide').textContent = side;
+}
+
+// ── Likert gradient bar (HOS) ─────────────────────────────────────────────────
+// 5 seçenek: 4 = zorluk yok … 0 = yapamıyorum
+const LC = [
+  { bg:'#ef4444', dim:'#fee2e2', tx:'white', dtx:'#7f1d1d' },
+  { bg:'#f97316', dim:'#ffedd5', tx:'white', dtx:'#7c2d12' },
+  { bg:'#eab308', dim:'#fef9c3', tx:'white', dtx:'#713f12' },
+  { bg:'#84cc16', dim:'#ecfccb', tx:'white', dtx:'#3f6212' },
+  { bg:'#22c55e', dim:'#d1fae5', tx:'white', dtx:'#065f46' },
+];
+const HOS_LABELS = ['Yapamıyorum','Aşırı zorlanıyorum','Orta derecede zorlanıyorum','Hafif zorlanıyorum','Zorlanmıyorum'];
+
+const HOS_ADL_ITEMS = [
+  'Düz zeminde 15 dakika yürümek','Yokuş yukarı çıkmak','Yokuş aşağı inmek','Merdiven çıkmak','Merdiven inmek',
+  'Kaldırıma çıkmak / inmek','Derin çömelmek','Otobüse / arabaya binip inmek','Sıkı pantolon veya çorap giymek',
+  'Ayakkabı / çorap giyip çıkarmak','Yataktan kalkmak','Yatakta yan dönmek','Alçak koltuktan kalkmak',
+  'Yerden bir şey almak için eğilmek','Hafif ev işleri yapmak','Ağır ev işleri yapmak','Alışveriş yapmak',
+];
+const HOS_SPORT_ITEMS = [
+  'Koşmak','Zıplamak','Dönerek hareket etmek (pivot)','Diz çökmek','Hızlanmak',
+  'Ani durmak / yön değiştirmek','Yan adım atmak','Aktivite sırasında normal tekniğinizi koruyabilmek',
+  'Normal spor / rekreasyon düzeyinizde katılabilmek',
+];
+
+const hosAdlAns   = new Array(HOS_ADL_ITEMS.length).fill(null);
+const hosSportAns = new Array(HOS_SPORT_ITEMS.length).fill(null);
+
+function buildHos(containerId, items, answers, prefix, title, intro, scoreId, progId) {
+  const cont = document.getElementById(containerId);
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+  const segs = () => LC.map((c, i) =>
+    `<div class="lseg" data-v="${i}" style="background:${c.dim}"><span class="lseg-num" style="color:${c.dtx}">${i}</span></div>`).join('');
+  cont.innerHTML = `
+    <div class="q-intro">${intro}</div>
+    <div class="q-score-card">
+      <div><div class="q-score-title">${title}</div><div class="q-score-prog" id="${progId}">0 / ${items.length} soru yanıtlandı</div></div>
+      <div style="text-align:right"><div class="q-score-val" id="${scoreId}">—</div><div class="q-score-sub">/ 100</div></div>
+    </div>
+    <div class="q-group">
+      ${items.map((t, i) => `
+        <div class="q-item">
+          <div class="q-text"><span class="q-num">${i + 1}.</span> ${t}</div>
+          <div class="lbar" id="${prefix}bar${i}" data-i="${i}">${segs()}</div>
+          <div class="lbl-out" id="${prefix}lbl${i}"></div>
+          <button class="na-btn" id="${prefix}na${i}" onclick="hosNA('${prefix}', ${i})">Bu aktiviteyi yapmıyorum (N/A)</button>
+        </div>`).join('')}
+    </div>`;
+  cont.querySelectorAll('.lbar').forEach(bar => {
+    const i = parseInt(bar.dataset.i);
+    let active = false;
+    const pick = clientX => {
+      const r = bar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width, clientX - r.left));
+      setHos(prefix, i, Math.min(4, Math.floor((x / r.width) * 5)));
+    };
+    bar.addEventListener('pointerdown', e => { active = true; bar.setPointerCapture(e.pointerId); pick(e.clientX); e.preventDefault(); });
+    bar.addEventListener('pointermove', e => { if (active) pick(e.clientX); });
+    bar.addEventListener('pointerup', () => { active = false; });
+  });
+}
+
+function hosStore(prefix) { return prefix === 'ha' ? hosAdlAns : hosSportAns; }
+
+function setHos(prefix, i, v) {
+  hosStore(prefix)[i] = v;
+  const bar = document.getElementById(prefix + 'bar' + i);
+  bar.classList.add('touched');
+  bar.querySelectorAll('.lseg').forEach(s => {
+    const sv = parseInt(s.dataset.v), c = LC[sv], on = sv === v;
+    s.classList.toggle('sel', on);
+    s.style.background = on ? c.bg : c.dim;
+    s.querySelector('.lseg-num').style.color = on ? c.tx : c.dtx;
+  });
+  const lb = document.getElementById(prefix + 'lbl' + i);
+  lb.textContent = HOS_LABELS[v]; lb.style.color = LC[v].bg;
+  document.getElementById(prefix + 'na' + i).classList.remove('on');
+  updateHos(prefix);
+}
+
+function hosNA(prefix, i) {
+  const arr = hosStore(prefix);
+  const btn = document.getElementById(prefix + 'na' + i);
+  const wasNA = arr[i] === 'na';
+  arr[i] = wasNA ? null : 'na';
+  btn.classList.toggle('on', !wasNA);
+  const bar = document.getElementById(prefix + 'bar' + i);
+  bar.classList.remove('touched');
+  bar.querySelectorAll('.lseg').forEach(s => {
+    const c = LC[parseInt(s.dataset.v)];
+    s.classList.remove('sel'); s.style.background = c.dim;
+    s.querySelector('.lseg-num').style.color = c.dtx;
+  });
+  document.getElementById(prefix + 'lbl' + i).textContent = wasNA ? '' : 'Uygulanmıyor';
+  updateHos(prefix);
+}
+
+function updateHos(prefix) {
+  const arr = hosStore(prefix);
+  const isAdl = prefix === 'ha';
+  const items = isAdl ? HOS_ADL_ITEMS : HOS_SPORT_ITEMS;
+  const answered = arr.filter(v => v !== null).length;
+  const scored = arr.filter(v => typeof v === 'number');
+  document.getElementById(isAdl ? 'haProg' : 'hsProg').textContent = `${answered} / ${items.length} soru yanıtlandı`;
+  const el = document.getElementById(isAdl ? 'haScore' : 'hsScore');
+  if (!scored.length) {
+    el.textContent = '—'; el.style.color = 'var(--muted)';
+    scores[isAdl ? 'hos_adl' : 'hos_sport'] = null;
+    return;
+  }
+  const val = Math.round(scored.reduce((a, b) => a + b, 0) / (scored.length * 4) * 1000) / 10;
+  scores[isAdl ? 'hos_adl' : 'hos_sport'] = val;
+  el.textContent = val;
+  el.style.color = val >= 80 ? '#16a34a' : val >= 60 ? '#d97706' : '#dc2626';
+}
+
+// ── iHOT-12 ───────────────────────────────────────────────────────────────────
+const IHOT_ITEMS = [
+  'Kalçanızdaki ağrı genel olarak ne kadar rahatsız edici?',
+  'Kalçanız nedeniyle günlük işlerinizi yaparken ne kadar zorlanıyorsunuz?',
+  'Uzun süre oturmak kalçanızı ne kadar rahatsız ediyor?',
+  'Kalçanız nedeniyle ne kadar topallıyorsunuz?',
+  'Sevdiğiniz aktiviteleri yapmakta ne kadar zorlanıyorsunuz?',
+  'Kalçanız yüzünden ne sıklıkla enerjinizin düştüğünü hissediyorsunuz?',
+  'Kalçanızdaki tutukluk ne kadar rahatsız edici?',
+  'Kalçanız uykunuzu ne kadar etkiliyor?',
+  'Kalçanız nedeniyle sosyal hayatınız ne kadar kısıtlanıyor?',
+  'Kalçanızın kötüleşeceği endişesini ne sıklıkla yaşıyorsunuz?',
+  'Kalçanız nedeniyle çevrenizdekilerin farkına varmasından ne kadar rahatsızsınız?',
+  'Kalçanız genel yaşam kalitenizi ne kadar etkiliyor?',
+];
+const ihotAns = new Array(IHOT_ITEMS.length).fill(null);
+
+function buildIhot() {
+  const cont = document.getElementById('ihotContainer');
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+  cont.innerHTML = `
+    <div class="q-intro"><strong>iHOT-12 · Kalça Yaşam Kalitesi</strong><br>
+      Son <strong>1 ayı</strong> düşünerek her soruda cetveli kaydırın. Sol uç en kötü, sağ uç en iyi durumu gösterir. 12 sorunun tamamı yanıtlanmalıdır.</div>
+    <div class="q-score-card">
+      <div><div class="q-score-title">iHOT-12 Skoru</div><div class="q-score-prog" id="ihProg">0 / 12 soru yanıtlandı</div></div>
+      <div style="text-align:right"><div class="q-score-val" id="ihScore">—</div><div class="q-score-sub">/ 100</div></div>
+    </div>
+    <div class="q-group">
+      ${IHOT_ITEMS.map((t, i) => `
+        <div class="q-item ih-untouched" id="ihItem${i}">
+          <div class="q-text"><span class="q-num">${i + 1}.</span> ${t}</div>
+          <div class="ih-val" id="ihVal${i}">50</div>
+          <input type="range" class="ih-slider" id="ihSl${i}" min="0" max="100" step="1" value="50"
+                 oninput="setIhot(${i}, this.value)">
+          <div class="ih-ends"><span>Çok kötü / aşırı</span><span>Hiç sorun yok</span></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function setIhot(i, v) {
+  v = parseInt(v);
+  ihotAns[i] = v;
+  document.getElementById('ihItem' + i).classList.remove('ih-untouched');
+  const el = document.getElementById('ihVal' + i);
+  el.textContent = v;
+  el.style.color = v >= 70 ? '#16a34a' : v >= 40 ? '#d97706' : '#dc2626';
+  document.getElementById('ihSl' + i).style.setProperty('--thumb-color', v >= 70 ? '#16a34a' : v >= 40 ? '#d97706' : '#dc2626');
+  const done = ihotAns.filter(x => x !== null).length;
+  document.getElementById('ihProg').textContent = `${done} / 12 soru yanıtlandı`;
+  const sEl = document.getElementById('ihScore');
+  if (done < 12) { sEl.textContent = '—'; sEl.style.color = 'var(--muted)'; scores.ihot12 = null; return; }
+  const val = Math.round(ihotAns.reduce((a, b) => a + b, 0) / 12 * 10) / 10;
+  scores.ihot12 = val;
+  sEl.textContent = val;
+  sEl.style.color = val >= 80 ? '#16a34a' : val >= 60 ? '#d97706' : '#dc2626';
+}
+
+// ── mHHS ──────────────────────────────────────────────────────────────────────
+// Modifiye Harris Kalça Skoru: 8 madde, toplam 91 puan × 1.1 = 100
+const MHHS_ITEMS = [
+  { q: 'Ağrı', opts: [['Ağrım yok', 44], ['Ara sıra hafif ağrı, aktiviteyi etkilemiyor', 40],
+      ['Hafif ağrı, ortalama aktiviteyi etkilemiyor; ağrı kesici nadiren', 30],
+      ['Orta derecede ağrı, katlanılabilir ama aktiviteyi kısıtlıyor', 20],
+      ['Belirgin ağrı, aktivite ciddi kısıtlı', 10], ['Yatakta bile ağrı / tamamen kısıtlı', 0]] },
+  { q: 'Topallama', opts: [['Yok', 11], ['Hafif', 8], ['Orta', 5], ['Belirgin / yürüyemiyorum', 0]] },
+  { q: 'Destek kullanımı', opts: [['Kullanmıyorum', 11], ['Uzun yürüyüşlerde baston', 7], ['Sürekli baston', 5],
+      ['Tek koltuk değneği', 3], ['İki baston', 2], ['İki koltuk değneği / yürüyemiyorum', 0]] },
+  { q: 'Yürüme mesafesi', opts: [['Sınırsız', 11], ['Yaklaşık 1 km (6 blok)', 8], ['300-500 m (2-3 blok)', 5],
+      ['Sadece ev içi', 2], ['Yatak / sandalyeye bağımlı', 0]] },
+  { q: 'Merdiven çıkma', opts: [['Normal, tutunmadan', 4], ['Tırabzana tutunarak', 2], ['Güçlükle, herhangi bir şekilde', 1], ['Çıkamıyorum', 0]] },
+  { q: 'Ayakkabı ve çorap giyme', opts: [['Kolayca', 4], ['Zorlanarak', 2], ['Yapamıyorum', 0]] },
+  { q: 'Oturma', opts: [['Normal sandalyede 1 saat rahatça', 5], ['Yüksek sandalyede yarım saat', 3], ['Rahatça oturamıyorum', 0]] },
+  { q: 'Toplu taşıma kullanma', opts: [['Kullanabiliyorum', 1], ['Kullanamıyorum', 0]] },
+];
+const mhhsAns = new Array(MHHS_ITEMS.length).fill(null);
+
+function buildMhhs() {
+  const cont = document.getElementById('mhhsContainer');
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+  cont.innerHTML = `
+    <div class="q-intro"><strong>mHHS · Modifiye Harris Kalça Skoru</strong><br>
+      Her başlıkta size <strong>en uygun</strong> seçeneği işaretleyin. 8 maddenin tamamı yanıtlanmalıdır.</div>
+    <div class="q-score-card">
+      <div><div class="q-score-title">mHHS Skoru</div><div class="q-score-prog" id="mhProg">0 / 8 madde yanıtlandı</div></div>
+      <div style="text-align:right"><div class="q-score-val" id="mhScore">—</div><div class="q-score-sub">/ 100</div></div>
+    </div>
+    ${MHHS_ITEMS.map((it, i) => `
+      <div class="q-group"><div class="q-item">
+        <div class="q-text"><span class="q-num">${i + 1}.</span> <strong>${it.q}</strong></div>
+        <div class="opt-list">
+          ${it.opts.map((o, j) => `<div class="opt" id="mh${i}_${j}" onclick="setMhhs(${i}, ${j}, ${o[1]})">${o[0]}<span class="opt-pts">${o[1]} p</span></div>`).join('')}
+        </div>
+      </div></div>`).join('')}`;
+}
+
+function setMhhs(i, j, pts) {
+  mhhsAns[i] = pts;
+  MHHS_ITEMS[i].opts.forEach((_, k) => document.getElementById(`mh${i}_${k}`).classList.toggle('on', k === j));
+  const done = mhhsAns.filter(v => v !== null).length;
+  document.getElementById('mhProg').textContent = `${done} / 8 madde yanıtlandı`;
+  const el = document.getElementById('mhScore');
+  if (done < 8) { el.textContent = '—'; el.style.color = 'var(--muted)'; scores.mhhs = null; return; }
+  const val = Math.round(mhhsAns.reduce((a, b) => a + b, 0) * 1.1 * 10) / 10;
+  scores.mhhs = val;
+  el.textContent = val;
+  el.style.color = val >= 80 ? '#16a34a' : val >= 60 ? '#d97706' : '#dc2626';
+}
+
+// ── Hip-RSI ───────────────────────────────────────────────────────────────────
+// Wörner ve ark. (KSSTA 2021) — ACL-RSI'dan uyarlanmış 12 madde, her biri 0-100 VAS,
+// toplam = maddelerin ortalaması (0-100). Yüksek = psikolojik hazırlık daha iyi.
+// Olumsuz ifadeli maddelerde uçlar ters yerleştirilmiştir (sol = en olumsuz).
+const RSI_ITEMS = [
+  { t: 'Sporunuzu yaparken kalçanız konusunda gergin misiniz?',                          lo: 'Çok gerginim',        hi: 'Hiç gergin değilim' },
+  { t: 'Sporunuzu yaparken kalçanızı hesaba katmak zorunda olmak sizi rahatsız ediyor mu?', lo: 'Çok rahatsız ediyor', hi: 'Hiç etmiyor' },
+  { t: 'Sporunuzu yaparken kendinizi rahat hissediyor musunuz?',                          lo: 'Hiç rahat değilim',   hi: 'Tamamen rahatım' },
+  { t: 'Sporunuzu yaparken kalçanızı yeniden sakatlamaktan korkuyor musunuz?',            lo: 'Çok korkuyorum',      hi: 'Hiç korkmuyorum' },
+  { t: 'Sporunuzu yaparken kalçanızı kazara sakatlamaktan endişe ediyor musunuz?',        lo: 'Çok endişeliyim',     hi: 'Hiç endişelenmiyorum' },
+  { t: 'Sporunuzu yaparken kalçanızın boşalmayacağına güveniyor musunuz?',                lo: 'Hiç güvenmiyorum',    hi: 'Tamamen güveniyorum' },
+  { t: 'Kalçanızı düşünmeden sporunuzu yapabileceğinize güveniyor musunuz?',              lo: 'Hiç güvenmiyorum',    hi: 'Tamamen güveniyorum' },
+  { t: 'Zorlu anlarda kalçanızın dayanacağına güveniyor musunuz?',                        lo: 'Hiç güvenmiyorum',    hi: 'Tamamen güveniyorum' },
+  { t: 'Eski spor seviyenizde performans gösterebileceğinize güveniyor musunuz?',         lo: 'Hiç güvenmiyorum',    hi: 'Tamamen güveniyorum' },
+  { t: 'Sporunuzda iyi performans gösterme yeteneğinize güveniyor musunuz?',              lo: 'Hiç güvenmiyorum',    hi: 'Tamamen güveniyorum' },
+  { t: 'Sporunuzu yaparak kalçanızı yeniden sakatlamanız sizce ne kadar olası?',          lo: 'Çok olası',           hi: 'Hiç olası değil' },
+  { t: 'Yeniden ameliyat ve rehabilitasyon süreci düşüncesi sporunuzu yapmanızı engelliyor mu?', lo: 'Tamamen engelliyor', hi: 'Hiç engellemiyor' },
+];
+const rsiAns = new Array(RSI_ITEMS.length).fill(null);
+
+function buildRsi() {
+  const cont = document.getElementById('rsiContainer');
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+  cont.innerHTML = `
+    <div class="q-intro"><strong>Hip-RSI · Spora Dönüş Psikolojik Hazırlık</strong><br>
+      Sporunuza dönme konusunda <strong>şu anki duygularınızı</strong> düşünerek her cetveli kaydırın.
+      Sporla ilgilenmiyorsanız da en yakın hissettiğiniz noktayı işaretleyin. 12 sorunun tamamı yanıtlanmalıdır.</div>
+    <div class="q-score-card">
+      <div><div class="q-score-title">Hip-RSI Skoru</div><div class="q-score-prog" id="rsProg">0 / 12 soru yanıtlandı</div></div>
+      <div style="text-align:right"><div class="q-score-val" id="rsScore">—</div><div class="q-score-sub">/ 100</div></div>
+    </div>
+    <div class="q-group">
+      ${RSI_ITEMS.map((it, i) => `
+        <div class="q-item ih-untouched" id="rsItem${i}">
+          <div class="q-text"><span class="q-num">${i + 1}.</span> ${it.t}</div>
+          <div class="ih-val" id="rsVal${i}">50</div>
+          <input type="range" class="ih-slider" id="rsSl${i}" min="0" max="100" step="1" value="50" oninput="setRsi(${i}, this.value)">
+          <div class="ih-ends"><span>${it.lo}</span><span>${it.hi}</span></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function setRsi(i, v) {
+  v = parseInt(v);
+  rsiAns[i] = v;
+  document.getElementById('rsItem' + i).classList.remove('ih-untouched');
+  const col = v >= 70 ? '#16a34a' : v >= 40 ? '#d97706' : '#dc2626';
+  const el = document.getElementById('rsVal' + i);
+  el.textContent = v; el.style.color = col;
+  document.getElementById('rsSl' + i).style.setProperty('--thumb-color', col);
+  const done = rsiAns.filter(x => x !== null).length;
+  document.getElementById('rsProg').textContent = `${done} / 12 soru yanıtlandı`;
+  const sEl = document.getElementById('rsScore');
+  if (done < 12) { sEl.textContent = '—'; sEl.style.color = 'var(--muted)'; scores.hip_rsi = null; return; }
+  const val = Math.round(rsiAns.reduce((a, b) => a + b, 0) / 12 * 10) / 10;
+  scores.hip_rsi = val;
+  sEl.textContent = val;
+  sEl.style.color = val >= 70 ? '#16a34a' : val >= 50 ? '#d97706' : '#dc2626';
+}
+
+// ── SF-12 ─────────────────────────────────────────────────────────────────────
+// Resmi SF-12v1 puanlama (Ware/QualityMetric): PCS +56.57706, MCS +60.75781
+const SFC = {
+  g:  { bg:'#22c55e', dim:'#d1fae5', tx:'white', dtx:'#065f46' },
+  l:  { bg:'#84cc16', dim:'#ecfccb', tx:'white', dtx:'#3f6212' },
+  y:  { bg:'#eab308', dim:'#fef9c3', tx:'white', dtx:'#713f12' },
+  o:  { bg:'#f97316', dim:'#ffedd5', tx:'white', dtx:'#7c2d12' },
+  r:  { bg:'#ef4444', dim:'#fee2e2', tx:'white', dtx:'#7f1d1d' },
+  dr: { bg:'#b91c1c', dim:'#fecaca', tx:'white', dtx:'#7f1d1d' },
+};
+const SF_GOOD5 = [SFC.g, SFC.l, SFC.y, SFC.o, SFC.r];
+const SF_BAD5  = [SFC.r, SFC.o, SFC.y, SFC.l, SFC.g];
+const SF_BAD3  = [SFC.r, SFC.y, SFC.g];
+const SF_BAD2  = [SFC.r, SFC.g];
+const SF_GOOD6 = [SFC.g, SFC.l, SFC.y, SFC.o, SFC.r, SFC.dr];
+const SF_BAD6  = [SFC.dr, SFC.r, SFC.o, SFC.y, SFC.l, SFC.g];
+
+const SF12Q = {
+  1:  { text: 'Genel olarak sağlığınız için aşağıdakilerden hangisini söyleyebilirsiniz?',
+        opts: ['Mükemmel', 'Çok iyi', 'İyi', 'Orta', 'Kötü'],
+        colors: SF_GOOD5,
+        w: [[0,0], [-1.31872,-0.06064], [-3.02396,0.03482], [-5.56461,-0.16891], [-8.37399,-1.71175]] },
+  2:  { text: 'Orta düzeyde aktiviteler: masa taşımak, elektrik süpürgesiyle temizlik, bahçe işleri gibi',
+        opts: ['Evet, çok kısıtlıyor', 'Evet, biraz kısıtlıyor', 'Hayır, hiç kısıtlamıyor'],
+        colors: SF_BAD3,
+        w: [[-7.23216,3.93115], [-3.45555,1.8684], [0,0]] },
+  3:  { text: 'Birkaç kat merdiven çıkmak',
+        opts: ['Evet, çok kısıtlıyor', 'Evet, biraz kısıtlıyor', 'Hayır, hiç kısıtlamıyor'],
+        colors: SF_BAD3,
+        w: [[-6.24397,2.68282], [-2.73557,1.43103], [0,0]] },
+  4:  { text: 'İstediğinizden daha azını başardınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[-4.61617,1.4406], [0,0]] },
+  5:  { text: 'İşinizde veya diğer aktivitelerinizde kısıtlandınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[-5.51747,1.66968], [0,0]] },
+  6:  { text: 'İstediğinizden daha azını başardınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[3.04365,-6.82672], [0,0]] },
+  7:  { text: 'İşinizi veya diğer aktivitelerinizi her zamanki kadar dikkatli yapamadınız',
+        opts: ['Evet', 'Hayır'],
+        colors: SF_BAD2,
+        w: [[2.32091,-5.69921], [0,0]] },
+  8:  { text: 'Son 4 hafta içinde ağrı, normal işinizi (hem ev dışında hem ev işlerinde) ne kadar etkiledi?',
+        opts: ['Hiç etkilemedi', 'Çok az', 'Orta derecede', 'Oldukça', 'Aşırı derecede'],
+        colors: SF_GOOD5,
+        w: [[0,0], [-3.80130,0.90384], [-6.50522,1.49384], [-8.38063,1.76691], [-11.25544,1.48619]] },
+  9:  { text: 'Kendinizi sakin ve huzurlu hissettiniz',
+        opts: ['Her zaman', 'Çoğu zaman', 'Oldukça sık', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_GOOD6,
+        w: [[0,0], [0.66514,-1.94949], [1.36689,-4.09842], [2.37241,-6.31121], [2.90426,-7.92717], [3.46638,-10.19085]] },
+  10: { text: 'Kendinizi enerjik hissettiniz',
+        opts: ['Her zaman', 'Çoğu zaman', 'Oldukça sık', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_GOOD6,
+        w: [[0,0], [-0.42251,-0.92057], [-1.14387,-1.65178], [-1.6185,-3.29805], [-2.02168,-4.88962], [-2.44706,-6.02409]] },
+  11: { text: 'Kendinizi kederli ve hüzünlü hissettiniz',
+        opts: ['Her zaman', 'Çoğu zaman', 'Oldukça sık', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_BAD6,
+        w: [[4.61446,-16.15395], [3.41593,-10.77911], [2.34247,-8.09914], [1.28044,-4.59055], [0.41188,-1.95934], [0,0]] },
+  12: { text: 'Son 4 hafta içinde fiziksel sağlığınız veya duygusal sorunlarınız, sosyal aktivitelerinizi (arkadaş veya akraba ziyareti gibi) ne kadar süreyle engelledi?',
+        opts: ['Her zaman', 'Çoğu zaman', 'Bazen', 'Nadiren', 'Hiçbir zaman'],
+        colors: SF_BAD5,
+        w: [[-0.33682,-6.29724], [-0.94342,-8.26066], [-0.56193,-6.94676], [-0.18043,-5.63286], [0.11038,-3.13896]] },
+};
+
+const SF12_GROUPS = [
+  { title: 'A — Genel Sağlık',         intro: '',                                                                                          qs: [1] },
+  { title: 'B — Fiziksel Aktiviteler', intro: 'Sağlığınız şu anda sizi bu aktivitelerde kısıtlıyor mu?',                                    qs: [2, 3] },
+  { title: 'C — Fiziksel Sağlık',      intro: 'Son 4 hafta içinde, fiziksel sağlığınız nedeniyle işinizde veya günlük aktivitelerinizde:',  qs: [4, 5] },
+  { title: 'D — Duygusal Durum',       intro: 'Son 4 hafta içinde, duygusal sorunlarınız (üzüntü, sıkıntı gibi) nedeniyle:',                qs: [6, 7] },
+  { title: 'E — Ağrı',                 intro: '',                                                                                          qs: [8] },
+  { title: 'F — Duygular ve Enerji',   intro: 'Son 4 hafta içinde ne kadar süreyle…',                                                      qs: [9, 10, 11] },
+  { title: 'G — Sosyal Aktiviteler',   intro: '',                                                                                          qs: [12] },
+];
+const sf12Answers = new Array(13).fill(0);
+
+function buildSf12() {
+  const cont = document.getElementById('sf12Container');
+  if (cont.dataset.built) return;
+  cont.dataset.built = '1';
+  const segs = n => {
+    const q = SF12Q[n], two = q.opts.length === 2;
+    return q.colors.map((c, i) =>
+      `<div class="lseg" data-i="${i}" style="background:${c.dim}">
+         <span class="lseg-num" style="color:${c.dtx}${two ? ';font-size:14px' : ''}">${two ? q.opts[i] : i + 1}</span>
+       </div>`).join('');
+  };
+  cont.innerHTML = `
+    <div class="q-intro"><strong>SF-12 Genel Sağlık Anketi</strong><br>
+      Son 4 haftayı düşünerek yanıtlayın. Fiziksel (PCS) ve Mental (MCS) sağlık puanı hesaplanır —
+      toplum ortalaması 50'dir, yüksek puan iyidir.</div>
+    <div class="q-score-card">
+      <div><div class="q-score-title">SF-12</div><div class="q-score-prog" id="sfProg">0 / 12 soru yanıtlandı</div></div>
+      <div style="display:flex; gap:18px;">
+        <div style="text-align:center"><div class="q-score-val" id="sfPcs" style="font-size:28px;color:var(--muted)">—</div><div class="q-score-sub">Fiziksel</div></div>
+        <div style="text-align:center"><div class="q-score-val" id="sfMcs" style="font-size:28px;color:var(--muted)">—</div><div class="q-score-sub">Mental</div></div>
+      </div>
+    </div>
+    ${SF12_GROUPS.map(g => `
+      <div class="q-group">
+        <div style="padding:12px 16px; background:#f9fafb; border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;">${g.title}</div>
+          ${g.intro ? `<div style="font-size:13px;color:#374151;margin-top:4px;line-height:1.4;">${g.intro}</div>` : ''}
+        </div>
+        ${g.qs.map(n => `
+          <div class="q-item">
+            <div class="q-text"><span class="q-num">${n}.</span> ${SF12Q[n].text}</div>
+            <div class="lbar" id="sfbar${n}" data-n="${n}">${segs(n)}</div>
+            <div class="lbl-out" id="sflbl${n}"></div>
+          </div>`).join('')}
+      </div>`).join('')}`;
+
+  cont.querySelectorAll('.lbar').forEach(bar => {
+    const n = parseInt(bar.dataset.n);
+    let active = false;
+    const pick = clientX => {
+      const r = bar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(r.width, clientX - r.left));
+      const cnt = SF12Q[n].opts.length;
+      setSf12(n, Math.min(cnt - 1, Math.floor((x / r.width) * cnt)));
+    };
+    bar.addEventListener('pointerdown', e => { active = true; bar.setPointerCapture(e.pointerId); pick(e.clientX); e.preventDefault(); });
+    bar.addEventListener('pointermove', e => { if (active) pick(e.clientX); });
+    bar.addEventListener('pointerup', () => { active = false; });
+  });
+}
+
+function setSf12(n, idx) {
+  sf12Answers[n] = idx + 1;
+  const q = SF12Q[n], bar = document.getElementById('sfbar' + n);
+  bar.classList.add('touched');
+  bar.querySelectorAll('.lseg').forEach(sg => {
+    const si = parseInt(sg.dataset.i), c = q.colors[si], on = si === idx;
+    sg.classList.toggle('sel', on);
+    sg.style.background = on ? c.bg : c.dim;
+    sg.querySelector('.lseg-num').style.color = on ? c.tx : c.dtx;
+  });
+  const lb = document.getElementById('sflbl' + n);
+  lb.textContent = q.opts[idx]; lb.style.color = q.colors[idx].bg;
+  updateSf12();
+}
+
+function updateSf12() {
+  const done = sf12Answers.slice(1).filter(v => v > 0).length;
+  document.getElementById('sfProg').textContent = `${done} / 12 soru yanıtlandı`;
+  const p = document.getElementById('sfPcs'), m = document.getElementById('sfMcs');
+  if (done < 12) {
+    scores.sf12_pcs = null; scores.sf12_mcs = null;
+    p.textContent = '—'; p.style.color = 'var(--muted)';
+    m.textContent = '—'; m.style.color = 'var(--muted)';
+    return;
+  }
+  let pcs = 56.57706, mcs = 60.75781;
+  for (let n = 1; n <= 12; n++) {
+    const w = SF12Q[n].w[sf12Answers[n] - 1];
+    pcs += w[0]; mcs += w[1];
+  }
+  scores.sf12_pcs = Math.round(pcs * 10) / 10;
+  scores.sf12_mcs = Math.round(mcs * 10) / 10;
+  const col = v => v >= 50 ? '#16a34a' : v >= 40 ? '#d97706' : '#dc2626';
+  p.textContent = scores.sf12_pcs; p.style.color = col(scores.sf12_pcs);
+  m.textContent = scores.sf12_mcs; m.style.color = col(scores.sf12_mcs);
+}
+
+// ── Navigasyon ────────────────────────────────────────────────────────────────
+const headerMeta = [
+  { label: 'Kalça Değerlendirmesi', title: 'Hoş Geldiniz' },
+  { label: 'Hasta Bilgileri',       title: 'Bilgilerinizi Doğrulayın' },
+  { label: 'Bölüm 1 / 6',           title: 'Ağrı Değerlendirmesi' },
+  { label: 'Bölüm 2 / 6',           title: 'iHOT-12' },
+  { label: 'Bölüm 3 / 6',           title: 'HOS — Günlük Yaşam' },
+  { label: 'Bölüm 3 / 6',           title: 'HOS — Spor' },
+  { label: 'Bölüm 4 / 6',           title: 'mHHS' },
+  { label: 'Bölüm 5 / 6',           title: 'Hip-RSI' },
+  { label: 'Bölüm 6 / 6',           title: 'SF-12' },
+  { label: '',                      title: '' },
+];
+const btnLabels = ['Başla','Devam →','İleri →','İleri →','İleri →','İleri →','İleri →','İleri →','Gönder',''];
+let currentSection = 0;
+
+function showSection(n) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec' + n).classList.add('active');
+  currentSection = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const navBar = document.getElementById('navBar');
+  if (n === 9) { navBar.style.display = 'none'; return; }
+  navBar.style.display = 'flex';
+  document.getElementById('btnBack').style.display = n > 0 ? 'block' : 'none';
+  document.getElementById('btnNext').textContent = btnLabels[n] || 'İleri →';
+  document.getElementById('btnNext').disabled = false;
+  document.getElementById('headerLabel').textContent = headerMeta[n].label;
+  document.getElementById('headerTitle').textContent = headerMeta[n].title;
+  document.getElementById('progressFill').style.width = [2, 10, 20, 34, 48, 60, 72, 86, 96, 100][n] + '%';
+
+  if (n === 3) buildIhot();
+  if (n === 4) buildHos('hosAdlContainer', HOS_ADL_ITEMS, hosAdlAns, 'ha',
+      'HOS — Günlük Yaşam (ADL)', '<strong>HOS · Günlük Yaşam Alt Ölçeği</strong><br>Son bir hafta içinde <strong>kalçanız nedeniyle</strong> aşağıdaki aktivitelerde ne kadar zorlandığınızı işaretleyin. Yapmadığınız aktiviteler için “N/A” seçeneğini kullanın.', 'haScore', 'haProg');
+  if (n === 5) buildHos('hosSportContainer', HOS_SPORT_ITEMS, hosSportAns, 'hs',
+      'HOS — Spor', '<strong>HOS · Spor Alt Ölçeği</strong><br>Spor ve rekreasyon aktivitelerinde <strong>kalçanız nedeniyle</strong> yaşadığınız zorluğu işaretleyin. Yapmadığınız aktiviteler için “N/A” seçeneğini kullanın.', 'hsScore', 'hsProg');
+  if (n === 6) buildMhhs();
+  if (n === 7) buildRsi();
+  if (n === 8) buildSf12();
+}
+
+function goNext() {
+  if (currentSection === 1 && !activeSide) {
+    const p = document.getElementById('sidePicker');
+    p.style.animation = 'none'; p.offsetHeight; p.style.animation = 'shake 0.35s ease';
+    return;
+  }
+  if (currentSection === 3) {
+    const done = ihotAns.filter(v => v !== null).length;
+    if (done < 12) { alert(`iHOT-12: lütfen tüm soruları yanıtlayın. Şu an ${done}/12 yanıtlandı.`); return; }
+  }
+  if (currentSection === 4 || currentSection === 5) {
+    const arr = currentSection === 4 ? hosAdlAns : hosSportAns;
+    const done = arr.filter(v => v !== null).length;
+    if (done < arr.length) { alert(`Lütfen tüm maddeleri yanıtlayın (yapmadığınız aktiviteler için N/A). Şu an ${done}/${arr.length}.`); return; }
+  }
+  if (currentSection === 6) {
+    const done = mhhsAns.filter(v => v !== null).length;
+    if (done < 8) { alert(`mHHS: lütfen tüm maddeleri yanıtlayın. Şu an ${done}/8.`); return; }
+  }
+  if (currentSection === 7) {
+    const done = rsiAns.filter(v => v !== null).length;
+    if (done < 12) { alert(`Hip-RSI: lütfen tüm soruları yanıtlayın. Şu an ${done}/12.`); return; }
+  }
+  if (currentSection === 8) {
+    const done = sf12Answers.slice(1).filter(v => v > 0).length;
+    if (done < 12) { alert(`SF-12: lütfen tüm soruları yanıtlayın. Şu an ${done}/12.`); return; }
+    submitForm();
+    return;
+  }
+  showSection(currentSection + 1);
+}
+
+function goBack() { if (currentSection > 0) showSection(currentSection - 1); }
+
+// ── Gönderim ──────────────────────────────────────────────────────────────────
+function submitForm() {
+  const btn = document.getElementById('btnNext');
+  btn.innerHTML = '<span class="spinner"></span>Gönderiliyor...';
+  btn.disabled = true;
+
+  const now = new Date();
+  const payload = {
+    module:       'hip',
+    timestamp:    now.toISOString(),
+    date:         now.toLocaleDateString('tr-TR'),
+    time:         now.toLocaleTimeString('tr-TR'),
+    patientId, patientName,
+    diagnosis:    'Kalça Artroskopisi',
+    surgeryDate:  surgeryDateStr,
+    daysPostOp:   daysPostOp !== null ? daysPostOp : '',
+    surgeryLeg:   activeSide,
+    followup:     selectedFU,
+    vas:          scores.vas,
+    ihot12:       scores.ihot12,
+    mhhs:         scores.mhhs,
+    hos_adl:      scores.hos_adl,
+    hos_sport:    scores.hos_sport,
+    hip_rsi:      scores.hip_rsi,
+    sf12_pcs:     scores.sf12_pcs,
+    sf12_mcs:     scores.sf12_mcs,
+  };
+
+  const getUrl = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  const popup = window.open(getUrl, 'prom_submit', 'width=1,height=1,left=0,top=0');
+  setTimeout(() => {
+    try { if (popup) popup.close(); } catch (e) {}
+    showSuccess();
+  }, 2500);
+}
+
+function showSuccess() {
+  document.getElementById('finalVas').textContent   = scores.vas + ' / 10';
+  document.getElementById('finalIhot').textContent  = scores.ihot12 !== null ? scores.ihot12 : '—';
+  document.getElementById('finalAdl').textContent   = scores.hos_adl !== null ? scores.hos_adl : '—';
+  document.getElementById('finalSport').textContent = scores.hos_sport !== null ? scores.hos_sport : '—';
+  document.getElementById('finalMhhs').textContent = scores.mhhs !== null ? scores.mhhs : '—';
+  document.getElementById('finalRsi').textContent  = scores.hip_rsi !== null ? scores.hip_rsi : '—';
+  document.getElementById('finalPcs').textContent  = scores.sf12_pcs !== null ? scores.sf12_pcs : '—';
+  document.getElementById('finalMcs').textContent  = scores.sf12_mcs !== null ? scores.sf12_mcs : '—';
+  showSection(9);
+}
+
+// ── Başlangıç ─────────────────────────────────────────────────────────────────
+document.getElementById('welcomeName').textContent = patientName;
+document.getElementById('demoName').textContent    = patientName;
+document.getElementById('demoDate').textContent    = fmtDate(surgeryDateStr);
+document.getElementById('demoDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
+document.getElementById('chipDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
+updateVAS(5);
+selectFU(selectedFU);
+if (activeSide) selectSide(activeSide); else document.getElementById('chipSide').textContent = '—';
+showSection(0);
+</script>
+</body>
+</html>

@@ -12,22 +12,145 @@ const DIAG_SHEETS = {
 };
 const DEFAULT_SHEET = 'PROM_Kayitlar'; // eski kayıtlar + bilinmeyen tanılar
 
+// Kalça artroskopisi ayrı bir modül: kendi sayfası ve kendi PROM sütunları
+const HIP_SHEET = 'PROM_Kalca_Artroskopisi';
+const HIP_HEADERS = [
+  'Zaman Damgası', 'Tarih', 'Saat', 'Hasta ID', 'Hasta Adı', 'Tanı',
+  'Girişim Tarihi', 'Post-op Gün', 'Taraf', 'Takip',
+  'VAS (0-10)', 'iHOT-12 (0-100)', 'mHHS (0-100)', 'HOS-ADL (0-100)', 'HOS-Spor (0-100)',
+  'Hip-RSI (0-100)', 'SF-12 PCS', 'SF-12 MCS',
+];
+
+function isHip(data) {
+  return data.module === 'hip' || data.diagnosis === 'Kalça Artroskopisi';
+}
+
+// Kalça cerrahi kaydı (doktor girişi) — hasta başına tek satır
+const HIP_OP_SHEET = 'Kalca_Cerrahi_Kayit';
+// Sütun blokları: kimlik → PRE-OP değerlendirme → İNTRA-OP bulgular → pre-op PROM
+const HIP_OP_HEADERS = [
+  'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Yaş', 'Taraf', 'Cerrahi Tarihi',
+  // Pre-op (radyografi / MR)
+  'Lateral CE (°)', 'CE Sınıflaması', 'Dunn Alfa (°)', 'Alfa Sınıflaması', 'FAI Tipi',
+  'Kondrolabral BD — MR',
+  // İntra-op (artroskopik)
+  'Traksiyon (dk)', 'Kondrolabral BD — Artroskopik', 'MR / Artroskopi Uyumu',
+  'Yırtık Başlangıç', 'Yırtık Bitiş', 'Yırtık Süresi (saat)',
+  'Ankor Sayısı', 'Ankorlar (saat · tip)', 'Knotless', 'Düğümlü', 'Labrum İşlemi',
+  'Notlar',
+];
+
+function isHipOp(data) { return data.module === 'hipop'; }
+
+function saveHipOpRow(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(HIP_OP_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(HIP_OP_SHEET);
+    sheet.setFrozenRows(1);
+    sheet.setColumnWidth(1, 160);
+    sheet.setColumnWidth(3, 160);
+    sheet.setColumnWidth(11, 240);
+  }
+  if (sheet.getRange(1, HIP_OP_HEADERS.length).getValue() !== HIP_OP_HEADERS[HIP_OP_HEADERS.length - 1]) {
+    sheet.getRange(1, 1, 1, HIP_OP_HEADERS.length).setValues([HIP_OP_HEADERS]);
+    const hr = sheet.getRange(1, 1, 1, HIP_OP_HEADERS.length);
+    hr.setBackground('#1e6fff'); hr.setFontColor('#ffffff');
+    hr.setFontWeight('bold'); hr.setFontSize(11);
+  }
+
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+  const row = [
+    data.timestamp || '', data.patientId || '', data.patientName || '', n(data.age),
+    data.side || '', data.surgeryDate || '',
+    // Pre-op
+    n(data.ce), data.ceClass || '', n(data.alpha), data.alphaClass || '', data.fai || '',
+    data.clbPre || '',
+    // İntra-op
+    n(data.traction), data.clbIntra || '', data.clbConcord || '',
+    data.tearStart || '', data.tearEnd || '', n(data.tearHours),
+    n(data.anchorCount), data.anchors || '', n(data.knotless), n(data.knotted), data.proc || '',
+    data.notes || '',
+  ];
+
+  // Aynı hasta zaten varsa satırı güncelle, yoksa ekle
+  const last = sheet.getLastRow();
+  let target = 0;
+  if (last >= 2) {
+    const vals = sheet.getRange(2, 2, last - 1, 2).getValues(); // Hasta ID + Ad
+    const id = String(data.patientId || '').trim();
+    const nm = String(data.patientName || '').trim().toLowerCase();
+    for (let i = 0; i < vals.length; i++) {
+      const rid = String(vals[i][0] || '').trim();
+      const rnm = String(vals[i][1] || '').trim().toLowerCase();
+      if ((id && rid) ? rid === id : (nm && rnm === nm)) { target = i + 2; break; }
+    }
+  }
+  if (target) sheet.getRange(target, 1, 1, row.length).setValues([row]);
+  else { sheet.appendRow(row); target = sheet.getLastRow(); }
+
+  // Sütunlar (1-based): CE=7, Alfa=9, KLB-MR=12, KLB-Artro=14, Uyum=15
+  colorCE(sheet, target, 7, data.ce);
+  colorAlpha(sheet, target, 9, data.alpha);
+  colorCLB(sheet, target, 14, data.clbIntra);
+  colorConcord(sheet, target, 15, data.clbConcord);
+}
+
+// Lateral CE: <20 displazi (kırmızı) · 20-25 borderline (sarı) · 25-40 normal (yeşil) · >40 overcoverage (turuncu)
+function colorCE(sheet, row, col, v) {
+  if (v === undefined || v === null || v === '') return;
+  v = Number(v);
+  const bg = v < 20 ? '#fee2e2' : v <= 25 ? '#fef9c3' : v <= 40 ? '#dcfce7' : '#ffedd5';
+  sheet.getRange(row, col).setBackground(bg);
+}
+
+// Kondrolabral breakdown (artroskopik): Var = sarı, Yok = yeşil
+function colorCLB(sheet, row, col, v) {
+  if (!v) return;
+  sheet.getRange(row, col).setBackground(v === 'Var' ? '#fef9c3' : '#dcfce7');
+}
+
+// MR / artroskopi uyumu: MR'da kaçmışsa kırmızı, uyumluysa yeşil/sarı
+function colorConcord(sheet, row, col, v) {
+  if (!v) return;
+  const bg = v.indexOf('görülmedi') > -1 ? '#fee2e2'
+           : v.indexOf('intra-op yok') > -1 ? '#ffedd5'
+           : v.indexOf('uyumlu (yok)') > -1 ? '#dcfce7' : '#fef9c3';
+  sheet.getRange(row, col).setBackground(bg);
+}
+
+// Dunn alfa: ≤55 normal · 55-60 sınırda · >60 CAM
+function colorAlpha(sheet, row, col, v) {
+  if (v === undefined || v === null || v === '') return;
+  v = Number(v);
+  const bg = v <= 55 ? '#dcfce7' : v <= 60 ? '#fef9c3' : '#fee2e2';
+  sheet.getRange(row, col).setBackground(bg);
+}
+
 function sheetNameFor(diag) {
   return DIAG_SHEETS[diag] || DEFAULT_SHEET;
 }
 
 // Takip dönemi sırası — aynı hastanın satırları tabloda bu sıraya göre alt alta dizilir
-const FU_ORDER = { 'Pre-op': 0, '2. Hafta': 1, '6. Hafta': 2, '6. Ay': 3 };
+// Yaklaşık gün değeriyle sıralanır — omuz (2./6. hafta) ve kalça (1./3./12. ay) birlikte çalışır
+const FU_ORDER = {
+  'Pre-op': 0, '2. Hafta': 14, '1. Ay': 30, '6. Hafta': 42,
+  '3. Ay': 90, '6. Ay': 180, '12. Ay': 365,
+};
 function fuRank(label) {
-  return FU_ORDER.hasOwnProperty(label) ? FU_ORDER[label] : 99;
+  return FU_ORDER.hasOwnProperty(label) ? FU_ORDER[label] : 9999;
 }
 
 // Yeni kaydın gideceği satır numarası: aynı hastanın bloğu içinde dönem sırasına
 // göre konum bulur (hasta anahtarı: Hasta ID, yoksa ad). Hasta yoksa null → sona eklenir.
 function findInsertRow(sheet, data) {
+  return findInsertRowIn(sheet, data, HEADERS.length, 20);
+}
+
+function findInsertRowIn(sheet, data, colCount, fuCol) {
   const last = sheet.getLastRow();
   if (last < 2) return null;
-  const values = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
+  const values = sheet.getRange(2, 1, last - 1, colCount).getValues();
   const newId   = String(data.patientId || '').trim();
   const newName = String(data.patientName || '').trim().toLowerCase();
   const newRank = fuRank(String(data.followup || ''));
@@ -40,7 +163,7 @@ function findInsertRow(sheet, data) {
     const same = (newId && id) ? id === newId : (newName !== '' && name === newName);
     if (!same) continue;
     lastMatch = i;
-    if (insertAt === -1 && fuRank(String(values[i][20] || '')) > newRank) insertAt = i;
+    if (insertAt === -1 && fuRank(String(values[i][fuCol] || '')) > newRank) insertAt = i;
   }
   if (lastMatch === -1) return null;      // yeni hasta
   if (insertAt !== -1) return insertAt + 2; // bu satırın üstüne (sheet satır no = dizin + 2)
@@ -92,6 +215,8 @@ function doGet(e) {
 }
 
 function saveToSheet(data) {
+  if (isHipOp(data)) { saveHipOpRow(data); return; }
+  if (isHip(data)) { saveHipRow(data); return; }
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheetName = sheetNameFor(data.diagnosis);
   let sheet = ss.getSheetByName(sheetName);
@@ -211,6 +336,69 @@ function colorSF12(sheet, row, col, score) {
   sheet.getRange(row, col).setBackground(bg);
 }
 
+// Kalça artroskopisi kaydı — kendi sayfasına, hasta bazında dönem sırasıyla
+function saveHipRow(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(HIP_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(HIP_SHEET);
+    sheet.setFrozenRows(1);
+    sheet.setColumnWidth(1, 160);
+    sheet.setColumnWidth(5, 160);
+  }
+  if (sheet.getRange(1, HIP_HEADERS.length).getValue() !== HIP_HEADERS[HIP_HEADERS.length - 1]) {
+    sheet.getRange(1, 1, 1, HIP_HEADERS.length).setValues([HIP_HEADERS]);
+    const hr = sheet.getRange(1, 1, 1, HIP_HEADERS.length);
+    hr.setBackground('#1e6fff'); hr.setFontColor('#ffffff');
+    hr.setFontWeight('bold'); hr.setFontSize(11);
+  }
+
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+  const row = [
+    data.timestamp || '', data.date || '', data.time || '',
+    data.patientId || '', data.patientName || '', 'Kalça Artroskopisi',
+    data.surgeryDate || '', n(data.daysPostOp), data.surgeryLeg || '', data.followup || '',
+    n(data.vas), n(data.ihot12), n(data.mhhs), n(data.hos_adl), n(data.hos_sport),
+    n(data.hip_rsi), n(data.sf12_pcs), n(data.sf12_mcs),
+  ];
+
+  // Aynı hastanın satırları dönem sırasıyla alt alta
+  const target = findInsertRowIn(sheet, data, HIP_HEADERS.length, 9);
+  let rowIdx;
+  if (target === null || target > sheet.getLastRow()) {
+    sheet.appendRow(row); rowIdx = sheet.getLastRow();
+  } else {
+    sheet.insertRowsBefore(target, 1);
+    sheet.getRange(target, 1, 1, row.length).setValues([row]);
+    rowIdx = target;
+  }
+
+  colorVAS(sheet, rowIdx, 11, data.vas);
+  colorHip(sheet, rowIdx, 12, data.ihot12);
+  colorHip(sheet, rowIdx, 13, data.mhhs);
+  colorHip(sheet, rowIdx, 14, data.hos_adl);
+  colorHip(sheet, rowIdx, 15, data.hos_sport);
+  colorRSI(sheet, rowIdx, 16, data.hip_rsi);
+  colorSF12(sheet, rowIdx, 17, data.sf12_pcs);
+  colorSF12(sheet, rowIdx, 18, data.sf12_mcs);
+}
+
+// Hip-RSI: ≥70 hazır · ≥50 kısmen · <50 hazır değil
+function colorRSI(sheet, row, col, score) {
+  if (score === undefined || score === null || score === '') return;
+  const v = Number(score);
+  const bg = v >= 70 ? '#dcfce7' : v >= 50 ? '#fef9c3' : '#fee2e2';
+  sheet.getRange(row, col).setBackground(bg);
+}
+
+// Kalça PROM'ları: yüksek = iyi (≥80 yeşil, ≥60 sarı, <60 kırmızı)
+function colorHip(sheet, row, col, score) {
+  if (score === undefined || score === null || score === '') return;
+  const v = Number(score);
+  const bg = v >= 80 ? '#dcfce7' : v >= 60 ? '#fef9c3' : '#fee2e2';
+  sheet.getRange(row, col).setBackground(bg);
+}
+
 function getSheetData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // Tüm tanı sayfalarını tek listede birleştir (ilk satır ortak başlık)
@@ -222,7 +410,23 @@ function getSheetData() {
     const data = sheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) rows.push(data[i]); // başlığı atla
   });
+  // Kalça artroskopisi kayıtları ayrı sütun düzeninde
+  const hipRows = [HIP_HEADERS];
+  const hipSheet = ss.getSheetByName(HIP_SHEET);
+  if (hipSheet && hipSheet.getLastRow() >= 2) {
+    const hd = hipSheet.getDataRange().getValues();
+    for (let i = 1; i < hd.length; i++) hipRows.push(hd[i]);
+  }
+
+  // Kalça cerrahi kayıtları
+  const hipOpRows = [HIP_OP_HEADERS];
+  const opSheet = ss.getSheetByName(HIP_OP_SHEET);
+  if (opSheet && opSheet.getLastRow() >= 2) {
+    const od = opSheet.getDataRange().getValues();
+    for (let i = 1; i < od.length; i++) hipOpRows.push(od[i]);
+  }
+
   return ContentService
-    .createTextOutput(JSON.stringify({ rows: rows }))
+    .createTextOutput(JSON.stringify({ rows: rows, hipRows: hipRows, hipOpRows: hipOpRows }))
     .setMimeType(ContentService.MimeType.JSON);
 }

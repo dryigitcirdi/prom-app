@@ -78,12 +78,101 @@
     .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
     .filter-bar input { max-width: 200px; }
     .count-badge { font-size: 12px; color: var(--muted); margin-left: auto; }
+    /* Branş sekmeleri */
+    .branch-tabs { display: flex; gap: 6px; background: white; border-bottom: 1px solid var(--border); padding: 0 24px; }
+    .branch-tab { padding: 12px 22px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer;
+                  border: none; background: none; border-bottom: 2.5px solid transparent; transition: all 0.15s; }
+    .branch-tab:hover { color: var(--primary); }
+    .branch-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    /* Tümör modülü */
+    .tumor-layout { display: grid; grid-template-columns: 400px 1fr; gap: 20px; align-items: start; }
+    .body-map-card { padding: 18px; }
+    .body-map-hint { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; line-height: 1.5; }
+    .tz { cursor: pointer; transition: fill 0.12s, stroke 0.12s; }
+    /* Morfoloji bloğu */
+    .morph-block { border: 1px solid #e3e8ef; border-radius: 12px; padding: 14px; margin-bottom: 14px; background: #fbfcfe; }
+    .morph-block.intraop { background: #f7fbff; border-color: #dbeafe; }
+    .morph-title { font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase;
+                   letter-spacing: .04em; margin-bottom: 10px; }
+    .morph-title span { font-weight: 500; color: var(--muted); text-transform: none; letter-spacing: 0; }
+    .morph-tag { margin-top: 5px; font-size: 11.5px; font-weight: 700; min-height: 16px; color: #94a3b8; }
+    .morph-tag.muted { font-weight: 500; color: #94a3b8; }
+    /* ── Kalça kadranı — sinematik sahne ── */
+    .hip-stage { position: relative; border-radius: 18px; padding: 16px 14px 14px; overflow: hidden;
+      background: #ffffff; border: 1px solid #e3e8ef;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+    .hip-stage > * { position: relative; }
+    .hip-topbar { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+    .hip-modes { display:inline-flex; padding:3px; border-radius:11px; background:#f1f4f9; border:1px solid #e3e8ef; }
+    .hip-mode { padding:7px 15px; border-radius:10px; border:none; background:transparent; color:#64748b;
+      font-size:12.5px; font-weight:650; letter-spacing:.005em; cursor:pointer;
+      transition: color .22s cubic-bezier(.4,0,.2,1), background .22s, box-shadow .22s; display:inline-flex; align-items:center; gap:6px; }
+    .hip-mode:hover { color:#334155; }
+    .hip-mode.on { background:#fff; box-shadow: 0 1px 2px rgba(15,23,42,.10); }
+    .hip-mode.on#hipModeTear     { color:#e11d48; }
+    .hip-mode.on#hipModeAnchor   { color:#0284c7; }
+    .hip-mode.on#hipTypeKnotless { color:#0284c7; }
+    .hip-mode.on#hipTypeKnotted  { color:#7c3aed; }
+    .hip-mode .dot { width:7px; height:7px; border-radius:50%; }
+    .hip-ghost { margin-left:auto; padding:6px 13px; border-radius:9px; font-size:12px; font-weight:600;
+      color:#64748b; background:#fff; border:1px solid #e3e8ef; cursor:pointer; transition: all .18s; }
+    .hip-ghost:hover { color:#0f172a; border-color:#cbd5e1; background:#f8fafc; }
+    .hip-readout { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+    .hip-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border-radius:8px;
+      background:#f8fafc; border:1px solid #e3e8ef; color:#334155;
+      font-size:12.5px; font-weight:600; letter-spacing:.005em;
+      animation: chipIn .28s cubic-bezier(.4,0,.2,1) both; }
+    .hip-chip .sw { width:8px; height:8px; border-radius:50%; }
+    .hip-chip.muted { color:#94a3b8; font-weight:500; }
+    .hip-chip.rm { cursor:pointer; transition: border-color .18s, background .18s; }
+    .hip-chip.rm:hover { border-color:#cbd5e1; background:#f1f5f9; }
+    @keyframes chipIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
+    .hip-hint { font-size:11.5px; color:#94a3b8; margin-top:10px; letter-spacing:.01em; }
+    /* SVG etkileşim */
+    .hipseg { fill: transparent; cursor: pointer; transition: fill .2s cubic-bezier(.4,0,.2,1); }
+    .hipseg:hover { fill: rgba(2,132,199,.10); }
+    .hipanchor-hit { fill: transparent; cursor: pointer; transition: fill .16s ease; }
+    .hipanchor-hit:hover { fill: rgba(2,132,199,.16); }
+    .hipstage-anchor { animation: anchorPop .32s cubic-bezier(.34,1.4,.64,1) both;
+      transform-box: fill-box; transform-origin: center; cursor: pointer; }
+    @keyframes anchorPop { from { opacity:0; transform: scale(.2); } to { opacity:1; transform: scale(1); } }
+    .hip-band { animation: bandDraw .45s cubic-bezier(.32,.72,.35,1) both; }
+    @keyframes bandDraw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
+    .hip-mini { border-radius: 10px; border: 1px solid #e3e8ef; display:block; }
+    .tz:hover { fill: #93c5fd !important; stroke: #3b82f6 !important; }
+    .tz.sel-primer { fill: #f87171 !important; stroke: #dc2626 !important; }
+    .tz.sel-met    { fill: #c4b5fd !important; stroke: #7c3aed !important; }
+    .met-mode .tz:hover { fill: #c4b5fd !important; stroke: #8b5cf6 !important; }
+    .tumor-form-card { padding: 20px; }
+    .tumor-form-card .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .tumor-form-card .form-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .loc-banner { background: var(--primary-light); color: var(--primary); border-radius: 8px;
+                  padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+    .loc-banner.empty { background: var(--bg); color: var(--muted); font-weight: 500; }
+    .pri-chip { display: inline-flex; align-items: center; gap: 5px; background: #fee2e2; color: #dc2626;
+                border-radius: 99px; padding: 3px 10px; font-size: 12px; font-weight: 600; margin: 2px 4px 2px 0; cursor: pointer; }
+    .pri-chip:hover { background: #fecaca; }
+    .met-chip { display: inline-flex; align-items: center; gap: 6px; background: #f3e8ff; color: #7c3aed;
+                border-radius: 99px; padding: 4px 10px; font-size: 12px; font-weight: 600; margin: 3px 4px 3px 0; cursor: pointer; }
+    .met-chip:hover { background: #e9d5ff; }
+    .btn-met { background: #f3e8ff; color: #7c3aed; border: 1px solid #d8b4fe; }
+    .btn-met.active { background: #7c3aed; color: white; }
+    .badge-met { background: #f3e8ff; color: #7c3aed; }
+    /* Tümör hasta kartları */
+    .tp-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .tp-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+               display: grid; grid-template-columns: 112px 1fr; gap: 16px; }
+    .tp-name { font-size: 14px; font-weight: 700; }
+    .tp-dx   { font-size: 12px; color: var(--muted); margin: 2px 0 8px; }
+    .tp-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tp-badges .score-pill { font-size: 11px; padding: 2px 8px; }
     /* Takip dönemi rozetleri */
     .fu-badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
     .fu-preop { background: #e8f0fe; color: #1e6fff; }
     .fu-2wk   { background: #fef3c7; color: #b45309; }
     .fu-6w    { background: #f3e8ff; color: #7c3aed; }
     .fu-6m    { background: #ccfbf1; color: #0d9488; }
+    .fu-12m   { background: #dcfce7; color: #15803d; }
     .fu-none  { background: #f3f4f6; color: #9ca3af; }
     /* Dönem filtre çipleri */
     .fu-chips { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -95,6 +184,76 @@
     .matrix-cell { line-height: 1.7; font-size: 12px; white-space: nowrap; }
     .m-muted { color: #c4c8cf; }
     .matrix-count { font-size: 10px; color: var(--muted); margin-left: 4px; }
+    /* Kompakt VAS cetveli (kalça formu) */
+    .vas-mini { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; background: #fcfcfd; }
+    .vas-mini-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+    .vas-mini-val { font-size: 30px; font-weight: 800; line-height: 1; transition: color 0.25s; }
+    .vas-mini-lbl { font-size: 12.5px; font-weight: 600; transition: color 0.25s; }
+    .vas-mini input[type=range] {
+      --thumb-color: #d97706;
+      -webkit-appearance: none; width: 100%; height: 9px; border-radius: 5px; outline: none; cursor: pointer; padding: 0;
+      background: linear-gradient(90deg, #22c55e 0%, #84cc16 22%, #facc15 42%, #f97316 64%, #ef4444 82%, #991b1b 100%);
+    }
+    .vas-mini input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: white;
+      border: 3px solid var(--thumb-color); box-shadow: 0 1px 6px rgba(0,0,0,0.2); cursor: pointer; transition: border-color 0.2s;
+    }
+    .vas-mini-ticks { display: flex; justify-content: space-between; margin-top: 4px; }
+    .vas-mini-ticks span { font-size: 10px; color: var(--muted); }
+    /* Kalça takip matrisi */
+    .hip-fu { grid-column: 1 / -1; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; overflow-x: auto; }
+    .hip-fu table { width: 100%; min-width: 520px; }
+    .hip-fu th { font-size: 10.5px; padding: 6px 8px; }
+    .hip-fu td { padding: 7px 8px; font-size: 12.5px; border-bottom: 1px solid #f3f4f6; }
+    .hip-fu td:first-child { color: var(--muted); font-weight: 600; font-size: 11.5px; white-space: nowrap; }
+    .hip-fu .score-pill { font-size: 11.5px; padding: 2px 9px; }
+    .hip-add { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); align-items: center; }
+    .hip-add input, .hip-add select { padding: 6px 8px; font-size: 12px; }
+    .hip-add input[type=number] { width: 74px; }
+    .hip-add .btn { padding: 6px 12px; font-size: 12px; }
+    .hip-add .lbl { font-size: 11px; color: var(--muted); font-weight: 600; }
+    /* Fırça (lezyon çizimi) */
+    .brush-stage { position: relative; width: 380px; max-width: 100%; margin: 0 auto; }
+    .brush-stage canvas { display: block; width: 100%; border-radius: 10px; }
+    #brushPaint { position: absolute; inset: 0; cursor: crosshair; touch-action: none; }
+    #brushBg { background: white; border: 1px solid var(--border); }
+    .brush-bar { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .brush-bar input[type=range] { width: 120px; }
+    .brush-lbl { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .brush-dot-wrap { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; }
+    #brushDot { display: inline-block; border-radius: 50%; background: rgba(220,38,38,0.55); width: 14px; height: 14px; }
+    #btnEraser.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .tp-draws { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .tp-draws img { width: 52px; height: 62px; object-fit: contain; background: #fbfaf7; border: 1px solid var(--border); border-radius: 8px; }
+    /* Tümör alt sekmeleri */
+    .t-subtabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .t-subtab { padding: 9px 20px; border-radius: 10px; border: 1.5px solid var(--border); background: white;
+                font-size: 13.5px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .t-subtab:hover { border-color: var(--primary); color: var(--primary); }
+    .t-subtab.active { background: var(--primary); border-color: var(--primary); color: white; }
+    /* Tümör zaman çizelgesi */
+    .tp-tl { grid-column: 1 / -1; border-top: 1px solid var(--border); margin-top: 10px; padding-top: 12px; }
+    .tlh { display: flex; overflow-x: auto; padding: 4px 2px 10px; }
+    .tlh-item { position: relative; flex: 0 0 auto; width: 176px; padding: 0 10px; text-align: center; }
+    .tlh-item::before { content: ''; position: absolute; top: 27px; left: 0; right: 0; height: 2px; background: var(--border); }
+    .tlh-item:first-child::before { left: 50%; }
+    .tlh-item:last-child::before { right: 50%; }
+    .tlh-date { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .tlh-dotwrap { position: relative; height: 16px; margin-bottom: 6px; }
+    .tlh-dot { position: absolute; left: 50%; top: 2px; transform: translateX(-50%); width: 13px; height: 13px;
+               border-radius: 50%; border: 2.5px solid white; box-shadow: 0 0 0 1.5px var(--border); }
+    .tlh-label { font-size: 12px; font-weight: 700; }
+    .tlh-note  { font-size: 11px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+    .tlh-item svg { margin-top: 6px; }
+    .tl-add { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+              padding-top: 10px; border-top: 1px dashed var(--border); }
+    .tl-add input[type=date] { width: 128px; }
+    .tl-add select { max-width: 160px; }
+    .tl-add input[type=text] { flex: 1; min-width: 140px; }
+    .tl-add input, .tl-add select { padding: 6px 8px; font-size: 12px; }
+    .tl-add .btn { padding: 6px 12px; font-size: 12px; }
+    .tp-actions { margin-top: 9px; display: flex; gap: 6px; }
+    .tp-actions .btn { padding: 4px 10px; font-size: 11.5px; }
     /* Seyir grafiği */
     .spark { display: block; }
     .spark-legend { display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--muted); margin: -6px 0 12px; flex-wrap: wrap; }
@@ -121,6 +280,12 @@
   </div>
 </div>
 
+<div class="branch-tabs">
+  <button class="branch-tab active" onclick="setBranch('Sports Medicine', this)">🏃 Sports Medicine</button>
+  <button class="branch-tab" onclick="setBranch('Tümör', this)">🧬 Tümör</button>
+  <button class="branch-tab" onclick="setBranch('Kalça Artroskopisi', this)">🦵 Kalça Artroskopisi</button>
+</div>
+
 <div class="main">
 
   <!-- Config uyarısı -->
@@ -133,6 +298,7 @@
     </div>
   </div>
 
+  <div id="sportsView">
   <!-- Özet kartlar — satır 1 -->
   <div class="stats-grid">
     <div class="stat-card">
@@ -313,13 +479,254 @@
       </tbody>
     </table>
   </div>
+  </div><!-- /sportsView -->
+
+  <!-- Kalça artroskopisi modülü -->
+  <div id="hipView" style="display:none;">
+    <div class="tumor-layout" style="margin-bottom:24px;">
+      <div class="card body-map-card">
+        <div class="section-title">🕐 Labrum Haritası</div>
+        <div class="hip-stage">
+          <div class="hip-topbar">
+            <div class="hip-modes">
+              <button class="hip-mode on" id="hipModeTear" onclick="setHipMode('tear')">
+                <span class="dot" style="background:#fb7185;color:#fb7185"></span>Yırtık</button>
+              <button class="hip-mode" id="hipModeAnchor" onclick="setHipMode('anchor')">
+                <span class="dot" style="background:#0284c7;color:#0284c7"></span>Ankor</button>
+            </div>
+            <div class="hip-modes" id="hipTypes" style="display:none;">
+              <button class="hip-mode on" id="hipTypeKnotless" onclick="setAnchorType('knotless')">
+                <span class="dot" style="background:#0284c7"></span>Knotless</button>
+              <button class="hip-mode" id="hipTypeKnotted" onclick="setAnchorType('knotted')">
+                <span class="dot" style="background:#7c3aed"></span>Düğümlü</button>
+            </div>
+            <button class="hip-ghost" onclick="clearHipAll()">Sıfırla</button>
+          </div>
+          <div id="hipClockWrap"></div>
+          <div class="hip-readout" id="hipReadout"></div>
+          <div class="hip-hint" id="hipHint"></div>
+        </div>
+      </div>
+      <div class="card tumor-form-card">
+        <div class="section-title">📋 Kalça Artroskopisi Kaydı</div>
+        <div class="form-row3">
+          <div class="form-group"><label>Hasta Adı Soyadı</label><input type="text" id="hName" placeholder="Ad Soyad"></div>
+          <div class="form-group"><label>Hasta ID</label><input type="text" id="hId" placeholder="12345"></div>
+          <div class="form-group"><label>Yaş</label><input type="number" id="hAge" min="0" max="120" placeholder="28"></div>
+        </div>
+        <div class="form-row2">
+          <div class="form-group"><label>Taraf</label>
+            <select id="hSide"><option value="Sağ">Sağ Kalça</option><option value="Sol">Sol Kalça</option></select></div>
+          <div class="form-group"><label>Cerrahi Tarihi</label><input type="date" id="hSurgery"></div>
+        </div>
+
+        <div class="morph-block">
+          <div class="morph-title">Pre-op Değerlendirme <span>· radyografi / MR</span></div>
+          <div class="form-row3">
+            <div class="form-group"><label>Lateral CE Açısı (°)</label>
+              <input type="number" id="hCE" min="-20" max="80" step="0.1" placeholder="örn. 27" oninput="updateCEClass()">
+              <div class="morph-tag" id="hCETag">—</div></div>
+            <div class="form-group"><label>Dunn Alfa Açısı (°)</label>
+              <input type="number" id="hAlpha" min="20" max="120" step="0.1" placeholder="örn. 62" oninput="updateAlphaClass()">
+              <div class="morph-tag" id="hAlphaTag">—</div></div>
+            <div class="form-group"><label>FAI Tipi</label>
+              <select id="hFai"><option value="">—</option><option>CAM</option><option>Pincer</option><option>Mixed</option><option>Yok</option></select>
+              <div class="morph-tag muted">Radyografik morfoloji</div></div>
+          </div>
+          <div class="form-group" style="margin-top:4px;">
+            <label>Kondrolabral Breakdown — MR</label>
+            <select id="hCLBpre" onchange="updateCLB()">
+              <option value="">—</option><option>Var</option><option>Yok</option><option>Şüpheli</option></select>
+          </div>
+        </div>
+
+        <div class="morph-block intraop">
+          <div class="morph-title">İntra-op Bulgular <span>· artroskopik</span></div>
+          <div class="form-row3">
+            <div class="form-group"><label>Traksiyon Süresi (dk)</label>
+              <input type="number" id="hTrac" min="0" max="300" step="1" placeholder="örn. 45">
+              <div class="morph-tag muted">Traksiyon altında geçen süre</div></div>
+            <div class="form-group"><label>Kondrolabral Breakdown</label>
+              <select id="hCLBintra" onchange="updateCLB()">
+                <option value="">—</option><option>Var</option><option>Yok</option></select>
+              <div class="morph-tag" id="hCLBTag">—</div></div>
+            <div class="form-group"><label>Labrum İşlemi</label>
+              <select id="hProc"><option value="">—</option><option>Debridman</option><option>Onarım (Repair)</option><option>Rekonstrüksiyon</option></select>
+              <div class="morph-tag muted">Yırtık ve ankorlar soldaki kadranda</div></div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Notlar</label><input type="text" id="hNotes" placeholder="Kondral lezyon, kapsül yönetimi...">
+        </div>
+        <button class="btn btn-primary" onclick="saveHipPatient()">Hastayı Kaydet</button>
+        <span style="font-size:11px;color:var(--muted);margin-left:10px;">
+          Fonksiyonel skorlar hastaya gönderilen anketten gelir — aşağıdaki takip tablosunda görünür</span>
+      </div>
+    </div>
+    <div class="card link-card" style="margin-bottom:24px;">
+      <div class="section-title">🔗 Kalça Anketi Linki Oluştur</div>
+      <div class="form-row">
+        <div class="form-group"><label>Hasta Adı Soyadı</label><input type="text" id="lhName" placeholder="Ahmet Yılmaz"></div>
+        <div class="form-group"><label>Hasta ID / TC</label><input type="text" id="lhId" placeholder="12345"></div>
+        <div class="form-group"><label>Girişim Tarihi</label><input type="date" id="lhSurgery"></div>
+        <div class="form-group"><label>Taraf</label>
+          <select id="lhSide"><option value="Sağ kalça">Sağ</option><option value="Sol kalça">Sol</option></select></div>
+        <div class="form-group"><label>Takip Dönemi</label>
+          <select id="lhFU"><option value="preop">Pre-op</option><option value="1m">1. Ay</option><option value="3m">3. Ay</option><option value="6m">6. Ay</option><option value="12m">12. Ay</option></select></div>
+        <div><button class="btn btn-primary" onclick="generateHipLink()">Link Oluştur</button></div>
+      </div>
+      <div class="link-result" id="lhResult">
+        <div class="link-box">
+          <span class="link-text" id="lhText"></span>
+          <button class="btn btn-ghost btn-sm" onclick="copyHipLink()">Kopyala</button>
+          <button class="btn btn-ghost btn-sm" onclick="whatsappHipShare()">WhatsApp</button>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;" id="lhMeta"></div>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <div class="section-title">🗂 Kalça Artroskopisi Hastaları</div>
+      <div class="tp-grid" id="hipGrid"></div>
+    </div>
+  </div>
+
+  <!-- Tümör modülü -->
+  <div id="tumorView" style="display:none;">
+    <div class="t-subtabs">
+      <button class="t-subtab active" onclick="setTumorMode('kemik', this)">🦴 Kemik Tümörleri</button>
+      <button class="t-subtab" onclick="setTumorMode('yumusak', this)">💪 Yumuşak Doku Tümörleri</button>
+    </div>
+    <div class="tumor-layout" style="margin-bottom:24px;">
+      <div class="card body-map-card">
+        <div class="section-title">🧬 Yeni Tümör Kaydı — Lokalizasyon Seçin</div>
+        <div id="bodyMapWrap"></div>
+        <div id="detailWrap" style="display:none;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="closeDetail()">← Tüm Vücut</button>
+            <strong id="detailTitle" style="font-size:13px;"></strong>
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto;" id="detailWholeBtn" onclick="selectWholeFromDetail()"></button>
+          </div>
+          <div id="detailSvgWrap"></div>
+        </div>
+        <div id="brushWrap" style="display:none;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="closeBrush()">← Haritaya Dön</button>
+            <strong id="brushTitle" style="font-size:13px;"></strong>
+          </div>
+          <div class="brush-stage" id="brushStage">
+            <canvas id="brushBg" width="380" height="450"></canvas>
+            <canvas id="brushPaint" width="380" height="450"></canvas>
+          </div>
+          <div class="brush-bar">
+            <span class="brush-lbl">Fırça</span>
+            <input type="range" id="brushSize" min="4" max="36" value="14" oninput="brushSizeChanged()">
+            <span class="brush-dot-wrap"><span id="brushDot"></span></span>
+            <button class="btn btn-ghost btn-sm" id="btnEraser" onclick="toggleEraser()">🧽 Silgi</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearBrush()">Temizle</button>
+            <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="closeBrush()">✓ Bitti</button>
+          </div>
+          <div class="body-map-hint">Lezyonun gerçek uzanımını çizim üzerinde boyayın — kayda hastayla birlikte eklenir</div>
+        </div>
+        <div class="body-map-hint" id="bodyMapHint">
+          Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)
+        </div>
+      </div>
+      <div class="card tumor-form-card">
+        <div class="section-title">📋 Klinik Bilgiler</div>
+        <div class="loc-banner empty" id="tLocBanner">Lokalizasyon seçilmedi — soldaki haritadan bölge seçin</div>
+        <div class="form-row3">
+          <div class="form-group"><label>Hasta Adı Soyadı</label><input type="text" id="tName" placeholder="Ad Soyad"></div>
+          <div class="form-group"><label>Hasta ID</label><input type="text" id="tId" placeholder="12345"></div>
+          <div class="form-group"><label>Yaş</label><input type="number" id="tAge" min="0" max="120" placeholder="17"></div>
+        </div>
+        <div class="form-row3">
+          <div class="form-group"><label>Ön Tanı</label><input type="text" id="tPreDx" placeholder="örn. Kemik tümörü"></div>
+          <div class="form-group"><label>Biyopsi</label>
+            <select id="tBiopsy"><option value="">—</option><option>Var</option><option>Yok</option></select></div>
+          <div class="form-group"><label>Kesin Tanı</label><input type="text" id="tFinalDx" placeholder="örn. Osteosarkom"></div>
+        </div>
+        <div class="form-row3">
+          <div class="form-group"><label>Cerrahi Tarihi</label><input type="date" id="tSurgery"></div>
+          <div class="form-group"><label>Cerrahi Sınır</label>
+            <select id="tMargin"><option value="">—</option><option>Temiz</option><option>Marjinal</option><option>Pozitif</option></select></div>
+          <div class="form-group"><label>Nüks</label>
+            <select id="tRec" onchange="document.getElementById('tRecDateWrap').style.display = this.value==='Var' ? '' : 'none'">
+              <option>Yok</option><option>Var</option></select></div>
+        </div>
+        <div class="form-row2" id="tRecDateWrap" style="display:none;">
+          <div class="form-group"><label>Nüks Tarihi</label><input type="date" id="tRecDate"></div>
+          <div class="form-group"><label>&nbsp;</label>
+            <div style="font-size:12px;color:var(--muted);padding-top:10px;">Nüks süresi cerrahi tarihine göre otomatik hesaplanır</div></div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Metastaz</label>
+          <div>
+            <button class="btn btn-sm btn-met" id="btnMetMode" onclick="toggleMetMode()">🟣 Haritadan metastaz işaretle</button>
+            <input type="date" id="tMetDate" title="Metastaz saptanma tarihi" style="margin-left:6px; padding:6px 8px; font-size:12px;">
+            <span id="metChips"></span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Notlar</label>
+          <input type="text" id="tNotes" placeholder="Evre, kemoterapi, protez tipi...">
+        </div>
+        <button class="btn btn-primary" onclick="saveTumorPatient()">Hastayı Kaydet</button>
+        <span style="font-size:11px;color:var(--muted);margin-left:10px;">Kayıtlar şimdilik yerel — tasarım onaylanınca tabloya bağlanacak</span>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <div class="section-title">🗂 Tümör Hastaları</div>
+      <div class="tp-grid" id="tpGrid"></div>
+    </div>
+  </div>
 
 </div>
 
 <script>
 // ─── Yapılandırma ─────────────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
-const FORM_BASE_URL   = window.location.href.replace('dashboard.html', 'form.html');
+// Hasta anketi adresi: bulunduğu klasörden türetilir (dosya adından bağımsız, sorgu dizesi hariç)
+const FORM_BASE_URL   = window.location.href.split(/[?#]/)[0].replace(/[^\/]*$/, '') + 'form.html';
+
+// ─── Branşlar — üst düzey sekmeler; her branşın kendi tanı seti var ───────────
+const BRANCHES = {
+  'Sports Medicine': ['Kalsifik Tendinit', 'Rotator Manşet', 'Bankart Lezyonu'],
+  'Tümör': [],
+  'Kalça Artroskopisi': [],
+};
+let activeBranch = 'Sports Medicine';
+
+function branchOf(diag) {
+  for (const b in BRANCHES) if (BRANCHES[b].includes(diag)) return b;
+  return 'Sports Medicine'; // eski/bilinmeyen tanılar varsayılan olarak Sports Medicine'de
+}
+
+function setBranch(name, btn) {
+  activeBranch = name;
+  document.querySelectorAll('.branch-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const VIEWS = { 'Sports Medicine': 'sportsView', 'Tümör': 'tumorView', 'Kalça Artroskopisi': 'hipView' };
+  Object.keys(VIEWS).forEach(k =>
+    document.getElementById(VIEWS[k]).style.display = k === name ? '' : 'none');
+  const sports = name === 'Sports Medicine';
+  const df = document.getElementById('diagFilter');
+  df.style.display = sports ? '' : 'none';
+  df.innerHTML = '<option value="Tümü">Tüm Tanılar</option>' +
+    BRANCHES[name].map(d => `<option value="${d}">${d}</option>`).join('');
+  if (sports) { refreshAll(); }
+  else if (name === 'Tümör') {
+    document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
+    initBodyMap();
+    renderTumorPatients();
+  } else {
+    document.getElementById('totalBadge').textContent = hipPatients.length + ' hasta';
+    initHipClock();
+    renderHipPatients();
+  }
+}
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let allRows = [];
@@ -357,13 +764,15 @@ function loadDemoData() {
 // Aktif tanı filtresinden geçen kayıtlar — tüm görünümlerin tabanı
 function baseRows() {
   const d = document.getElementById('diagFilter').value;
-  return d === 'Tümü' ? allRows : allRows.filter(r => (r.diagnosis || '') === d);
+  const inBranch = allRows.filter(r => branchOf(r.diagnosis || '') === activeBranch);
+  return d === 'Tümü' ? inBranch : inBranch.filter(r => (r.diagnosis || '') === d);
 }
 
 // Tablo + istatistik + matris — tek noktadan tazele
 function refreshAll() {
   const base = baseRows();
-  document.getElementById('totalBadge').textContent = base.length + ' kayıt';
+  if (activeBranch === 'Sports Medicine')
+    document.getElementById('totalBadge').textContent = base.length + ' kayıt';
   filterTable();
   updateStats(activeFU === 'Tümü' ? base : base.filter(r => fuOf(r) === activeFU));
   renderMatrix(base);
@@ -718,6 +1127,1488 @@ function whatsappShare() {
   );
   window.open('https://wa.me/?text=' + msg, '_blank');
 }
+// ═══════════════════════════════════════════════════════════════════════════
+// TÜMÖR MODÜLÜ — vücut haritası + klinik kayıt
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══ Anatomik iskelet haritası (AP görünüm: hastanın sağı ekranın solunda) ═══
+// Bölge etiketleri + mini haritadaki işaret noktaları (anchor)
+const T_REGIONS = (() => {
+  const C = { // merkezi bölgeler
+    kafa:      { label: 'Kafa / Kranium', anchor: [120, 34]  },
+    omurga:    { label: 'Omurga',         anchor: [120, 140] },
+    sternum:   { label: 'Sternum',        anchor: [120, 112] },
+    akciger:   { label: 'Akciğer',        anchor: [120, 103] },
+    karaciger: { label: 'Karaciğer',      anchor: [103, 160] },
+    sakrum:    { label: 'Sakrum',         anchor: [120, 230] },
+    pelvis_sag:{ label: 'Pelvis (Sağ)',   anchor: [96, 228]  },
+    pelvis_sol:{ label: 'Pelvis (Sol)',   anchor: [144, 228] },
+  };
+  const S = { // taraflı bölgeler (sağ taraf koordinatı; sol = 240-x)
+    klavikula:      { label: 'Klavikula',                  anchor: [95, 85]   },
+    skapula:        { label: 'Skapula',                    anchor: [80, 110]  },
+    kostalar:       { label: 'Kostalar',                   anchor: [98, 122]  },
+    humerus_prox:   { label: 'Proksimal Humerus',          anchor: [72, 100]  },
+    humerus_saft:   { label: 'Humerus Şaft',               anchor: [68, 136]  },
+    humerus_distal: { label: 'Distal Humerus / Dirsek',    anchor: [61, 165]  },
+    onkol:          { label: 'Önkol (Radius/Ulna)',        anchor: [57, 206]  },
+    el:             { label: 'El',                         anchor: [51, 252]  },
+    femur_prox:     { label: 'Proksimal Femur',            anchor: [95, 262]  },
+    femur_saft:     { label: 'Femur Şaft',                 anchor: [91, 308]  },
+    femur_distal:   { label: 'Distal Femur',               anchor: [92, 360]  },
+    patella:        { label: 'Patella',                    anchor: [92, 379]  },
+    tibia_prox:     { label: 'Proksimal Tibia',            anchor: [92, 395]  },
+    tibia_saft:     { label: 'Tibia Şaft',                 anchor: [90, 429]  },
+    tibia_distal:   { label: 'Distal Tibia / Ayak Bileği', anchor: [90, 464]  },
+    fibula:         { label: 'Fibula',                     anchor: [78, 432]  },
+    ayak:           { label: 'Ayak',                       anchor: [76, 494]  },
+  };
+  const R = {};
+  for (const k in C) R[k] = C[k];
+  for (const k in S) {
+    R[k + '_sag'] = { label: S[k].label + ' (Sağ)', anchor: S[k].anchor };
+    R[k + '_sol'] = { label: S[k].label + ' (Sol)', anchor: [240 - S[k].anchor[0], S[k].anchor[1]] };
+  }
+  // Granüler el/ayak bölgeleri — mini haritada ana bölgenin noktasında görünür
+  const HAND_SUBS = {
+    karpus: 'Karpal Kemikler', mk1: '1. Metakarp', mk2: '2. Metakarp', mk3: '3. Metakarp',
+    mk4: '4. Metakarp', mk5: '5. Metakarp', p1: 'Başparmak Falanksları', p2: '2. Parmak Falanksları',
+    p3: '3. Parmak Falanksları', p4: '4. Parmak Falanksları', p5: '5. Parmak Falanksları',
+  };
+  const FOOT_SUBS = {
+    talus: 'Talus', kalkaneus: 'Kalkaneus', orta: 'Orta Ayak (Navikula/Küneiform/Küboid)',
+    mt1: '1. Metatars', mt2: '2. Metatars', mt3: '3. Metatars', mt4: '4. Metatars', mt5: '5. Metatars',
+    p1: 'Başparmak Falanksları', p2: '2. Parmak Falanksları', p3: '3. Parmak Falanksları',
+    p4: '4. Parmak Falanksları', p5: '5. Parmak Falanksları',
+  };
+  [['el', HAND_SUBS, S.el.anchor], ['ayak', FOOT_SUBS, S.ayak.anchor]].forEach(([base, subs, anc]) => {
+    for (const k in subs) {
+      R[base + '_' + k + '_sag'] = { label: subs[k] + ' — Sağ ' + (base === 'el' ? 'El' : 'Ayak'), anchor: anc };
+      R[base + '_' + k + '_sol'] = { label: subs[k] + ' — Sol ' + (base === 'el' ? 'El' : 'Ayak'), anchor: [240 - anc[0], anc[1]] };
+    }
+  });
+  return R;
+})();
+
+// Granüler bölgenin ana harita üzerindeki ebeveyni (ayak_talus_sol → ayak_sol)
+function parentZoneOf(id) {
+  const m = id && id.match(/^(el|ayak)_[a-z0-9]+_(sag|sol)$/);
+  return m ? m[1] + '_' + m[2] : null;
+}
+
+// Birleşik bölge kaydı: iskelet + yumuşak doku
+function REG(id) { return T_REGIONS[id] || ST_REGIONS[id] || { label: id, anchor: [0, 0] }; }
+function tCenterOf(regionId) { return REG(regionId).anchor; }
+
+// Tümör alt modu: kemik | yumusak
+let tumorMode = 'kemik';
+function setTumorMode(mode, btn) {
+  if (tumorMode === mode) return;
+  tumorMode = mode;
+  document.querySelectorAll('.t-subtab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  // seçim durumunu sıfırla (bölge kümeleri farklı)
+  tPrimers = []; tMets = [];
+  if (metMode) toggleMetMode();
+  if (detailView) closeDetail();
+  const wrap = document.getElementById('bodyMapWrap');
+  wrap.dataset.built = ''; // haritayı yeni modla yeniden kur
+  initBodyMap();
+  renderTumorPatients();
+  document.getElementById('totalBadge').textContent =
+    tumorPatients.filter(p => (p.ttype || 'kemik') === tumorMode).length + ' hasta';
+}
+
+// Vücut silüeti (soluk kontur)
+const T_CONTOUR = `<path fill="#eef2f7" stroke="#dde4ee" stroke-width="1.5" d="
+  M120,6 Q99,8 98,28 Q98,42 105,52 Q108,57 108,64 L106,70 Q88,76 76,86 Q66,94 62,112
+  L54,168 L48,230 Q46,244 48,252 Q50,262 56,284 Q60,292 66,288 L62,258 L62,240 L70,178
+  L76,130 Q78,116 84,108 L88,132 L90,170 Q88,196 84,214 Q78,226 80,244 L84,262
+  Q80,270 78,296 L80,352 Q80,368 84,380 L86,402 Q90,430 88,456 L88,478 L74,500
+  Q70,508 76,512 L96,510 L104,500 L106,480 L106,456 Q104,428 106,404 L104,382
+  Q106,352 108,330 L110,290 Q112,272 118,264 L120,262 L122,264 Q128,272 130,290
+  L132,330 Q134,352 136,382 L134,404 Q136,428 134,456 L134,480 L136,500 L144,510
+  L164,512 Q170,508 166,500 L152,478 L152,456 Q150,430 154,402 L156,380 Q160,368 160,352
+  L162,296 Q160,270 156,262 L160,244 Q162,226 156,214 Q152,196 150,170 L152,132
+  L156,108 Q162,116 164,130 L170,178 L178,240 L178,258 L174,288 Q180,292 184,284
+  Q190,270 192,252 Q194,244 192,230 L186,168 L178,112 Q174,94 164,86 Q152,76 134,70
+  L132,64 Q132,57 135,52 Q142,42 142,28 Q141,8 120,6 Z"/>`;
+
+// Organlar (metastaz hedefleri) — yumuşak, kesikli
+const T_ORGANS = `
+  <g class="tz" id="tz_akciger" onclick="tumorZoneClick('akciger')" fill="#dbeafe" stroke="#93c5fd"
+     stroke-width="1.5" stroke-dasharray="3 2" opacity="0.85">
+    <path d="M96,90 Q85,100 87,126 Q89,142 103,147 Q109,132 109,106 Q107,94 96,90 Z"/>
+    <path d="M144,90 Q155,100 153,126 Q151,142 137,147 Q131,132 131,106 Q133,94 144,90 Z"/>
+    <title>Akciğer</title>
+  </g>
+  <g class="tz" id="tz_karaciger" onclick="tumorZoneClick('karaciger')" fill="#fde8d3" stroke="#f0b285"
+     stroke-width="1.5" stroke-dasharray="3 2" opacity="0.9">
+    <path d="M90,150 Q86,154 89,166 Q100,175 120,170 L119,155 Q104,148 90,150 Z"/>
+    <title>Karaciğer</title>
+  </g>`;
+
+// Kemikler — sağ taraf çizimi (sol taraf aynalanır)
+const T_BONES_CENTRAL = {
+  kafa: `<path d="M120,12 C106,12 98,22 98,34 C98,44 103,52 110,57 L110,62 L130,62 L130,57
+           C137,52 142,44 142,34 C142,22 134,12 120,12 Z"/>
+         <path d="M109,60 L112,71 Q120,75 128,71 L131,60 Q120,66 109,60 Z"/>`,
+  omurga: (() => { let p = ''; let y = 66;
+      for (let i = 0; i < 3; i++) { p += `<rect x="116" y="${y}" width="8"  height="6"  rx="2"/>`; y += 8; }
+      y = 92;
+      for (let i = 0; i < 7; i++) { p += `<rect x="115" y="${y}" width="10" height="8"  rx="2"/>`; y += 10; }
+      y = 164;
+      for (let i = 0; i < 3; i++) { p += `<rect x="114" y="${y}" width="12" height="10" rx="2.5"/>`; y += 12; }
+      return p; })(),
+  sternum: `<path d="M114,92 L126,92 L124,138 Q120,142 116,138 Z"/>`,
+  sakrum:  `<path d="M112,214 L128,214 L124,250 Q120,254 116,250 Z"/>`,
+};
+const T_BONES_SIDED = {
+  klavikula: `<path d="M113,84 Q96,75 80,81 Q78,85 80,88 Q96,82 113,91 Z"/>`,
+  skapula:   `<path d="M75,93 L91,97 L87,130 Q78,125 72,108 Z" opacity="0.8"/>`,
+  kostalar: (() => { let p = ''; for (let i = 0; i < 6; i++) {
+      p += `<path d="M114,${94 + 9 * i} Q${83 - i},${103 + 9 * i} 112,${105 + 9 * i}" fill="none" stroke-width="4" stroke-linecap="round"/>`;
+    } return p; })(),
+  humerus_prox:   `<circle cx="72" cy="99" r="8.5"/><path d="M65,104 L63,118 L79,118 L79,105 Q72,111 65,104 Z"/>`,
+  humerus_saft:   `<path d="M64,118 L56,154 L68,156 L78,118 Z"/>`,
+  humerus_distal: `<path d="M56,156 L52,170 Q58,178 66,175 L70,172 L68,155 Z"/>`,
+  onkol: `<path d="M56,176 L48,232 L52,234 L61,178 Z"/><path d="M64,179 L55,236 L59,238 L69,181 Z"/>`,
+  el: `<path d="M46,240 Q42,250 45,258 L60,254 L61,242 Z"/>
+       <path d="M45,260 L40,280" fill="none" stroke-width="3" stroke-linecap="round"/>
+       <path d="M50,262 L47,284" fill="none" stroke-width="3" stroke-linecap="round"/>
+       <path d="M55,262 L54,286" fill="none" stroke-width="3" stroke-linecap="round"/>
+       <path d="M60,260 L61,282" fill="none" stroke-width="3" stroke-linecap="round"/>`,
+  femur_prox: `<circle cx="105" cy="259" r="8"/><path d="M84,254 Q94,248 101,256 L104,262 L98,274 L86,272 Z"/>`,
+  femur_saft: `<path d="M88,274 L84,344 L96,346 L98,276 Z"/>`,
+  femur_distal: `<path d="M83,346 Q78,362 84,372 Q92,378 100,371 Q105,362 100,348 Z"/>`,
+  patella: `<ellipse cx="92" cy="379" rx="5.5" ry="6.5"/>`,
+  tibia_prox: `<path d="M80,388 L104,388 Q104,398 100,402 L84,402 Q80,398 80,388 Z"/>`,
+  tibia_saft: `<path d="M86,402 L85,456 L95,456 L97,402 Z"/>`,
+  tibia_distal: `<path d="M83,456 L83,472 Q89,478 97,472 L95,456 Z"/>`,
+  fibula: `<circle cx="78" cy="394" r="3.5"/><path d="M76,400 L76,468 L81,470 L81,400 Z"/><circle cx="79" cy="472" r="3"/>`,
+  ayak: `<path d="M80,478 Q70,490 60,500 Q57,508 64,510 L94,502 L96,480 Z"/>
+         <path d="M74,498 L70,507" fill="none" stroke-width="2"/>
+         <path d="M82,494 L80,505" fill="none" stroke-width="2"/>`,
+};
+
+// İskelet SVG içeriği — interactive: tıklama + hover; değilse salt görsel
+function skeletonMarkup(interactive) {
+  const BONE_ATTR = 'fill="#f6f1e7" stroke="#a89f8d" stroke-width="1.2"';
+  const g = (id, inner, extra) => interactive
+    ? `<g class="tz" id="tz_${id}" onclick="tumorZoneClick('${id}')" ${BONE_ATTR} ${extra || ''}>${inner}<title>${T_REGIONS[id].label}</title></g>`
+    : `<g ${BONE_ATTR} ${extra || ''}>${inner}</g>`;
+
+  let out = T_CONTOUR;
+  out += interactive ? T_ORGANS
+       : T_ORGANS.replace(/class="tz"/g, '').replace(/onclick="[^"]*"/g, '');
+  for (const id in T_BONES_CENTRAL) out += g(id, T_BONES_CENTRAL[id]);
+  // pelvis kanatları (merkezi tanımlı ama taraflı çizim)
+  const pelvisPath = `<path d="M116,212 Q94,208 82,220 Q76,232 84,246 Q94,240 102,248 Q110,242 114,234 Z"/>`;
+  out += g('pelvis_sag', pelvisPath);
+  out += g('pelvis_sol', pelvisPath, 'transform="translate(240,0) scale(-1,1)"');
+  for (const key in T_BONES_SIDED) {
+    out += g(key + '_sag', T_BONES_SIDED[key]);
+    out += g(key + '_sol', T_BONES_SIDED[key], 'transform="translate(240,0) scale(-1,1)"');
+  }
+  out += `<text x="12" y="18" font-size="12" fill="#9ca3af" font-weight="600">Sağ</text>
+          <text x="204" y="18" font-size="12" fill="#9ca3af" font-weight="600">Sol</text>`;
+  return out;
+}
+
+function initBodyMap() {
+  const wrap = document.getElementById('bodyMapWrap');
+  if (wrap.dataset.built === tumorMode) { syncBodyMap(); return; }
+  wrap.dataset.built = tumorMode;
+  wrap.innerHTML = tumorMode === 'kemik'
+    ? `<svg id="bodyMapSvg" viewBox="0 0 240 520" width="100%" xmlns="http://www.w3.org/2000/svg">${skeletonMarkup(true)}</svg>`
+    : `<svg id="bodyMapSvg" viewBox="0 0 420 520" width="100%" xmlns="http://www.w3.org/2000/svg">${softMarkup(true)}</svg>`;
+  document.getElementById('bodyMapHint').textContent = tumorMode === 'kemik'
+    ? 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)'
+    : 'Primer tümörün kompartmanına tıklayın · Ön ve Arka görünüm birlikte';
+  syncBodyMap();
+}
+
+function baseFigure(p) {
+  const soft = (p.ttype || 'kemik') === 'yumusak';
+  return { markup: soft ? softMarkup(false) : skeletonMarkup(false), vb: soft ? '0 0 420 520' : '0 0 240 520', dotR: soft ? 12 : 10 };
+}
+
+function miniBodySVG(p) {
+  const base = baseFigure(p);
+  const dots = [];
+  const regions = p.regions || (p.regionId ? [p.regionId] : []);
+  regions.forEach(r => {
+    const c = tCenterOf(r);
+    dots.push(`<circle cx="${c[0]}" cy="${c[1]}" r="${base.dotR}" fill="#dc2626" opacity="0.85" stroke="white" stroke-width="2"><title>Primer: ${REG(r).label}</title></circle>`);
+  });
+  (p.mets || []).forEach(m => {
+    const c = tCenterOf(m);
+    dots.push(`<circle cx="${c[0]}" cy="${c[1]}" r="${base.dotR - 2}" fill="#7c3aed" opacity="0.85" stroke="white" stroke-width="2"><title>Metastaz: ${REG(m).label}</title></circle>`);
+  });
+  return `<svg viewBox="${base.vb}" width="104" xmlns="http://www.w3.org/2000/svg">${base.markup}${dots.join('')}</svg>`;
+}
+
+// ═══ Yumuşak doku modeli v2 — anatomik pozisyon, segmentli bölge şeması ═══
+// Yerel 0..210 (orta 105); ÖN offset 0 (AP: sağ solda), ARKA offset 210 (PA: sağ sağda)
+// rot: parçanın kendi merkezi etrafında derece
+const ST_DEFS = {
+  central: {
+    bas_boyun:    { view: 'on',   label: 'Baş-Boyun',    s: [ { t:'e', cx:105, cy:30, rx:21, ry:23 }, { t:'r', x:96, y:54, w:18, h:13, rx:6 } ] },
+    gogus_duvari: { view: 'on',   label: 'Göğüs Duvarı', s: { t:'r', x:72, y:70,  w:66, h:50, rx:16 } },
+    karin_duvari: { view: 'on',   label: 'Karın Duvarı', s: { t:'r', x:77, y:124, w:56, h:50, rx:14 } },
+    sirt_ust:     { view: 'arka', label: 'Sırt (Üst)',   s: { t:'r', x:72, y:70,  w:66, h:58, rx:16 } },
+    sirt_alt:     { view: 'arka', label: 'Bel Bölgesi',  s: { t:'r', x:78, y:132, w:54, h:42, rx:12 } },
+  },
+  sided: {
+    omuz:         { view: 'on',   label: 'Omuz / Deltoid',              s: { t:'e', cx:56, cy:84,  rx:15, ry:13 } },
+    kol_on:       { view: 'on',   label: 'Kol (Üst Kol) Ön',            s: { t:'r', x:39, y:100, w:22, h:52, rx:11, rot:16 } },
+    onkol_volar:  { view: 'on',   label: 'Önkol Volar',                 s: { t:'r', x:26, y:158, w:19, h:54, rx:9,  rot:13 } },
+    el:           { view: 'on',   label: 'El',                          s: { t:'e', cx:24, cy:234, rx:12, ry:15, rot:10 } },
+    kasik:        { view: 'on',   label: 'İnguinal Bölge',              s: { t:'r', x:80, y:178, w:24, h:20, rx:8 } },
+    uyluk_on:     { view: 'on',   label: 'Uyluk Ön Kompartman',         s: { t:'r', x:69, y:206, w:34, h:112, rx:15, rot:8 } },
+    diz_on:       { view: 'on',   label: 'Diz Önü',                     s: { t:'e', cx:69, cy:336, rx:13, ry:12 } },
+    bacak_on:     { view: 'on',   label: 'Bacak Ön Kompartman',         s: { t:'r', x:57, y:352, w:21, h:102, rx:10, rot:6 } },
+    ayak_dorsum:  { view: 'on',   label: 'Ayak',                        s: { t:'e', cx:55, cy:478, rx:18, ry:11, rot:-22 } },
+    kol_arka:     { view: 'arka', label: 'Kol Arka (Triseps)',          s: { t:'r', x:39, y:100, w:22, h:52, rx:11, rot:16 } },
+    onkol_dorsal: { view: 'arka', label: 'Önkol Dorsal',                s: { t:'r', x:26, y:158, w:19, h:54, rx:9,  rot:13 } },
+    gluteal:      { view: 'arka', label: 'Gluteal Bölge',               s: { t:'e', cx:84, cy:192, rx:19, ry:16 } },
+    uyluk_arka:   { view: 'arka', label: 'Uyluk Arka (Hamstring)',      s: { t:'r', x:69, y:212, w:34, h:106, rx:15, rot:8 } },
+    popliteal:    { view: 'arka', label: 'Popliteal Fossa',             s: { t:'e', cx:69, cy:336, rx:12, ry:10 } },
+    baldir:       { view: 'arka', label: 'Baldır (Posterior)',          s: { t:'r', x:57, y:352, w:22, h:96, rx:11, rot:6 } },
+  },
+};
+
+function stCenter(sh) {
+  if (Array.isArray(sh)) sh = sh[0];
+  return sh.t === 'e' ? [sh.cx, sh.cy] : [sh.x + sh.w / 2, sh.y + sh.h / 2];
+}
+
+const ST_REGIONS = (() => {
+  const R = {};
+  const off = v => v === 'on' ? 0 : 210;
+  for (const k in ST_DEFS.central) {
+    const d = ST_DEFS.central[k];
+    const c = stCenter(d.s);
+    R['st_' + k] = { label: d.label, anchor: [c[0] + off(d.view), c[1]], soft: true };
+  }
+  for (const k in ST_DEFS.sided) {
+    const d = ST_DEFS.sided[k];
+    const c = stCenter(d.s);
+    const leftIsSag = d.view === 'on'; // ön: yerel-sol=Sağ, arka: yerel-sol=Sol
+    R['st_' + k + (leftIsSag ? '_sag' : '_sol')] = { label: d.label + (leftIsSag ? ' (Sağ)' : ' (Sol)'), anchor: [c[0] + off(d.view), c[1]], soft: true };
+    R['st_' + k + (leftIsSag ? '_sol' : '_sag')] = { label: d.label + (leftIsSag ? ' (Sol)' : ' (Sağ)'), anchor: [210 - c[0] + off(d.view), c[1]], soft: true };
+  }
+  // Haritada zone'u olmayan met hedefleri (yalnızca listeden seçilir)
+  R['st_akciger']   = { label: 'Akciğer (Met)',   anchor: [105, 92],  soft: true };
+  R['st_karaciger'] = { label: 'Karaciğer (Met)', anchor: [97, 146],  soft: true };
+  return R;
+})();
+
+function stShapeSVG(sh) {
+  if (Array.isArray(sh)) return sh.map(stShapeSVG).join('');
+  if (sh.t === 'e') {
+    const tr = sh.rot ? ` transform="rotate(${sh.rot} ${sh.cx} ${sh.cy})"` : '';
+    return `<ellipse cx="${sh.cx}" cy="${sh.cy}" rx="${sh.rx}" ry="${sh.ry}"${tr}/>`;
+  }
+  const cx = sh.x + sh.w / 2, cy = sh.y + sh.h / 2;
+  const tr = sh.rot ? ` transform="rotate(${sh.rot} ${cx} ${cy})"` : '';
+  return `<rect x="${sh.x}" y="${sh.y}" width="${sh.w}" height="${sh.h}" rx="${sh.rx || 0}"${tr}/>`;
+}
+function stMirror(sh) {
+  if (Array.isArray(sh)) return sh.map(stMirror);
+  return sh.t === 'e'
+    ? { ...sh, cx: 210 - sh.cx, rot: sh.rot ? -sh.rot : 0 }
+    : { ...sh, x: 210 - sh.x - sh.w, rot: sh.rot ? -sh.rot : 0 };
+}
+
+// Segmentli şema — parçalar görünür ve tıklanabilir
+function softMarkup(interactive) {
+  const PIECE = 'fill="#f3ede2" stroke="#b3a58f" stroke-width="1.6"';
+  const zone = (id, sh, off) => {
+    const inner = `<g transform="translate(${off},0)">${stShapeSVG(sh)}</g>`;
+    return interactive
+      ? `<g class="tz" id="tz_${id}" onclick="tumorZoneClick('${id}')" ${PIECE}>${inner}<title>${ST_REGIONS[id].label}</title></g>`
+      : `<g ${PIECE}>${inner}</g>`;
+  };
+  let out = `
+    <text x="78"  y="516" font-size="12" fill="#6b7280" font-weight="700">ÖN</text>
+    <text x="284" y="516" font-size="12" fill="#6b7280" font-weight="700">ARKA</text>
+    <text x="6"   y="16" font-size="11" fill="#9ca3af" font-weight="600">Sağ</text>
+    <text x="184" y="16" font-size="11" fill="#9ca3af" font-weight="600">Sol</text>
+    <text x="216" y="16" font-size="11" fill="#9ca3af" font-weight="600">Sol</text>
+    <text x="394" y="16" font-size="11" fill="#9ca3af" font-weight="600">Sağ</text>
+    <line x1="210" y1="8" x2="210" y2="512" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4 4"/>`;
+  for (const k in ST_DEFS.central) {
+    const d = ST_DEFS.central[k];
+    out += zone('st_' + k, d.s, d.view === 'on' ? 0 : 210);
+  }
+  for (const k in ST_DEFS.sided) {
+    const d = ST_DEFS.sided[k];
+    const off = d.view === 'on' ? 0 : 210;
+    const leftIsSag = d.view === 'on';
+    out += zone('st_' + k + (leftIsSag ? '_sag' : '_sol'), d.s, off);
+    out += zone('st_' + k + (leftIsSag ? '_sol' : '_sag'), stMirror(d.s), off);
+  }
+  return out;
+}
+
+// ── Etkileşim durumu ──
+let tPrimers = [];  // primer tümör bölgeleri (tümör birden çok bölgeye uzanabilir)
+let tMets = [];     // metastaz bölge id listesi
+let metMode = false;
+
+function tumorZoneClick(id) {
+  // El/ayak ana bölgeleri detay görünümü açar — seçim detaydan yapılır (kemik modu)
+  const dm = id.match(/^(el|ayak)_(sag|sol)$/);
+  if (dm) { openDetail(dm[1], dm[2]); return; }
+  tumorSelect(id);
+  // Yumuşak dokuda primer seçilen bölge için lezyon çizim paneli açılır
+  if (tumorMode === 'yumusak' && !metMode && tPrimers.includes(id)) openBrush(id);
+}
+
+function tumorSelect(id) {
+  if (metMode) {
+    if (tPrimers.includes(id)) return; // primer bölge met olamaz
+    const i = tMets.indexOf(id);
+    if (i === -1) tMets.push(id); else tMets.splice(i, 1);
+  } else {
+    const i = tPrimers.indexOf(id);
+    if (i === -1) { tPrimers.push(id); tMets = tMets.filter(m => m !== id); }
+    else tPrimers.splice(i, 1);
+  }
+  syncBodyMap();
+}
+
+function removePrimer(id) { tPrimers = tPrimers.filter(p => p !== id); syncBodyMap(); }
+function removeMet(id)    { tMets = tMets.filter(m => m !== id); syncBodyMap(); }
+
+// ── El / Ayak detay görünümü ──────────────────────────────────────────────────
+let detailView = null; // { kind:'el'|'ayak', side:'sag'|'sol' }
+
+function openDetail(kind, side) {
+  detailView = { kind, side };
+  document.getElementById('bodyMapWrap').style.display = 'none';
+  const dw = document.getElementById('detailWrap');
+  dw.style.display = '';
+  const sideTr = side === 'sag' ? 'Sağ' : 'Sol';
+  const kindTr = kind === 'el' ? 'El' : 'Ayak';
+  document.getElementById('detailTitle').textContent = `${sideTr} ${kindTr} — Detay`;
+  document.getElementById('detailWholeBtn').textContent = `${kindTr} bütününü seç`;
+  document.getElementById('detailSvgWrap').innerHTML =
+    `<svg viewBox="0 0 200 262" width="100%" xmlns="http://www.w3.org/2000/svg">${kind === 'el' ? handDetailMarkup(side) : footDetailMarkup(side)}</svg>`;
+  document.getElementById('bodyMapHint').textContent = metMode
+    ? 'Metastaz modunda: kemiğe tıkla = işaretle / kaldır'
+    : 'Tümörün yerleştiği kemiği seçin — üstteki butonla bütün bölge de seçilebilir';
+  syncBodyMap();
+}
+
+function closeDetail() {
+  detailView = null;
+  document.getElementById('detailWrap').style.display = 'none';
+  document.getElementById('bodyMapWrap').style.display = '';
+  document.getElementById('bodyMapHint').textContent = metMode
+    ? 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır'
+    : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
+}
+
+function selectWholeFromDetail() {
+  if (!detailView) return;
+  tumorSelect(detailView.kind + '_' + detailView.side);
+  if (metMode) closeDetail();
+}
+
+// Detay zone sarmalayıcı
+function dz(id, inner) {
+  return `<g class="tz" id="tz_${id}" onclick="tumorZoneClick('${id}')" fill="#f6f1e7" stroke="#a89f8d" stroke-width="1.2">${inner}<title>${T_REGIONS[id].label}</title></g>`;
+}
+
+// Ayak detayı — dorsal görünüm, parmaklar yukarıda (sağ ayak; sol aynalanır)
+function footDetailMarkup(side) {
+  const sfx = '_' + side;
+  let out = `<text x="8" y="252" font-size="10" fill="#9ca3af">Dorsal görünüm · parmaklar yukarıda</text>`;
+  let z = '';
+  z += dz('ayak_kalkaneus' + sfx, `<path d="M70,206 Q60,222 68,240 Q84,252 108,248 Q124,242 126,224 Q126,212 112,206 Q90,198 70,206 Z"/>`);
+  z += dz('ayak_talus' + sfx, `<path d="M62,178 Q54,190 60,202 Q74,212 96,208 Q110,203 110,189 Q108,176 92,172 Q72,170 62,178 Z"/>`);
+  z += dz('ayak_orta' + sfx, `<ellipse cx="56" cy="156" rx="15" ry="12"/><ellipse cx="88" cy="152" rx="15" ry="11"/><ellipse cx="119" cy="158" rx="14" ry="12"/>`);
+  z += dz('ayak_mt1' + sfx, `<path d="M42,144 L32,82 Q32,73 41,73 Q49,74 48,82 L58,142 Z"/>`);
+  z += dz('ayak_mt2' + sfx, `<path d="M70,142 L62,74 Q62,67 69,67 Q75,67 75,74 L82,140 Z"/>`);
+  z += dz('ayak_mt3' + sfx, `<path d="M94,140 L90,72 Q90,65 97,65 Q103,66 102,73 L106,140 Z"/>`);
+  z += dz('ayak_mt4' + sfx, `<path d="M117,142 L116,76 Q116,69 122,69 Q128,70 128,77 L129,142 Z"/>`);
+  z += dz('ayak_mt5' + sfx, `<path d="M139,146 L140,84 Q141,77 147,78 Q152,79 151,86 L151,146 Z"/><circle cx="146" cy="148" r="5"/>`);
+  z += dz('ayak_p1' + sfx, `<rect x="28" y="46" width="20" height="22" rx="7"/><rect x="26" y="20" width="20" height="22" rx="8"/>`);
+  z += dz('ayak_p2' + sfx, `<rect x="61" y="46" width="13" height="16" rx="5"/><rect x="60" y="30" width="12" height="14" rx="5"/><rect x="60" y="16" width="11" height="12" rx="5"/>`);
+  z += dz('ayak_p3' + sfx, `<rect x="89" y="44" width="13" height="16" rx="5"/><rect x="89" y="28" width="12" height="14" rx="5"/><rect x="89" y="15" width="11" height="11" rx="5"/>`);
+  z += dz('ayak_p4' + sfx, `<rect x="115" y="50" width="12" height="15" rx="5"/><rect x="115" y="34" width="11" height="14" rx="5"/><rect x="116" y="22" width="10" height="10" rx="4"/>`);
+  z += dz('ayak_p5' + sfx, `<rect x="139" y="58" width="12" height="14" rx="5"/><rect x="140" y="44" width="11" height="12" rx="5"/><rect x="141" y="32" width="9" height="10" rx="4"/>`);
+  out += side === 'sol' ? `<g transform="translate(200,0) scale(-1,1)">${z}</g>` : z;
+  return out;
+}
+
+// El detayı — dorsal görünüm, parmaklar yukarıda (sağ el; sol aynalanır)
+function handDetailMarkup(side) {
+  const sfx = '_' + side;
+  let out = `<text x="8" y="252" font-size="10" fill="#9ca3af">Dorsal görünüm · parmaklar yukarıda</text>
+    <g fill="#f6f1e7" stroke="#a89f8d" stroke-width="1" opacity="0.45">
+      <rect x="64" y="238" width="16" height="20" rx="6"/><rect x="92" y="238" width="14" height="20" rx="6"/>
+    </g>`;
+  let z = '';
+  z += dz('el_karpus' + sfx, `<ellipse cx="68" cy="222" rx="9" ry="8"/><ellipse cx="86" cy="226" rx="9" ry="8"/>
+    <ellipse cx="104" cy="225" rx="9" ry="8"/><ellipse cx="120" cy="219" rx="8" ry="7"/>
+    <ellipse cx="74" cy="208" rx="8" ry="7"/><ellipse cx="92" cy="210" rx="8" ry="7"/><ellipse cx="110" cy="208" rx="8" ry="7"/>`);
+  z += dz('el_mk1' + sfx, `<path d="M58,210 L32,158 Q29,151 36,148 Q42,146 45,152 L68,202 Z"/>`);
+  z += dz('el_mk2' + sfx, `<path d="M66,200 L60,136 Q60,129 67,129 Q73,129 73,136 L78,198 Z"/>`);
+  z += dz('el_mk3' + sfx, `<path d="M87,202 L86,132 Q86,125 93,125 Q99,126 98,133 L99,202 Z"/>`);
+  z += dz('el_mk4' + sfx, `<path d="M108,202 L112,138 Q113,131 119,132 Q125,133 124,140 L118,204 Z"/>`);
+  z += dz('el_mk5' + sfx, `<path d="M126,206 L136,152 Q138,145 144,147 Q149,149 147,156 L136,208 Z"/>`);
+  z += dz('el_p1' + sfx, `<rect x="18" y="116" width="14" height="30" rx="7" transform="rotate(24 25 131)"/>
+    <rect x="8" y="90" width="13" height="26" rx="6" transform="rotate(24 14 103)"/>`);
+  z += dz('el_p2' + sfx, `<rect x="58" y="98" width="13" height="28" rx="6"/><rect x="57" y="70" width="12" height="26" rx="6"/><rect x="57" y="48" width="11" height="20" rx="5"/>`);
+  z += dz('el_p3' + sfx, `<rect x="85" y="94" width="13" height="29" rx="6"/><rect x="85" y="64" width="12" height="28" rx="6"/><rect x="85" y="40" width="11" height="22" rx="5"/>`);
+  z += dz('el_p4' + sfx, `<rect x="111" y="100" width="13" height="28" rx="6"/><rect x="112" y="72" width="12" height="26" rx="6"/><rect x="113" y="50" width="11" height="20" rx="5"/>`);
+  z += dz('el_p5' + sfx, `<rect x="133" y="112" width="12" height="26" rx="6"/><rect x="136" y="88" width="11" height="22" rx="5"/><rect x="138" y="70" width="10" height="17" rx="5"/>`);
+  out += side === 'sol' ? `<g transform="translate(200,0) scale(-1,1)">${z}</g>` : z;
+  return out;
+}
+
+function toggleMetMode() {
+  metMode = !metMode;
+  document.getElementById('btnMetMode').classList.toggle('active', metMode);
+  document.getElementById('bodyMapSvg').parentElement.classList.toggle('met-mode', metMode);
+  document.getElementById('bodyMapHint').textContent = metMode
+    ? 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır'
+    : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
+}
+
+function syncBodyMap() {
+  const primerParents = tPrimers.map(parentZoneOf).filter(Boolean);
+  const metParents = tMets.map(parentZoneOf).filter(Boolean);
+  Object.keys(T_REGIONS).concat(Object.keys(ST_REGIONS)).forEach(id => {
+    const el = document.getElementById('tz_' + id);
+    if (!el) return;
+    el.classList.toggle('sel-met', tMets.includes(id) || metParents.includes(id));
+    el.classList.toggle('sel-primer', tPrimers.includes(id) || primerParents.includes(id));
+  });
+  const banner = document.getElementById('tLocBanner');
+  if (tPrimers.length) {
+    banner.className = 'loc-banner';
+    banner.innerHTML = '📍 Primer: ' + tPrimers.map(p =>
+      `<span class="pri-chip" onclick="removePrimer('${p}')" title="Kaldırmak için tıkla">${REG(p).label} ✕</span>`).join('') +
+      '<span style="font-weight:400;font-size:11px;color:var(--muted);"> — tümör birden çok bölgeye uzanıyorsa haritadan eklemeye devam edin</span>';
+  } else {
+    banner.className = 'loc-banner empty';
+    banner.textContent = 'Lokalizasyon seçilmedi — soldaki haritadan bölge seçin (birden çok bölge seçilebilir)';
+  }
+  document.getElementById('metChips').innerHTML = tMets.map(m =>
+    `<span class="met-chip" onclick="removeMet('${m}')" title="Kaldırmak için tıkla">🟣 ${REG(m).label} ✕</span>`).join('');
+}
+
+// ── Kayıt ──
+let tumorPatients = [
+  { name: 'TEST Osteosarkom', id: 'TU1', age: 17, preDx: 'Kemik tümörü', biopsy: 'Var',
+    finalDx: 'Osteosarkom', regions: ['femur_distal_sol', 'tibia_prox_sol'], surgery: '2026-01-15', margin: 'Temiz',
+    rec: 'Yok', recDate: '', mets: ['akciger'], notes: 'Diz çevresi tutulum — rezeksiyon + endoprotez',
+    events: [
+      { date: '2025-11-02', type: 'tani',     note: 'Diz ağrısı ile başvuru — distal femur + proksimal tibia kitle', regions: ['femur_distal_sol', 'tibia_prox_sol'] },
+      { date: '2025-11-10', type: 'biyopsi',  note: 'Tru-cut biyopsi: Osteosarkom' },
+      { date: '2025-11-20', type: 'kt',       note: 'Neoadjuvan kemoterapi başlandı (MAP)' },
+      { date: '2026-01-15', type: 'cerrahi',  note: 'Geniş rezeksiyon + tümör endoprotezi · Sınır: Temiz' },
+      { date: '2026-02-05', type: 'kt',       note: 'Adjuvan kemoterapi' },
+      { date: '2026-04-20', type: 'kontrol',  note: '3. ay kontrol — nüks/met yok' },
+      { date: '2026-06-28', type: 'metastaz', note: 'Toraks BT: akciğer metastazı', regions: ['akciger'] },
+    ] },
+  { name: 'TEST Kondrosarkom', id: 'TU2', age: 46, preDx: 'Pelvik kitle', biopsy: 'Var',
+    finalDx: 'Kondrosarkom G2', regions: ['pelvis_sag', 'femur_prox_sag'], surgery: '2025-11-03', margin: 'Marjinal',
+    rec: 'Var', recDate: '2026-06-20', mets: [], notes: 'Asetabulum + femur başı tutulumu',
+    events: [
+      { date: '2025-10-01', type: 'tani',    note: 'Pelvik kitle — asetabulum ve femur başı tutulumu', regions: ['pelvis_sag', 'femur_prox_sag'] },
+      { date: '2025-10-12', type: 'biyopsi', note: 'İnsizyonel biyopsi: Kondrosarkom Grade 2' },
+      { date: '2025-11-03', type: 'cerrahi', note: 'İnternal hemipelvektomi · Sınır: Marjinal' },
+      { date: '2026-06-20', type: 'nuks',    note: 'Lokal nüks (7.5 ay)', regions: ['pelvis_sag'] },
+      { date: '2026-07-01', type: 'rt',      note: 'Palyatif radyoterapi planlandı' },
+    ] },
+  { name: 'TEST Miksofibrosarkom', id: 'TU3', age: 58, preDx: 'Uyluk arka yumuşak doku kitlesi', biopsy: 'Var',
+    finalDx: 'Miksofibrosarkom G2', ttype: 'yumusak', regions: ['st_uyluk_arka_sol'], surgery: '2026-03-10', margin: 'Temiz',
+    rec: 'Yok', recDate: '', mets: [], notes: 'Hamstring kompartmanı — geniş rezeksiyon',
+    events: [
+      { date: '2026-01-28', type: 'tani',    note: 'Sol uyluk arka yüzde büyüyen kitle — MR: derin yerleşimli', regions: ['st_uyluk_arka_sol'] },
+      { date: '2026-02-06', type: 'biyopsi', note: 'Tru-cut: Miksofibrosarkom Grade 2' },
+      { date: '2026-03-10', type: 'cerrahi', note: 'Geniş rezeksiyon · Sınır: Temiz' },
+      { date: '2026-04-15', type: 'rt',      note: 'Adjuvan radyoterapi (60 Gy)' },
+      { date: '2026-07-02', type: 'kontrol', note: '3. ay kontrol — lokal nüks yok, toraks BT temiz', regions: [] },
+    ] },
+];
+
+function saveTumorPatient() {
+  if (!tPrimers.length) { alert('Lütfen haritadan en az bir primer tümör bölgesi seçin.'); return; }
+  const name = document.getElementById('tName').value.trim();
+  const age  = document.getElementById('tAge').value;
+  const finalDx = document.getElementById('tFinalDx').value.trim();
+  if (!name) { alert('Lütfen hasta adını girin.'); return; }
+  if (!age)  { alert('Lütfen yaş girin.'); return; }
+
+  const surgery = document.getElementById('tSurgery').value;
+  const margin  = document.getElementById('tMargin').value;
+  const rec     = document.getElementById('tRec').value;
+  const recDate = document.getElementById('tRecDate').value;
+  const metDate = document.getElementById('tMetDate').value;
+  const notes   = document.getElementById('tNotes').value.trim();
+  const today   = new Date().toISOString().slice(0, 10);
+
+  // Kayıt anındaki bilgilerden başlangıç zaman çizelgesi
+  const events = [];
+  events.push({ date: surgery || today, type: 'tani', note: finalDx || 'Primer tümör', regions: tPrimers.slice() });
+  if (document.getElementById('tBiopsy').value === 'Var') events.push({ date: surgery || today, type: 'biyopsi', note: 'Biyopsi yapıldı' });
+  if (surgery) events.push({ date: surgery, type: 'cerrahi', note: margin ? 'Sınır: ' + margin : '' });
+  if (tMets.length) events.push({ date: metDate || today, type: 'metastaz', note: metDate ? '' : 'Tarih: kayıt günü', regions: tMets.slice() });
+  if (rec === 'Var' && recDate) events.push({ date: recDate, type: 'nuks', note: 'Lokal nüks' });
+
+  tumorPatients.push({
+    name, age: Number(age),
+    id:      document.getElementById('tId').value.trim(),
+    preDx:   document.getElementById('tPreDx').value.trim(),
+    biopsy:  document.getElementById('tBiopsy').value,
+    finalDx,
+    regions: tPrimers.slice(),
+    ttype: tumorMode,
+    surgery, margin, rec, recDate,
+    mets:    tMets.slice(),
+    drawings: Object.assign({}, tumorDrawings),
+    notes, events,
+  });
+  tumorDrawings = {};
+
+  // formu sıfırla
+  ['tName','tId','tAge','tPreDx','tFinalDx','tSurgery','tRecDate','tMetDate','tNotes'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('tBiopsy').value = ''; document.getElementById('tMargin').value = '';
+  document.getElementById('tRec').value = 'Yok'; document.getElementById('tRecDateWrap').style.display = 'none';
+  if (metMode) toggleMetMode();
+  tPrimers = []; tMets = [];
+  syncBodyMap();
+  renderTumorPatients();
+  document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
+}
+
+function tRecMonths(p) {
+  if (p.rec !== 'Var' || !p.recDate || !p.surgery) return null;
+  const ms = new Date(p.recDate) - new Date(p.surgery);
+  return Math.round(ms / 86400000 / 30.44 * 10) / 10;
+}
+
+// Olay türleri — renk ve etiket
+const EVENT_TYPES = {
+  tani:      { label: 'Tanı / Primer',  icon: '🔴', color: '#dc2626' },
+  biyopsi:   { label: 'Biyopsi',        icon: '🔬', color: '#6b7280' },
+  kt:        { label: 'Kemoterapi',     icon: '💊', color: '#2563eb' },
+  rt:        { label: 'Radyoterapi',    icon: '⚡', color: '#eab308' },
+  cerrahi:   { label: 'Cerrahi',        icon: '🔪', color: '#0d9488' },
+  amputasyon:{ label: 'Amputasyon',     icon: '🦿', color: '#7f1d1d' },
+  nuks:      { label: 'Nüks',           icon: '⚠️', color: '#ea580c' },
+  metastaz:  { label: 'Metastaz',       icon: '🟣', color: '#7c3aed' },
+  kontrol:   { label: 'Kontrol (temiz)',icon: '✅', color: '#16a34a' },
+  diger:     { label: 'Diğer',          icon: '📌', color: '#6b7280' },
+};
+
+// Olay anındaki hastalık haritası: önceki işaretler soluk, bu olayın bölgeleri parlak
+function timelineBodySVG(patient, prevRegions, evRegions, color) {
+  const base = baseFigure(patient);
+  const dots = [];
+  prevRegions.forEach(([r, c]) => {
+    const p = tCenterOf(r);
+    dots.push(`<circle cx="${p[0]}" cy="${p[1]}" r="${base.dotR - 1}" fill="${c}" opacity="0.28"/>`);
+  });
+  (evRegions || []).forEach(r => {
+    const p = tCenterOf(r);
+    dots.push(`<circle cx="${p[0]}" cy="${p[1]}" r="${base.dotR + 1}" fill="${color}" opacity="0.95" stroke="white" stroke-width="2"><title>${REG(r).label}</title></circle>`);
+  });
+  const w = base.vb.includes('420') ? 96 : 64;
+  return `<svg viewBox="${base.vb}" width="${w}" xmlns="http://www.w3.org/2000/svg">${base.markup}${dots.join('')}</svg>`;
+}
+
+function renderTimeline(p, idx) {
+  const evs = (p.events || []).slice().sort((x, y) => String(x.date).localeCompare(String(y.date)));
+  const seen = []; // [regionId, renk] birikimi
+  const items = evs.map(ev => {
+    const meta = EVENT_TYPES[ev.type] || EVENT_TYPES.diger;
+    const hasR = ev.regions && ev.regions.length;
+    const body = hasR ? timelineBodySVG(p, seen.slice(), ev.regions, meta.color) : '';
+    if (hasR) ev.regions.forEach(r => seen.push([r, meta.color]));
+    const regTxt = hasR ? `<div class="tlh-note">${ev.regions.map(r => REG(r).label).join(' + ')}</div>` : '';
+    return `
+      <div class="tlh-item">
+        <div class="tlh-date">${fmtDate(ev.date)}</div>
+        <div class="tlh-dotwrap"><span class="tlh-dot" style="background:${meta.color}"></span></div>
+        <div class="tlh-label" style="color:${meta.color}">${meta.icon} ${meta.label}</div>
+        ${ev.note ? `<div class="tlh-note">${ev.note}</div>` : ''}
+        ${regTxt}
+        ${body}
+      </div>`;
+  }).join('');
+
+  const typeOpts = Object.keys(EVENT_TYPES).map(t => `<option value="${t}">${EVENT_TYPES[t].label}</option>`).join('');
+  const reg = (p.ttype || 'kemik') === 'yumusak' ? ST_REGIONS : T_REGIONS;
+  const regionOpts = '<option value="">Bölge (opsiyonel)</option>' +
+    Object.keys(reg).sort((x, y) => reg[x].label.localeCompare(reg[y].label, 'tr'))
+      .map(r => `<option value="${r}">${reg[r].label}</option>`).join('');
+
+  return `
+    <div class="tp-tl" id="tl_${idx}" style="display:${openTimelines.has(idx) ? '' : 'none'};">
+      <div class="tlh">${items || '<div class="tlh-note">Henüz olay yok</div>'}</div>
+      <div class="tl-add">
+        <input type="date" id="evDate_${idx}">
+        <select id="evType_${idx}">${typeOpts}</select>
+        <select id="evRegion_${idx}">${regionOpts}</select>
+        <input type="text" id="evNote_${idx}" placeholder="Not (örn. diz üstü amputasyon)">
+        <button class="btn btn-primary" onclick="addEvent(${idx})">Ekle</button>
+      </div>
+    </div>`;
+}
+
+const openTimelines = new Set();
+
+function toggleTl(idx) {
+  if (openTimelines.has(idx)) openTimelines.delete(idx); else openTimelines.add(idx);
+  renderTumorPatients();
+}
+
+function addEvent(idx) {
+  const date = document.getElementById('evDate_' + idx).value;
+  const type = document.getElementById('evType_' + idx).value;
+  const region = document.getElementById('evRegion_' + idx).value;
+  const note = document.getElementById('evNote_' + idx).value.trim();
+  if (!date) { alert('Lütfen olay tarihini girin.'); return; }
+  const p = tumorPatients[idx];
+  p.events = p.events || [];
+  p.events.push({ date, type, note, regions: region ? [region] : [] });
+  // Metastaz/nüks olayları kart rozetlerine de yansısın
+  if (type === 'metastaz' && region && !(p.mets || []).includes(region)) (p.mets = p.mets || []).push(region);
+  if (type === 'nuks') { p.rec = 'Var'; if (!p.recDate) p.recDate = date; }
+  renderTumorPatients();
+}
+
+function renderTumorPatients() {
+  const grid = document.getElementById('tpGrid');
+  const list = tumorPatients.map((p, idx) => [p, idx]).filter(([p]) => (p.ttype || 'kemik') === tumorMode);
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🗂</div><div>Bu grupta henüz hasta kaydı yok</div></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(([p, idx]) => {
+    const months = tRecMonths(p);
+    const marginCls = p.margin === 'Temiz' ? 'score-good' : p.margin === 'Marjinal' ? 'score-mid' : p.margin === 'Pozitif' ? 'score-bad' : '';
+    const evCount = (p.events || []).length;
+    return `
+    <div class="tp-card">
+      <div>${miniBodySVG(p)}</div>
+      <div>
+        <div class="tp-name">${p.name}${p.age ? ' · ' + p.age + 'y' : ''}</div>
+        <div class="tp-dx">${p.finalDx || p.preDx || '—'} · ${
+          (p.regions || (p.regionId ? [p.regionId] : [])).map(r => REG(r).label).join(' + ') || '—'
+        }${p.biopsy ? ' · Biyopsi: ' + p.biopsy : ''}</div>
+        <div class="tp-badges">
+          ${p.margin ? `<span class="score-pill ${marginCls}">Sınır: ${p.margin}</span>` : ''}
+          ${p.rec === 'Var'
+            ? `<span class="score-pill score-bad">Nüks${months !== null ? ': ' + months + ' ay' : ' var'}</span>`
+            : '<span class="score-pill score-good">Nüks yok</span>'}
+          ${p.mets && p.mets.length
+            ? `<span class="score-pill badge-met">Met: ${p.mets.map(m => REG(m).label).join(', ')}</span>`
+            : '<span class="score-pill score-good">Met yok</span>'}
+        </div>
+        ${p.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:7px;">${p.notes}</div>` : ''}
+        ${p.drawings && Object.keys(p.drawings).length ? `<div class="tp-draws">${Object.keys(p.drawings).map(k => {
+          const m = k.match(/^([a-z_]+?)(?:_(sag|sol))?$/);
+          const lbl = (BRUSH_GROUPS[m[1]] ? BRUSH_GROUPS[m[1]].label : k) + (m[2] ? (m[2] === 'sag' ? ' (Sağ)' : ' (Sol)') : '');
+          return `<img src="${p.drawings[k]}" title="Lezyon çizimi: ${lbl}">`;
+        }).join('')}</div>` : ''}
+        <div class="tp-actions">
+          <button class="btn btn-ghost" onclick="toggleTl(${idx})">🕐 Zaman Çizelgesi${evCount ? ' (' + evCount + ')' : ''}</button>
+        </div>
+      </div>
+      ${renderTimeline(p, idx)}
+    </div>`;
+  }).join('');
+}
+
+// ═══ Fırça — lezyon uzanımını segment detayı üzerine boyama (yumuşak doku) ═══
+const BRUSH_GROUPS = {
+  bas:       { label: 'Baş-Boyun',  sided: false, panels: ['ÖN', 'ARKA'], type: 'head'  },
+  govde_ust: { label: 'Gövde Üst',  sided: false, panels: ['ÖN', 'ARKA'], type: 'trunk' },
+  govde_alt: { label: 'Gövde Alt',  sided: false, panels: ['ÖN', 'ARKA'], type: 'trunk' },
+  pelvik:    { label: 'Pelvik Bölge', sided: true, panels: ['ÖN', 'ARKA'], type: 'pelvis' },
+  omuz:      { label: 'Omuz',       sided: true,  panels: ['ÖN', 'ARKA'], type: 'shoulder' },
+  kol:       { label: 'Kol (Üst Kol)', sided: true, panels: ['ÖN', 'ARKA'], type: 'limb', top: 'Omuz', bottom: 'Dirsek', bones: 1 },
+  onkol:     { label: 'Önkol',      sided: true,  panels: ['VOLAR', 'DORSAL'], type: 'limb', top: 'Dirsek', bottom: 'El bileği', bones: 2 },
+  el:        { label: 'El',         sided: true,  panels: ['DORSAL', 'PALMAR'], type: 'hand' },
+  uyluk:     { label: 'Uyluk',      sided: true,  panels: ['ÖN', 'ARKA'], type: 'limb', top: 'Kalça', bottom: 'Diz', bones: 1 },
+  diz:       { label: 'Diz',        sided: true,  panels: ['ÖN', 'ARKA (Popliteal)'], type: 'knee' },
+  bacak:     { label: 'Bacak',      sided: true,  panels: ['ÖN', 'ARKA'], type: 'limb', top: 'Diz', bottom: 'Ayak bileği', bones: 2 },
+  ayak:      { label: 'Ayak',       sided: true,  panels: ['DORSAL', 'PLANTAR'], type: 'foot' },
+};
+const REGION2GROUP = {
+  bas_boyun: 'bas', gogus_duvari: 'govde_ust', sirt_ust: 'govde_ust',
+  karin_duvari: 'govde_alt', sirt_alt: 'govde_alt', kasik: 'pelvik', gluteal: 'pelvik',
+  omuz: 'omuz', kol_on: 'kol', kol_arka: 'kol', onkol_volar: 'onkol', onkol_dorsal: 'onkol',
+  el: 'el', uyluk_on: 'uyluk', uyluk_arka: 'uyluk', diz_on: 'diz', popliteal: 'diz',
+  bacak_on: 'bacak', baldir: 'bacak', ayak_dorsum: 'ayak',
+};
+
+// st_bacak_on_sag → { key:'bacak_sag', group:'bacak', side:'sag' }
+function brushKeyOf(regionId) {
+  const m = regionId.match(/^st_([a-z_]+?)(?:_(sag|sol))?$/);
+  if (!m) return null;
+  const g = REGION2GROUP[m[1]];
+  if (!g) return null;
+  const side = BRUSH_GROUPS[g].sided ? (m[2] || '') : '';
+  return { key: g + (side ? '_' + side : ''), group: g, side };
+}
+
+let tumorDrawings = {}; // aktif form girişinin çizimleri: key → dataURL
+let brushKey = null, brushEraser = false, brushStrokes = 0, brushBound = false;
+
+function brushCtx(id) { return document.getElementById(id).getContext('2d'); }
+
+// ── Panel arka planları ──
+function bpPanel(ctx, x, title) {
+  ctx.fillStyle = '#fbfaf7'; ctx.strokeStyle = '#d8d2c4'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(x, 30, 170, 405, 12); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#6b7280'; ctx.font = '700 12px -apple-system, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(title, x + 85, 20);
+}
+function bpJoint(ctx, cx, cy, rx, ry, label, above) {
+  ctx.strokeStyle = '#b3a58f'; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#9ca3af'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(label, cx, above ? cy - ry - 6 : cy + ry + 14);
+}
+function bpLimb(ctx, x, cfg) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(cx - 44, 78, 88, 300, 40); ctx.stroke();
+  bpJoint(ctx, cx, 74, 34, 20, cfg.top, true);
+  bpJoint(ctx, cx, 384, 30, 18, cfg.bottom, false);
+  ctx.strokeStyle = '#d5cbb8'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  if (cfg.bones === 1) {
+    ctx.beginPath(); ctx.moveTo(cx, 96); ctx.lineTo(cx, 362); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(cx - 13, 96); ctx.lineTo(cx - 10, 362); ctx.stroke();
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cx + 15, 100); ctx.lineTo(cx + 13, 358); ctx.stroke();
+  }
+}
+function bpHead(ctx, x) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(cx, 160, 62, 82, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(cx - 26, 244, 52, 70, 16); ctx.stroke();
+  bpJoint(ctx, cx, 330, 56, 16, 'Omuz hattı', false);
+}
+function bpTrunk(ctx, x, back) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(cx - 62, 66, 124, 320, 26); ctx.stroke();
+  ctx.strokeStyle = '#d5cbb8'; ctx.setLineDash([6, 5]); ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(cx, 74); ctx.lineTo(cx, 378); ctx.stroke();
+  ctx.setLineDash([]);
+  if (back) {
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx - 46, 100); ctx.quadraticCurveTo(cx - 20, 130, cx - 34, 168); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx + 46, 100); ctx.quadraticCurveTo(cx + 20, 130, cx + 34, 168); ctx.stroke();
+  } else {
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx - 52, 92); ctx.lineTo(cx - 8, 84); ctx.moveTo(cx + 52, 92); ctx.lineTo(cx + 8, 84); ctx.stroke();
+  }
+}
+function bpPelvis(ctx, x, back) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  if (back) {
+    ctx.beginPath(); ctx.ellipse(cx - 34, 220, 40, 52, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(cx + 34, 220, 40, 52, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Gluteal', cx, 300);
+  } else {
+    ctx.beginPath(); ctx.moveTo(cx - 60, 130); ctx.quadraticCurveTo(cx, 100, cx + 60, 130); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - 56, 150); ctx.lineTo(cx - 8, 250); ctx.moveTo(cx + 56, 150); ctx.lineTo(cx + 8, 250); ctx.stroke();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('İnguinal', cx, 290);
+  }
+}
+function bpShoulder(ctx, x) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, 190, 74, Math.PI, 0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - 74, 190); ctx.quadraticCurveTo(cx, 300, cx + 74, 190); ctx.stroke();
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = '#b3a58f';
+  ctx.beginPath(); ctx.arc(cx, 200, 34, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(cx - 80, 120); ctx.lineTo(cx + 30, 112); ctx.stroke();
+  ctx.fillStyle = '#9ca3af'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Klavikula', cx - 24, 104);
+}
+function bpKnee(ctx, x, back) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(cx - 46, 90, 92, 280, 38); ctx.stroke();
+  if (back) {
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = '#b3a58f';
+    ctx.beginPath(); ctx.moveTo(cx, 150); ctx.lineTo(cx - 30, 230); ctx.lineTo(cx, 310); ctx.lineTo(cx + 30, 230); ctx.closePath(); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#9ca3af'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Popliteal fossa', cx, 340);
+  } else {
+    ctx.beginPath(); ctx.ellipse(cx, 226, 26, 32, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Patella', cx, 286);
+  }
+}
+function bpHand(ctx, x) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(cx - 40, 210, 80, 96, 22); ctx.stroke();
+  for (let i = 0; i < 4; i++) {
+    const fx = cx - 30 + i * 20;
+    ctx.beginPath(); ctx.roundRect(fx - 7, 108 - (i === 1 || i === 2 ? 16 : 0), 14, 100 + (i === 1 || i === 2 ? 16 : 0), 7); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.roundRect(cx - 74, 208, 16, 62, 8); ctx.stroke();
+  bpJoint(ctx, cx, 318, 34, 14, 'El bileği', false);
+}
+function bpFoot(ctx, x) {
+  const cx = x + 85;
+  ctx.strokeStyle = '#8f8471'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(cx - 38, 130, 76, 200, 28); ctx.stroke();
+  for (let i = 0; i < 5; i++) {
+    const fx = cx - 30 + i * 15;
+    ctx.beginPath(); ctx.roundRect(fx - 5, 92 - (i === 0 ? 10 : 0), 11, 36 + (i === 0 ? 10 : 0), 5); ctx.stroke();
+  }
+  bpJoint(ctx, cx, 344, 32, 14, 'Topuk', false);
+}
+
+function drawBrushBg(info) {
+  const cfg = BRUSH_GROUPS[info.group];
+  const ctx = brushCtx('brushBg');
+  ctx.clearRect(0, 0, 380, 450);
+  const xs = [5, 205];
+  cfg.panels.forEach((title, i) => {
+    bpPanel(ctx, xs[i], title);
+    const x = xs[i], back = i === 1;
+    if (cfg.type === 'limb')     bpLimb(ctx, x, cfg);
+    if (cfg.type === 'head')     bpHead(ctx, x);
+    if (cfg.type === 'trunk')    bpTrunk(ctx, x, back);
+    if (cfg.type === 'pelvis')   bpPelvis(ctx, x, back);
+    if (cfg.type === 'shoulder') bpShoulder(ctx, x);
+    if (cfg.type === 'knee')     bpKnee(ctx, x, back);
+    if (cfg.type === 'hand')     bpHand(ctx, x);
+    if (cfg.type === 'foot')     bpFoot(ctx, x);
+  });
+}
+
+// ── Boyama ──
+function bindBrush() {
+  if (brushBound) return;
+  brushBound = true;
+  const cv = document.getElementById('brushPaint');
+  const ctx = cv.getContext('2d');
+  let drawing = false, lx = 0, ly = 0;
+  const pos = e => {
+    const r = cv.getBoundingClientRect();
+    return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height];
+  };
+  const stroke = (x1, y1, x2, y2) => {
+    const size = +document.getElementById('brushSize').value;
+    ctx.globalCompositeOperation = brushEraser ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = 'rgba(220,38,38,0.55)';
+    ctx.lineWidth = brushEraser ? size * 1.4 : size;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  };
+  cv.addEventListener('pointerdown', e => {
+    drawing = true; cv.setPointerCapture(e.pointerId);
+    [lx, ly] = pos(e); stroke(lx, ly, lx + 0.1, ly + 0.1); brushStrokes++;
+    e.preventDefault();
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    const [x, y] = pos(e); stroke(lx, ly, x, y); lx = x; ly = y;
+  });
+  cv.addEventListener('pointerup', () => { drawing = false; });
+}
+
+function openBrush(regionId) {
+  const info = brushKeyOf(regionId);
+  if (!info) return;
+  brushKey = info.key;
+  document.getElementById('bodyMapWrap').style.display = 'none';
+  document.getElementById('brushWrap').style.display = '';
+  const sideTr = info.side === 'sag' ? ' — Sağ' : info.side === 'sol' ? ' — Sol' : '';
+  document.getElementById('brushTitle').textContent = `🖌 ${BRUSH_GROUPS[info.group].label}${sideTr} · Lezyon Çizimi`;
+  drawBrushBg(info);
+  const pctx = brushCtx('brushPaint');
+  pctx.clearRect(0, 0, 380, 450);
+  brushStrokes = 0;
+  if (tumorDrawings[brushKey]) {
+    const img = new Image();
+    img.onload = () => { pctx.globalCompositeOperation = 'source-over'; pctx.drawImage(img, 0, 0); };
+    img.src = tumorDrawings[brushKey];
+    brushStrokes = 1; // mevcut çizim var
+  }
+  if (brushEraser) toggleEraser();
+  bindBrush();
+}
+
+function brushHasInk() {
+  const d = brushCtx('brushPaint').getImageData(0, 0, 380, 450).data;
+  for (let i = 3; i < d.length; i += 160) if (d[i] > 8) return true;
+  return false;
+}
+
+function closeBrush() {
+  if (brushKey) {
+    if (brushStrokes > 0 && brushHasInk()) tumorDrawings[brushKey] = document.getElementById('brushPaint').toDataURL('image/png');
+    else delete tumorDrawings[brushKey];
+  }
+  brushKey = null;
+  document.getElementById('brushWrap').style.display = 'none';
+  document.getElementById('bodyMapWrap').style.display = '';
+  syncBodyMap();
+}
+
+function clearBrush() {
+  brushCtx('brushPaint').clearRect(0, 0, 380, 450);
+  brushStrokes = 0;
+}
+
+function toggleEraser() {
+  brushEraser = !brushEraser;
+  document.getElementById('btnEraser').classList.toggle('active', brushEraser);
+}
+
+function brushSizeChanged() {
+  const v = +document.getElementById('brushSize').value;
+  const dot = document.getElementById('brushDot');
+  dot.style.width = v + 'px'; dot.style.height = v + 'px';
+}
+
+// ── Kalça anketi linki (form-hip.html) ──
+const HIP_FORM_URL = window.location.href.split(/[?#]/)[0].replace(/[^\/]*$/, '') + 'form-hip.html';
+
+function generateHipLink() {
+  const name    = document.getElementById('lhName').value.trim();
+  const id      = document.getElementById('lhId').value.trim() || ('H' + Date.now());
+  const surgery = document.getElementById('lhSurgery').value;
+  const leg     = document.getElementById('lhSide').value;
+  const fu      = document.getElementById('lhFU').value;
+  if (!name)    { alert('Lütfen hasta adını girin.'); return; }
+  if (!surgery) { alert('Lütfen girişim tarihini girin.'); return; }
+
+  const url = HIP_FORM_URL + '?' + new URLSearchParams({ name, id, surgery, leg, fu }).toString();
+  document.getElementById('lhText').textContent = url;
+  document.getElementById('lhResult').style.display = 'block';
+  const FU_LABELS = { preop: 'Pre-op', '1m': '1. Ay', '3m': '3. Ay', '6m': '6. Ay', '12m': '12. Ay' };
+  const d = new Date(surgery), days = Math.floor((new Date() - d) / 86400000);
+  document.getElementById('lhMeta').textContent =
+    `${name} · Kalça Artroskopisi · ${FU_LABELS[fu]} değerlendirmesi · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
+}
+
+function copyHipLink() {
+  navigator.clipboard.writeText(document.getElementById('lhText').textContent).then(() => alert('Link kopyalandı!'));
+}
+
+function whatsappHipShare() {
+  const text = document.getElementById('lhText').textContent;
+  const name = document.getElementById('lhName').value.trim();
+  const msg = encodeURIComponent(`Merhaba ${name},\n\nKalçanızın iyileşme sürecini takip edebilmemiz için lütfen aşağıdaki kısa anketi doldurur musunuz?\n\n${text}\n\nTeşekkürler.`);
+  window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+// ═══ Kalça artroskopisi — labrum saat kadranı ═══
+// 24 yarım saatlik dilim; dilim 0 = 12:00–12:30, saat yönünde artar
+function hipTimeLabel(halfIdx) {
+  const h = Math.floor((halfIdx % 24) / 2) % 12;
+  return (h === 0 ? 12 : h) + (halfIdx % 2 ? ':30' : ':00');
+}
+function hipArcLabel(a, b) {
+  const n = ((b - a + 24) % 24) + 1;
+  return hipTimeLabel(a) + ' – ' + hipTimeLabel(b + 1) + ' · ' + (n / 2) + ' saat';
+}
+
+// Halka sektörü (dolgu) ve bant yayı (stroke) yardımcıları
+function hipPolar(cx, cy, r, deg) {
+  const a = (deg - 90) * Math.PI / 180;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+function hipSegPath(i, cx, cy, r1, r2) {
+  const [x1, y1] = hipPolar(cx, cy, r2, i * 15), [x2, y2] = hipPolar(cx, cy, r2, (i + 1) * 15);
+  const [x3, y3] = hipPolar(cx, cy, r1, (i + 1) * 15), [x4, y4] = hipPolar(cx, cy, r1, i * 15);
+  return `M${x1.toFixed(2)},${y1.toFixed(2)} A${r2},${r2} 0 0 1 ${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r1},${r1} 0 0 0 ${x4.toFixed(2)},${y4.toFixed(2)} Z`;
+}
+// selA→selB (saat yönünde, dahil) bandını çizen yay
+function hipBandArc(cx, cy, r, selA, selB) {
+  const span = ((selB - selA + 24) % 24) + 1;      // kaç yarım saat
+  const a1 = selA * 15, a2 = a1 + span * 15;
+  const [x1, y1] = hipPolar(cx, cy, r, a1);
+  const [x2, y2] = hipPolar(cx, cy, r, a2 - 0.001); // tam tur kapanmasın
+  const large = span * 15 > 180 ? 1 : 0;
+  return { d: `M${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)}`,
+           len: 2 * Math.PI * r * (span * 15) / 360 };
+}
+
+// Premium kadran — tear bandı + ankor noktaları
+let hipUid = 0;
+function hipClockMarkup(interactive, selA, selB, size, anchors) {
+  const S = size, cx = S / 2, cy = S / 2;
+  const r1 = S * 0.295, r2 = S * 0.395, rMid = (r1 + r2) / 2;
+  const u = 'hc' + (++hipUid);
+  const A = normAnchors(anchors);
+
+  let out = `<defs>
+  </defs>
+  <rect x="0" y="0" width="${S}" height="${S}" rx="${S * 0.04}" fill="#ffffff"/>
+  <circle cx="${cx}" cy="${cy}" r="${r1 - S * 0.012}" fill="#fbfcfe" stroke="#e8edf4"/>
+  <circle cx="${cx}" cy="${cy}" r="${r1 * 0.52}" fill="none" stroke="#dfe5ee" stroke-width="1.2" stroke-dasharray="5 6"/>`;
+
+  // Asetabular halka
+  out += `<circle cx="${cx}" cy="${cy}" r="${rMid}" fill="none" stroke="#f4f6fa" stroke-width="${r2 - r1}"/>
+    <circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="#d5dce6" stroke-width="1.2"/>
+    <circle cx="${cx}" cy="${cy}" r="${r1}" fill="none" stroke="#d5dce6" stroke-width="1.2"/>`;
+
+  // Yırtık bandı
+  if (selA !== null && selA !== undefined) {
+    const arc = hipBandArc(cx, cy, rMid, selA, selB === null || selB === undefined ? selA : selB);
+    out += `<path class="hip-band" d="${arc.d}" fill="none" stroke="#e11d48" stroke-width="${r2 - r1}"
+      opacity="${selB === null || selB === undefined ? 0.42 : 1}"
+      stroke-dasharray="${arc.len.toFixed(1)}" style="--len:${arc.len.toFixed(1)}"/>`;
+  }
+
+  // Dilim ayraçları
+  for (let i = 0; i < 24; i++) {
+    const [ax, ay] = hipPolar(cx, cy, r1, i * 15), [bx, by] = hipPolar(cx, cy, r2, i * 15);
+    const major = i % 2 === 0;
+    out += `<line x1="${ax.toFixed(1)}" y1="${ay.toFixed(1)}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}"
+      stroke="rgba(15,23,42,${major ? .20 : .08})" stroke-width="${major ? 1.2 : 0.8}" pointer-events="none"/>`;
+  }
+
+  // Ankor modunda olası konumlar (saat ve yarım saat çizgileri) soluk gösterilir
+  const anchorMode = interactive && hipMode === 'anchor';
+  if (anchorMode) {
+    for (let i = 0; i < 24; i++) {
+      if (A.some(a => a.i === i)) continue;
+      const [gx, gy] = hipPolar(cx, cy, rMid, i * 15);
+      out += `<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${S * 0.008}" fill="#94a3b8" opacity=".45" pointer-events="none"/>`;
+    }
+  }
+
+  // Tıklama alanları — yırtık modunda dilimler, ankor modunda çizgi hedefleri
+  if (interactive && !anchorMode) {
+    for (let i = 0; i < 24; i++) {
+      out += `<path class="hipseg" d="${hipSegPath(i, cx, cy, r1 - S * 0.016, r2 + S * 0.016)}"
+        onclick="hipSegClick(${i})"><title>${hipTimeLabel(i)} – ${hipTimeLabel(i + 1)}</title></path>`;
+    }
+  }
+  if (anchorMode) {
+    for (let i = 0; i < 24; i++) {
+      const [hx, hy] = hipPolar(cx, cy, rMid, i * 15);
+      out += `<circle class="hipanchor-hit" cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="${S * 0.042}"
+        onclick="toggleHipAnchor(${i})"><title>Ankor · ${hipTimeLabel(i)}</title></circle>`;
+    }
+  }
+
+  // Ankorlar — saat / yarım saat çizgisinin tam üzerinde, tipe göre işaretli
+  A.forEach(an => {
+    const [x, y] = hipPolar(cx, cy, rMid, an.i * 15);
+    const rr = S * 0.023, meta = ANCHOR_TYPES[an.t] || ANCHOR_TYPES.knotless;
+    const inner = an.t === 'knotted'
+      ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(rr * 0.46).toFixed(1)}" fill="none" stroke="#ffffff" stroke-width="${(rr * 0.30).toFixed(2)}"/>`
+      : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(rr * 0.32).toFixed(1)}" fill="#ffffff"/>`;
+    out += `<g class="hipstage-anchor"${interactive ? ` onclick="toggleHipAnchor(${an.i})"` : ''}>
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(rr * 1.42).toFixed(1)}" fill="#ffffff"/>
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(1)}" fill="${meta.color}"/>
+      ${inner}
+      ${interactive ? `<title>${meta.label} · ${hipTimeLabel(an.i)}</title>` : ''}
+    </g>`;
+  });
+
+  // Saat rakamları
+  for (let h = 0; h < 12; h++) {
+    const [x, y] = hipPolar(cx, cy, r2 + S * 0.062, h * 30);
+    out += `<text x="${x.toFixed(1)}" y="${(y + S * 0.016).toFixed(1)}" text-anchor="middle"
+      font-size="${S * 0.046}" font-weight="${h % 3 === 0 ? 700 : 600}" fill="${h % 3 === 0 ? '#0f172a' : '#94a3b8'}"
+      style="font-variant-numeric:tabular-nums" pointer-events="none">${h === 0 ? 12 : h}</text>`;
+  }
+
+  // Merkez etiketleri
+  if (interactive) {
+    const t = (txt, x, y, sz, op) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${sz}"
+      fill="rgba(71,85,105,${op})" font-weight="600" letter-spacing="1.6" pointer-events="none">${txt}</text>`;
+    out += t('SÜPERİOR', cx, cy - r1 * 0.62, S * 0.027, .40)
+        + t('İNFERİOR', cx, cy + r1 * 0.70, S * 0.027, .40)
+        + t('ANT', cx + r1 * 0.72, cy + S * 0.010, S * 0.027, .40)
+        + t('POST', cx - r1 * 0.72, cy + S * 0.010, S * 0.027, .40)
+        + `<text x="${cx}" y="${cy - S * 0.004}" text-anchor="middle" font-size="${S * 0.034}"
+             fill="rgba(51,65,85,.72)" font-weight="600" letter-spacing=".4" pointer-events="none">Asetabulum</text>`
+        + `<text x="${cx}" y="${cy + S * 0.042}" text-anchor="middle" font-size="${S * 0.028}"
+             fill="rgba(100,116,139,.62)" font-weight="500" letter-spacing=".4" pointer-events="none">labrum saati</text>`;
+  }
+  return out;
+}
+
+// ── Radyografik sınıflamalar ──
+// Lateral CE: <20 displazi · 20-25 borderline · 25-40 normal · >40 overcoverage
+function ceClass(v) {
+  if (v === null || v === '' || isNaN(v)) return null;
+  v = Number(v);
+  if (v < 20)  return { label: 'Displazi',            cls: 'score-bad',  color: '#dc2626' };
+  if (v <= 25) return { label: 'Borderline displazi', cls: 'score-mid',  color: '#d97706' };
+  if (v <= 40) return { label: 'Normal örtünme',      cls: 'score-good', color: '#16a34a' };
+  return { label: 'Overcoverage (pincer)', cls: 'score-mid', color: '#ea580c' };
+}
+// Dunn alfa: ≤55 normal · 55-60 sınırda · >60 CAM morfolojisi
+function alphaClass(v) {
+  if (v === null || v === '' || isNaN(v)) return null;
+  v = Number(v);
+  if (v <= 55) return { label: 'Normal',           cls: 'score-good', color: '#16a34a' };
+  if (v <= 60) return { label: 'Sınırda',          cls: 'score-mid',  color: '#d97706' };
+  return { label: 'CAM morfolojisi', cls: 'score-bad', color: '#dc2626' };
+}
+function updateCEClass() {
+  const c = ceClass(document.getElementById('hCE').value);
+  const t = document.getElementById('hCETag');
+  t.textContent = c ? c.label : '—'; t.style.color = c ? c.color : '#94a3b8';
+}
+// MR ile artroskopi kondrolabral breakdown uyumu
+function clbConcordance(pre, intra) {
+  if (!pre || !intra) return null;
+  if (pre === 'Var' && intra === 'Var')  return { label: 'MR ile uyumlu (var)',        cls: 'score-mid',  color: '#d97706' };
+  if (pre === 'Yok' && intra === 'Yok')  return { label: 'MR ile uyumlu (yok)',        cls: 'score-good', color: '#16a34a' };
+  if (pre !== 'Var' && intra === 'Var')  return { label: 'MR\'da görülmedi — intra-op saptandı', cls: 'score-bad', color: '#dc2626' };
+  if (pre === 'Var' && intra === 'Yok')  return { label: 'MR pozitif — intra-op yok',  cls: 'score-mid',  color: '#ea580c' };
+  return null;
+}
+function updateCLB() {
+  const pre = document.getElementById('hCLBpre').value;
+  const intra = document.getElementById('hCLBintra').value;
+  const c = clbConcordance(pre, intra);
+  const t = document.getElementById('hCLBTag');
+  t.textContent = c ? c.label : '—';
+  t.style.color = c ? c.color : '#94a3b8';
+}
+
+function updateAlphaClass() {
+  const c = alphaClass(document.getElementById('hAlpha').value);
+  const t = document.getElementById('hAlphaTag');
+  t.textContent = c ? c.label : '—'; t.style.color = c ? c.color : '#94a3b8';
+}
+
+// Pre-op VAS — form.html ile aynı palet ve etiketler
+const HIP_VAS_COLORS = ['#22c55e','#16a34a','#65a30d','#a3a50a','#ca8a04','#d97706','#ea580c','#e04018','#ef4444','#b91c1c','#7f1d1d'];
+const HIP_VAS_LABELS = ['Hiç ağrı yok','Çok hafif ağrı','Hafif ağrı','Hafif-orta ağrı','Orta şiddette ağrı','Orta şiddette ağrı','Şiddetli ağrı','Çok şiddetli ağrı','Çok şiddetli ağrı','Dayanılmaz ağrı','Dayanılmaz ağrı'];
+
+function updateHipVas(v) {
+  v = parseInt(v);
+  const el = document.getElementById('hVasVal'), lb = document.getElementById('hVasLbl');
+  el.textContent = v; el.style.color = HIP_VAS_COLORS[v];
+  lb.textContent = HIP_VAS_LABELS[v]; lb.style.color = HIP_VAS_COLORS[v];
+  document.getElementById('hVas').style.setProperty('--thumb-color', HIP_VAS_COLORS[v]);
+}
+
+// ── Etkileşim ──
+// Ankor düğüm tipleri
+const ANCHOR_TYPES = {
+  knotless: { label: 'Q-Fix Knotless', short: 'Knotless', color: '#0284c7' },
+  knotted:  { label: 'Q-Fix Düğümlü',  short: 'Düğümlü',  color: '#7c3aed' },
+};
+// Eski kayıtlar sayı dizisi olabilir → {i,t} biçimine çevir
+function normAnchors(arr) {
+  return (arr || []).map(a => (typeof a === 'number' ? { i: a, t: 'knotless' } : a));
+}
+
+let hipA = null, hipB = null, hipAnchors = [], hipMode = 'tear', hipAnchorType = 'knotless';
+
+function setHipMode(m) {
+  hipMode = m;
+  document.getElementById('hipModeTear').classList.toggle('on', m === 'tear');
+  document.getElementById('hipModeAnchor').classList.toggle('on', m === 'anchor');
+  document.getElementById('hipTypes').style.display = m === 'anchor' ? '' : 'none';
+  initHipClock();
+}
+
+function initHipClock() {
+  document.getElementById('hipClockWrap').innerHTML =
+    `<svg viewBox="0 0 400 400" width="100%" style="max-width:430px; display:block; margin:2px auto 0;" xmlns="http://www.w3.org/2000/svg">${hipClockMarkup(true, hipA, hipB, 400, hipAnchors)}</svg>`;
+  syncHipReadout();
+}
+
+function hipSegClick(i) {
+  if (hipMode === 'anchor') { toggleHipAnchor(i); return; }
+  if (hipA === null || hipB !== null) { hipA = i; hipB = null; }
+  else hipB = i;
+  initHipClock();
+}
+
+function setAnchorType(t) {
+  hipAnchorType = t;
+  document.getElementById('hipTypeKnotless').classList.toggle('on', t === 'knotless');
+  document.getElementById('hipTypeKnotted').classList.toggle('on', t === 'knotted');
+  syncHipReadout();
+}
+
+// Boş konum → ekle · aynı tip → kaldır · farklı tip → tipi değiştir
+function toggleHipAnchor(i) {
+  const k = hipAnchors.findIndex(a => a.i === i);
+  if (k === -1) hipAnchors.push({ i: i, t: hipAnchorType });
+  else if (hipAnchors[k].t === hipAnchorType) hipAnchors.splice(k, 1);
+  else hipAnchors[k].t = hipAnchorType;
+  hipAnchors.sort((a, b) => a.i - b.i);
+  initHipClock();
+}
+
+function clearHipArc() { hipA = null; hipB = null; initHipClock(); }
+function clearHipAll() { hipA = null; hipB = null; hipAnchors = []; initHipClock(); }
+function hipAnchorSummary(list) {
+  const A = normAnchors(list);
+  if (!A.length) return '';
+  return Object.keys(ANCHOR_TYPES).map(t => {
+    const g = A.filter(a => a.t === t);
+    return g.length ? `${g.length} ${ANCHOR_TYPES[t].short} (${g.map(a => hipTimeLabel(a.i)).join(', ')})` : null;
+  }).filter(Boolean).join(' · ');
+}
+
+function syncHipReadout() {
+  const ro = document.getElementById('hipReadout');
+  if (!ro) return;
+  let html = '';
+  if (hipA !== null && hipB !== null)
+    html += `<span class="hip-chip"><span class="sw" style="background:#f43f5e;box-shadow:0 0 10px #f43f5e"></span>Yırtık · ${hipArcLabel(hipA, hipB)}</span>`;
+  else if (hipA !== null)
+    html += `<span class="hip-chip"><span class="sw" style="background:#f43f5e"></span>Başlangıç ${hipTimeLabel(hipA)} — bitişi seçin</span>`;
+  else
+    html += `<span class="hip-chip muted">Yırtık seçilmedi</span>`;
+  hipAnchors.forEach(a => {
+    const meta = ANCHOR_TYPES[a.t] || ANCHOR_TYPES.knotless;
+    html += `<span class="hip-chip rm" onclick="toggleHipAnchor(${a.i})" title="${meta.label} · tıklayınca kaldırılır / seçili tip farklıysa değişir"><span class="sw" style="background:${meta.color}"></span>${hipTimeLabel(a.i)} · ${meta.short}</span>`;
+  });
+  ro.innerHTML = html;
+  document.getElementById('hipHint').textContent = hipMode === 'tear'
+    ? 'Yırtık modu · başlangıç ve bitiş dilimine tıklayın (saat yönünde) — 12 süperior, 3 anterior'
+    : `Ankor modu · seçili tip: ${ANCHOR_TYPES[hipAnchorType].label} · çizgiye tıklayın; aynı tipe tekrar tıklamak kaldırır, farklı tip seçiliyken tıklamak tipi değiştirir`;
+}
+
+// ── Kayıt + liste ──
+let hipPatients = [
+  { name: 'TEST Labrum', id: 'HA1', age: 29, side: 'Sağ', surgery: '2026-06-18',
+    a: 1, b: 5, anchors: [{ i: 1, t: 'knotless' }, { i: 3, t: 'knotless' }, { i: 5, t: 'knotted' }],
+    ce: 23.5, alpha: 64, clbPre: 'Yok', traction: 48, clbIntra: 'Var', fai: 'CAM', proc: 'Onarım (Repair)', notes: 'Femoroplasti + 3 ankor',
+    fu: {
+      'Pre-op': { date: '2026-06-16', vas: 7, ihot: 34.5, mhhs: 52, hosAdl: 58, hosSp: 31, rsi: 28.5, pcs: 33.2, mcs: 41.8 },
+      '1. Ay':  { date: '2026-07-18', vas: 4, ihot: 51.0, mhhs: 66, hosAdl: 69, hosSp: 42, rsi: 44.0, pcs: 40.6, mcs: 48.3 },
+    } },
+];
+
+function saveHipPatient() {
+  if (hipA === null || hipB === null) { alert('Lütfen kadrandan yırtık aralığını seçin (başlangıç + bitiş).'); return; }
+  const name = document.getElementById('hName').value.trim();
+  const age  = document.getElementById('hAge').value;
+  if (!name) { alert('Lütfen hasta adını girin.'); return; }
+  if (!age)  { alert('Lütfen yaş girin.'); return; }
+  hipPatients.push({
+    name, age: Number(age),
+    id:      document.getElementById('hId').value.trim(),
+    side:    document.getElementById('hSide').value,
+    surgery: document.getElementById('hSurgery').value,
+    a: hipA, b: hipB, anchors: hipAnchors.slice(),
+    fai:     document.getElementById('hFai').value,
+    proc:    document.getElementById('hProc').value,
+    ce:      numOrNull('hCE'),
+    alpha:   numOrNull('hAlpha'),
+    clbPre:   document.getElementById('hCLBpre').value,
+    traction: numOrNull('hTrac'),
+    clbIntra: document.getElementById('hCLBintra').value,
+    notes:   document.getElementById('hNotes').value.trim(),
+    fu: {},
+  });
+  sendHipOpToSheet(hipPatients[hipPatients.length - 1]);
+
+  ['hName','hId','hAge','hSurgery','hNotes','hCE','hAlpha','hTrac'].forEach(i => document.getElementById(i).value = '');
+  ['hFai','hProc','hCLBpre','hCLBintra'].forEach(i => document.getElementById(i).value = '');
+  updateCLB(); updateCEClass(); updateAlphaClass();
+  clearHipAll();
+  renderHipPatients();
+  document.getElementById('totalBadge').textContent = hipPatients.length + ' hasta';
+}
+
+// Cerrahi kaydı hasta takip tablosuna gönder (gizli iframe — CORS/popup sorunu yok)
+function sendHipOpToSheet(p) {
+  if (!p || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+  const A = normAnchors(p.anchors);
+  const ce = ceClass(p.ce), al = alphaClass(p.alpha);
+  const payload = {
+    module: 'hipop',
+    timestamp: new Date().toISOString(),
+    patientId: p.id, patientName: p.name, age: p.age,
+    side: p.side, surgeryDate: p.surgery,
+    tearStart: hipTimeLabel(p.a), tearEnd: hipTimeLabel(p.b + 1),
+    tearHours: (((p.b - p.a + 24) % 24) + 1) / 2,
+    anchorCount: A.length,
+    anchors: A.map(a => hipTimeLabel(a.i) + ' ' + (ANCHOR_TYPES[a.t] || ANCHOR_TYPES.knotless).short).join(' | '),
+    knotless: A.filter(a => a.t === 'knotless').length,
+    knotted:  A.filter(a => a.t === 'knotted').length,
+    fai: p.fai, proc: p.proc,
+    ce: p.ce, ceClass: ce ? ce.label : '',
+    alpha: p.alpha, alphaClass: al ? al.label : '',
+    clbPre: p.clbPre, clbIntra: p.clbIntra,
+    clbConcord: (function () { const c = clbConcordance(p.clbPre, p.clbIntra); return c ? c.label : ''; })(),
+    traction: p.traction,
+    notes: p.notes,
+  };
+  const f = document.createElement('iframe');
+  f.style.display = 'none';
+  f.src = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 8000);
+}
+
+function numOrNull(id) {
+  const v = document.getElementById(id).value;
+  return v === '' ? null : Number(v);
+}
+
+// ── Kalça takip dönemleri ──
+const HIP_FU = ['Pre-op', '1. Ay', '3. Ay', '6. Ay', '12. Ay'];
+const HIP_FU_OFFSET = { 'Pre-op': 0, '1. Ay': 30, '3. Ay': 90, '6. Ay': 180, '12. Ay': 365 };
+const HIP_FU_CLS = { 'Pre-op': 'fu-preop', '1. Ay': 'fu-2wk', '3. Ay': 'fu-6w', '6. Ay': 'fu-6m', '12. Ay': 'fu-12m' };
+// PROM satırları: 0-100 ve yüksek = iyi (VAS hariç)
+const HIP_PROMS = [
+  { key: 'vas',    label: 'VAS (ağrı)',      max: 10,  low: true  },
+  { key: 'ihot',   label: 'iHOT-12',         max: 100, low: false },
+  { key: 'mhhs',   label: 'mHHS',            max: 100, low: false },
+  { key: 'hosAdl', label: 'HOS-ADL',         max: 100, low: false },
+  { key: 'hosSp',  label: 'HOS-Spor',        max: 100, low: false },
+  { key: 'rsi',    label: 'Hip-RSI',         max: 100, low: false, rsi: true },
+  { key: 'pcs',    label: 'SF-12 Fiziksel',  max: 100, low: false, norm: true },
+  { key: 'mcs',    label: 'SF-12 Mental',    max: 100, low: false, norm: true },
+];
+
+function hipCell(val, prom) {
+  if (val === null || val === undefined || val === '') return '<span class="m-muted">—</span>';
+  let cls;
+  if (prom.low)       cls = val <= 3  ? 'score-good' : val <= 6  ? 'score-mid' : 'score-bad';
+  else if (prom.norm) cls = val >= 50 ? 'score-good' : val >= 40 ? 'score-mid' : 'score-bad'; // SF-12 norm 50
+  else if (prom.rsi)  cls = val >= 70 ? 'score-good' : val >= 50 ? 'score-mid' : 'score-bad'; // Hip-RSI hazırlık
+  else                cls = val >= 80 ? 'score-good' : val >= 60 ? 'score-mid' : 'score-bad';
+  return `<span class="score-pill ${cls}">${val}</span>`;
+}
+
+// Sonraki takip: cerrahi tarihine göre ilk doldurulmamış dönem
+function hipNextBadge(p) {
+  const surgery = parseD(p.surgery);
+  if (!surgery) return '<span class="m-muted">—</span>';
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  for (const seg of HIP_FU) {
+    if (p.fu && p.fu[seg]) continue;
+    const t = new Date(surgery); t.setDate(t.getDate() + HIP_FU_OFFSET[seg]); t.setHours(0, 0, 0, 0);
+    const days = Math.round((t - today) / 86400000);
+    if (days < 0)   return `<span class="score-pill score-bad">${seg} · ${-days} gün gecikti</span>`;
+    if (days === 0) return `<span class="score-pill score-mid">${seg} · bugün</span>`;
+    if (days <= 7)  return `<span class="score-pill score-mid">${seg} · ${days} gün kaldı</span>`;
+    return `<span class="score-pill" style="background:var(--primary-light);color:var(--primary)">${seg} · ${days} gün kaldı</span>`;
+  }
+  return '<span class="score-pill score-good">Takip tamam ✓</span>';
+}
+
+const hipOpenFu = new Set();
+function toggleHipFu(i) {
+  if (hipOpenFu.has(i)) hipOpenFu.delete(i); else hipOpenFu.add(i);
+  renderHipPatients();
+}
+
+function saveHipFu(i) {
+  const seg = document.getElementById('hfSeg_' + i).value;
+  const p = hipPatients[i];
+  p.fu = p.fu || {};
+  p.fu[seg] = {
+    date:   document.getElementById('hfDate_' + i).value,
+    vas:    numOrNull('hfVas_' + i),
+    ihot:   numOrNull('hfIhot_' + i),
+    mhhs:   numOrNull('hfMhhs_' + i),
+    hosAdl: numOrNull('hfAdl_' + i),
+    hosSp:  numOrNull('hfSp_' + i),
+    rsi:    numOrNull('hfRsi_' + i),
+    pcs:    numOrNull('hfPcs_' + i),
+    mcs:    numOrNull('hfMcs_' + i),
+  };
+  renderHipPatients();
+}
+
+function hipFuPanel(p, i) {
+  const rows = HIP_PROMS.map(prom => `
+    <tr>
+      <td>${prom.label}</td>
+      ${HIP_FU.map(seg => `<td>${hipCell(p.fu && p.fu[seg] ? p.fu[seg][prom.key] : null, prom)}</td>`).join('')}
+    </tr>`).join('');
+  const dates = HIP_FU.map(seg => `<td style="font-size:11px;color:var(--muted);">${p.fu && p.fu[seg] && p.fu[seg].date ? fmtDate(p.fu[seg].date) : ''}</td>`).join('');
+  return `
+    <div class="hip-fu" id="hipfu_${i}" style="display:${hipOpenFu.has(i) ? '' : 'none'};">
+      <table>
+        <thead><tr><th></th>${HIP_FU.map(seg => `<th><span class="fu-badge ${HIP_FU_CLS[seg]}">${seg}</span></th>`).join('')}</tr></thead>
+        <tbody><tr><td>Tarih</td>${dates}</tr>${rows}</tbody>
+      </table>
+      <div class="hip-add">
+        <select id="hfSeg_${i}">${HIP_FU.map(s => `<option>${s}</option>`).join('')}</select>
+        <input type="date" id="hfDate_${i}">
+        <span class="lbl">VAS</span><input type="number" id="hfVas_${i}" min="0" max="10" placeholder="0-10">
+        <span class="lbl">iHOT</span><input type="number" id="hfIhot_${i}" min="0" max="100" step="0.1">
+        <span class="lbl">mHHS</span><input type="number" id="hfMhhs_${i}" min="0" max="100" step="0.1">
+        <span class="lbl">HOS-ADL</span><input type="number" id="hfAdl_${i}" min="0" max="100" step="0.1">
+        <span class="lbl">Spor</span><input type="number" id="hfSp_${i}" min="0" max="100" step="0.1">
+        <span class="lbl">Hip-RSI</span><input type="number" id="hfRsi_${i}" min="0" max="100" step="0.1">
+        <span class="lbl">PCS</span><input type="number" id="hfPcs_${i}" min="0" max="100" step="0.1">
+        <span class="lbl">MCS</span><input type="number" id="hfMcs_${i}" min="0" max="100" step="0.1">
+        <button class="btn btn-primary" onclick="saveHipFu(${i})">Kaydet</button>
+      </div>
+    </div>`;
+}
+
+function renderHipPatients() {
+  const grid = document.getElementById('hipGrid');
+  if (!hipPatients.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🗂</div><div>Henüz kalça artroskopisi kaydı yok</div></div>';
+    return;
+  }
+  grid.innerHTML = hipPatients.map((p, i) => {
+    const done = HIP_FU.filter(s => p.fu && p.fu[s]).length;
+    return `
+    <div class="tp-card">
+      <div><svg class="hip-mini" viewBox="0 0 380 380" width="104" xmlns="http://www.w3.org/2000/svg">${hipClockMarkup(false, p.a, p.b, 380, p.anchors)}</svg></div>
+      <div>
+        <div class="tp-name">${p.name}${p.age ? ' · ' + p.age + 'y' : ''} <span style="font-weight:500;color:var(--muted);font-size:12px;">· ${p.side} kalça</span></div>
+        <div class="tp-dx">${p.surgery ? 'Cerrahi: ' + fmtDate(p.surgery) : ''}</div>
+        <div class="tp-badges">
+          <span class="score-pill score-bad">Yırtık: ${hipArcLabel(p.a, p.b)}</span>
+          ${p.anchors && p.anchors.length
+            ? `<span class="score-pill" style="background:#e0f2fe;color:#0369a1">⚓ ${p.anchors.length} ankor · ${hipAnchorSummary(p.anchors)}</span>` : ''}
+          ${p.fai ? `<span class="score-pill score-mid">FAI: ${p.fai}</span>` : ''}
+          ${p.proc ? `<span class="score-pill score-good">${p.proc}</span>` : ''}
+          ${(() => { const c = ceClass(p.ce); return c ? `<span class="score-pill ${c.cls}">CE ${p.ce}° · ${c.label}</span>` : ''; })()}
+          ${(() => { const a = alphaClass(p.alpha); return a ? `<span class="score-pill ${a.cls}">α ${p.alpha}° · ${a.label}</span>` : ''; })()}
+          ${p.traction !== null && p.traction !== undefined && p.traction !== ''
+            ? `<span class="score-pill" style="background:#f1f5f9;color:#475569">Traksiyon ${p.traction} dk</span>` : ''}
+          ${(() => {
+            const c = clbConcordance(p.clbPre, p.clbIntra);
+            if (c) return `<span class="score-pill ${c.cls}">Kondrolabral: ${c.label}</span>`;
+            if (p.clbIntra) return `<span class="score-pill ${p.clbIntra === 'Var' ? 'score-mid' : 'score-good'}">Kondrolabral (intra-op): ${p.clbIntra}</span>`;
+            return '';
+          })()}
+          ${hipNextBadge(p)}
+        </div>
+        ${p.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:7px;">${p.notes}</div>` : ''}
+        <div class="tp-actions">
+          <button class="btn btn-ghost" onclick="toggleHipFu(${i})">📊 Takip Skorları (${done}/${HIP_FU.length})</button>
+        </div>
+      </div>
+      ${hipFuPanel(p, i)}
+    </div>`;
+  }).join('');
+}
+
 </script>
 </body>
 </html>
