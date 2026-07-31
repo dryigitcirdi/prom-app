@@ -50,7 +50,8 @@ function saveHipOpRow(data) {
     sheet.setFrozenRows(1);
     sheet.setColumnWidth(1, 160);
     sheet.setColumnWidth(3, 160);
-    sheet.setColumnWidth(11, 240);
+    sheet.setColumnWidth(20, 260);            // Ankorlar dökümü
+    sheet.getRange('P:Q').setNumberFormat('@'); // Yırtık başlangıç/bitiş = metin
   }
   if (sheet.getRange(1, HIP_OP_HEADERS.length).getValue() !== HIP_OP_HEADERS[HIP_OP_HEADERS.length - 1]) {
     sheet.getRange(1, 1, 1, HIP_OP_HEADERS.length).setValues([HIP_OP_HEADERS]);
@@ -88,6 +89,11 @@ function saveHipOpRow(data) {
   }
   if (target) sheet.getRange(target, 1, 1, row.length).setValues([row]);
   else { sheet.appendRow(row); target = sheet.getLastRow(); }
+
+  // Yırtık saatleri ("12:30") Sheets tarafından saat değerine çevrilmesin — düz metin
+  sheet.getRange(target, 16, 1, 2)
+    .setNumberFormat('@')
+    .setValues([[String(data.tearStart || ''), String(data.tearEnd || '')]]);
 
   // Sütunlar (1-based): CE=7, Alfa=9, KLB-MR=12, KLB-Artro=14, Uyum=15
   colorCE(sheet, target, 7, data.ce);
