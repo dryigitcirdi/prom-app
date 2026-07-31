@@ -133,6 +133,128 @@ function colorAlpha(sheet, row, col, v) {
   sheet.getRange(row, col).setBackground(bg);
 }
 
+// ═══ Tümör modülü — 3 sayfa: hasta künyesi · olaylar · lezyon çizimleri ═══
+const TUMOR_SHEET  = 'Tumor_Hastalar';
+const TUMOR_EVENTS = 'Tumor_Olaylar';
+const TUMOR_DRAWS  = 'Tumor_Cizimler';
+
+const TUMOR_HEADERS = [
+  'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Yaş', 'Tümör Tipi',
+  'Ön Tanı', 'Biyopsi', 'Kesin Tanı',
+  'Lokalizasyon', 'Bölge Kodları',
+  'Cerrahi Tarihi', 'Cerrahi Sınır',
+  'Nüks', 'Nüks Tarihi', 'Nüks Süresi (ay)',
+  'Metastaz', 'Metastaz Bölgeleri',
+  'Olay Sayısı', 'Çizim Sayısı', 'Notlar',
+];
+const TUMOR_EVENT_HEADERS = [
+  'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Olay Tarihi', 'Olay Tipi', 'Bölgeler', 'Not',
+];
+const TUMOR_DRAW_HEADERS = [
+  'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Bölge', 'Çizim (PNG)',
+];
+
+function isTumor(data) { return data.module === 'tumor'; }
+
+function ensureSheet(name, headers, widths) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.setFrozenRows(1);
+    (widths || []).forEach(function (w) { sheet.setColumnWidth(w[0], w[1]); });
+  }
+  if (sheet.getRange(1, headers.length).getValue() !== headers[headers.length - 1]) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    const hr = sheet.getRange(1, 1, 1, headers.length);
+    hr.setBackground('#1e6fff'); hr.setFontColor('#ffffff');
+    hr.setFontWeight('bold'); hr.setFontSize(11);
+  }
+  return sheet;
+}
+
+// Bir hastanın mevcut satırlarını sil (olaylar/çizimler yeniden yazılacak)
+function clearPatientRows(sheet, idCol, id, nameCol, name) {
+  const last = sheet.getLastRow();
+  if (last < 2) return;
+  const vals = sheet.getRange(2, 1, last - 1, Math.max(idCol, nameCol)).getValues();
+  for (let i = vals.length - 1; i >= 0; i--) {
+    const rid = String(vals[i][idCol - 1] || '').trim();
+    const rnm = String(vals[i][nameCol - 1] || '').trim().toLowerCase();
+    const match = (id && rid) ? rid === id : (name && rnm === name);
+    if (match) sheet.deleteRow(i + 2);
+  }
+}
+
+function saveTumorData(data) {
+  const id = String(data.patientId || '').trim();
+  const nameLc = String(data.patientName || '').trim().toLowerCase();
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+
+  // ── 1) Hasta künyesi (hasta başına tek satır: varsa güncelle) ──
+  const sheet = ensureSheet(TUMOR_SHEET, TUMOR_HEADERS, [[1, 160], [3, 160], [9, 260], [17, 200]]);
+  const row = [
+    data.timestamp || '', data.patientId || '', data.patientName || '', n(data.age),
+    data.ttype || '', data.preDx || '', data.biopsy || '', data.finalDx || '',
+    data.regionLabels || '', data.regionIds || '',
+    data.surgery || '', data.margin || '',
+    data.rec || '', data.recDate || '', n(data.recMonths),
+    (data.mets && data.mets.length) ? 'Var' : 'Yok', data.metLabels || '',
+    n(data.eventCount), n(data.drawCount), data.notes || '',
+  ];
+  const last = sheet.getLastRow();
+  let target = 0;
+  if (last >= 2) {
+    const vals = sheet.getRange(2, 2, last - 1, 2).getValues();
+    for (let i = 0; i < vals.length; i++) {
+      const rid = String(vals[i][0] || '').trim();
+      const rnm = String(vals[i][1] || '').trim().toLowerCase();
+      if ((id && rid) ? rid === id : (nameLc && rnm === nameLc)) { target = i + 2; break; }
+    }
+  }
+  if (target) sheet.getRange(target, 1, 1, row.length).setValues([row]);
+  else { sheet.appendRow(row); target = sheet.getLastRow(); }
+  colorMargin(sheet, target, 12, data.margin);
+  colorRec(sheet, target, 13, data.rec);
+  colorMet(sheet, target, 16, (data.mets && data.mets.length) ? 'Var' : 'Yok');
+
+  // ── 2) Zaman çizelgesi olayları (hastanın satırları yeniden yazılır) ──
+  if (data.events) {
+    const ev = ensureSheet(TUMOR_EVENTS, TUMOR_EVENT_HEADERS, [[1, 160], [3, 160], [6, 240], [7, 320]]);
+    clearPatientRows(ev, 2, id, 3, nameLc);
+    data.events.forEach(function (e) {
+      ev.appendRow([data.timestamp || '', data.patientId || '', data.patientName || '',
+                    e.date || '', e.typeLabel || e.type || '', e.regionLabels || '', e.note || '']);
+    });
+  }
+
+  // ── 3) Lezyon çizimleri ──
+  if (data.drawings) {
+    const dr = ensureSheet(TUMOR_DRAWS, TUMOR_DRAW_HEADERS, [[1, 160], [3, 160], [4, 200], [5, 420]]);
+    clearPatientRows(dr, 2, id, 3, nameLc);
+    data.drawings.forEach(function (d) {
+      const png = String(d.png || '');
+      dr.appendRow([data.timestamp || '', data.patientId || '', data.patientName || '',
+                    d.label || '', png.length > 45000 ? '[çok büyük — yerel]' : png]);
+    });
+  }
+}
+
+// Cerrahi sınır: Temiz yeşil · Marjinal sarı · Pozitif kırmızı
+function colorMargin(sheet, row, col, v) {
+  if (!v) return;
+  const bg = v === 'Temiz' ? '#dcfce7' : v === 'Marjinal' ? '#fef9c3' : '#fee2e2';
+  sheet.getRange(row, col).setBackground(bg);
+}
+function colorRec(sheet, row, col, v) {
+  if (!v) return;
+  sheet.getRange(row, col).setBackground(v === 'Var' ? '#fee2e2' : '#dcfce7');
+}
+function colorMet(sheet, row, col, v) {
+  if (!v) return;
+  sheet.getRange(row, col).setBackground(v === 'Var' ? '#f3e8ff' : '#dcfce7');
+}
+
 function sheetNameFor(diag) {
   return DIAG_SHEETS[diag] || DEFAULT_SHEET;
 }
@@ -221,6 +343,7 @@ function doGet(e) {
 }
 
 function saveToSheet(data) {
+  if (isTumor(data)) { saveTumorData(data); return; }
   if (isHipOp(data)) { saveHipOpRow(data); return; }
   if (isHip(data)) { saveHipRow(data); return; }
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -432,7 +555,21 @@ function getSheetData() {
     for (let i = 1; i < od.length; i++) hipOpRows.push(od[i]);
   }
 
+  // Tümör: hasta künyeleri ve olaylar (çizimler yanıta dahil edilmez — boyut)
+  function dumpSheet(name, headers) {
+    const out = [headers];
+    const sh = ss.getSheetByName(name);
+    if (sh && sh.getLastRow() >= 2) {
+      const d = sh.getDataRange().getValues();
+      for (let i = 1; i < d.length; i++) out.push(d[i]);
+    }
+    return out;
+  }
+  const tumorRows = dumpSheet(TUMOR_SHEET, TUMOR_HEADERS);
+  const tumorEventRows = dumpSheet(TUMOR_EVENTS, TUMOR_EVENT_HEADERS);
+
   return ContentService
-    .createTextOutput(JSON.stringify({ rows: rows, hipRows: hipRows, hipOpRows: hipOpRows }))
+    .createTextOutput(JSON.stringify({ rows: rows, hipRows: hipRows, hipOpRows: hipOpRows,
+                                       tumorRows: tumorRows, tumorEventRows: tumorEventRows }))
     .setMimeType(ContentService.MimeType.JSON);
 }

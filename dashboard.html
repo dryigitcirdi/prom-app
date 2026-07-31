@@ -1686,6 +1686,7 @@ function saveTumorPatient() {
   syncBodyMap();
   renderTumorPatients();
   document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
+  sendTumorToSheet(tumorPatients[tumorPatients.length - 1]);
 }
 
 function tRecMonths(p) {
@@ -1783,6 +1784,73 @@ function addEvent(idx) {
   if (type === 'metastaz' && region && !(p.mets || []).includes(region)) (p.mets = p.mets || []).push(region);
   if (type === 'nuks') { p.rec = 'Var'; if (!p.recDate) p.recDate = date; }
   renderTumorPatients();
+  sendTumorToSheet(p);
+}
+
+// ── Tümör kaydını hasta takip tablosuna gönder ──────────────────────────────
+// Çizimler büyük olabildiği için GET yerine POST (no-cors) kullanılır.
+function tumorRegionLabels(list) {
+  return normAnchorsSafe(list).map(r => REG(r).label).join(' + ');
+}
+function normAnchorsSafe(list) { return (list || []).filter(Boolean); }
+
+// Çizimi yarı boyuta indir — tabloya sığsın (hücre sınırı 50.000 karakter)
+function shrinkDrawing(dataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width / 2); c.height = Math.round(img.height / 2);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function sendTumorToSheet(p) {
+  if (!p || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+  const regions = p.regions || (p.regionId ? [p.regionId] : []);
+  const months = tRecMonths(p);
+
+  // Çizimleri küçültüp listeye çevir
+  const drawings = [];
+  for (const k of Object.keys(p.drawings || {})) {
+    const m = k.match(/^([a-z_]+?)(?:_(sag|sol))?$/);
+    const lbl = (m && BRUSH_GROUPS[m[1]] ? BRUSH_GROUPS[m[1]].label : k) +
+                (m && m[2] ? (m[2] === 'sag' ? ' (Sağ)' : ' (Sol)') : '');
+    drawings.push({ label: lbl, png: await shrinkDrawing(p.drawings[k]) });
+  }
+
+  const payload = {
+    module: 'tumor',
+    timestamp: new Date().toISOString(),
+    patientId: p.id, patientName: p.name, age: p.age,
+    ttype: (p.ttype || 'kemik') === 'yumusak' ? 'Yumuşak Doku' : 'Kemik',
+    preDx: p.preDx, biopsy: p.biopsy, finalDx: p.finalDx,
+    regionLabels: tumorRegionLabels(regions),
+    regionIds: regions.join(' | '),
+    surgery: p.surgery, margin: p.margin,
+    rec: p.rec, recDate: p.recDate, recMonths: months,
+    mets: p.mets || [], metLabels: tumorRegionLabels(p.mets),
+    eventCount: (p.events || []).length,
+    drawCount: drawings.length,
+    notes: p.notes,
+    events: (p.events || []).map(e => ({
+      date: e.date, type: e.type,
+      typeLabel: (EVENT_TYPES[e.type] || EVENT_TYPES.diger).label,
+      regionLabels: tumorRegionLabels(e.regions),
+      note: e.note,
+    })),
+    drawings: drawings,
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload) });
+  } catch (e) { console.warn('Tümör kaydı gönderilemedi:', e); }
 }
 
 function renderTumorPatients() {
