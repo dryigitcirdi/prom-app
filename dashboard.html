@@ -856,7 +856,15 @@ function fmtDate(v) {
 function txt(v) { return v === undefined || v === null ? '' : String(v).trim(); }
 function num(v) { return v === '' || v === null || v === undefined ? null : Number(v); }
 function splitIds(v) { return txt(v) ? txt(v).split('|').map(x => x.trim()).filter(Boolean) : []; }
-function isoDay(v) { const t = txt(v); return t.includes('T') ? t.slice(0, 10) : t; }
+// Sheets tarihleri UTC olarak serileşir (TR = UTC+3) — yerel güne çevir, gün kaymasın
+function isoDay(v) {
+  const t = txt(v);
+  if (!t || !t.includes('T')) return t;
+  const d = new Date(t);
+  if (isNaN(d)) return t.slice(0, 10);
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
 
 // "12:30" → yarım saat dilimi indeksi (0-23)
 function parseHipTime(lbl) {
