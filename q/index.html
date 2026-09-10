@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Anket açılıyor…</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100dvh;display:flex;align-items:center;justify-content:center;
+       background:#f8fafc;color:#0f172a;
+       font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+       padding:24px}
+  .box{text-align:center;max-width:340px}
+  .ring{width:46px;height:46px;margin:0 auto 22px;border-radius:50%;
+        border:3px solid #e2e8f0;border-top-color:#0f172a;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  p{font-size:14px;color:#64748b;margin-top:8px;line-height:1.5}
+  .err .ring{display:none}
+  .code{display:inline-block;margin-top:14px;padding:6px 12px;border-radius:8px;
+        background:#f1f5f9;font:600 14px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+</style>
+</head>
+<body>
+<div class="box" id="box">
+  <div class="ring"></div>
+  <h1 id="t">Anketiniz hazırlanıyor</h1>
+  <p id="s">Birkaç saniye sürebilir…</p>
+</div>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
+const qs  = new URLSearchParams(location.search);
+const k   = (qs.get('k') || location.search.replace(/^\?/, '')).toUpperCase().trim();
+
+function fail(msg, showCode) {
+  document.getElementById('box').className = 'box err';
+  document.getElementById('t').textContent = 'Bağlantı açılamadı';
+  document.getElementById('s').innerHTML = msg +
+    (showCode && k ? '<br><span class="code">' + k + '</span>' : '');
+}
+
+if (!/^[A-Z0-9]{4,8}$/.test(k)) {
+  fail('Bağlantı eksik görünüyor. Lütfen doktorunuzdan yeni bir bağlantı isteyin.');
+} else {
+  fetch(API + '?action=link&k=' + encodeURIComponent(k))
+    .then(r => r.json())
+    .then(d => {
+      if (!d || d.status !== 'ok') { fail('Bu bağlantı bulunamadı. Lütfen doktorunuza bildirin.', true); return; }
+      const page = d.module === 'hip' ? '../form-hip.html' : '../form.html';
+      const p = new URLSearchParams({
+        name: d.name || '', id: d.id || '', surgery: d.surgery || '',
+        leg: d.leg || '', fu: d.fu || ''
+      });
+      if (d.module !== 'hip') p.set('procedure', d.procedure || 'Kalsifik Tendinit');
+      location.replace(page + '?' + p.toString());
+    })
+    .catch(() => fail('İnternet bağlantınızı kontrol edip sayfayı yenileyin.', true));
+}
+</script>
+</body>
+</html>

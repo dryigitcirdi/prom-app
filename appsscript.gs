@@ -351,6 +351,16 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify({ rows: rows }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+  if (e.parameter.action === 'newlink') {
+    const code = makeShortLink(e.parameter);
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', code: code }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  if (e.parameter.action === 'link') {
+    const rec = resolveShortLink(e.parameter.k);
+    return ContentService.createTextOutput(JSON.stringify(rec))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'ok', message: 'PROM API çalışıyor' }))
     .setMimeType(ContentService.MimeType.JSON);
@@ -586,4 +596,76 @@ function getSheetData() {
     .createTextOutput(JSON.stringify({ rows: rows, hipRows: hipRows, hipOpRows: hipOpRows,
                                        tumorRows: tumorRows, tumorEventRows: tumorEventRows }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// KISA LİNK — hasta adı/tarihi URL'de görünmesin diye kod tabanlı yönlendirme
+// ═══════════════════════════════════════════════════════════════════════════
+const LINK_SHEET = 'Kisa_Linkler';
+const LINK_HEADERS = ['Kod', 'Modül', 'Ad Soyad', 'Hasta ID', 'Girişim Tarihi',
+                      'Taraf', 'Dönem', 'Tanı', 'Oluşturma', 'İlk Açılma', 'Açılma Sayısı'];
+// Karışabilen karakterler (I, O, 0, 1) alfabede yok — telefonda okunaklı olsun
+const LINK_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function linkSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(LINK_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(LINK_SHEET);
+    sh.getRange(1, 1, 1, LINK_HEADERS.length).setValues([LINK_HEADERS]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, 1, LINK_HEADERS.length).setBackground('#1e293b').setFontColor('#ffffff');
+    sh.setColumnWidth(1, 80);
+  }
+  return sh;
+}
+
+function makeShortLink(p) {
+  const sh = linkSheet_();
+  const last = sh.getLastRow();
+  const used = last > 1 ? sh.getRange(2, 1, last - 1, 1).getValues().map(function (r) { return String(r[0]); }) : [];
+  let code = '';
+  for (let tries = 0; tries < 40; tries++) {
+    code = '';
+    for (let i = 0; i < 5; i++) code += LINK_ALPHABET.charAt(Math.floor(Math.random() * LINK_ALPHABET.length));
+    if (used.indexOf(code) === -1) break;
+  }
+  sh.appendRow([code, p.module || 'omuz', p.name || '', p.pid || '', p.surgery || '',
+                p.leg || '', p.fu || '', p.procedure || '', new Date(), '', 0]);
+  // Kod ve Hasta ID metin kalsın (Sheets sayıya çevirmesin)
+  sh.getRange(sh.getLastRow(), 1).setNumberFormat('@').setValue(code);
+  sh.getRange(sh.getLastRow(), 4).setNumberFormat('@').setValue(String(p.pid || ''));
+  return code;
+}
+
+function resolveShortLink(code) {
+  const key = String(code || '').toUpperCase().trim();
+  if (!key) return { status: 'error', message: 'kod yok' };
+  const sh = linkSheet_();
+  if (sh.getLastRow() < 2) return { status: 'error', message: 'bulunamadı' };
+  const d = sh.getRange(2, 1, sh.getLastRow() - 1, LINK_HEADERS.length).getValues();
+  for (let i = 0; i < d.length; i++) {
+    if (String(d[i][0]).toUpperCase().trim() !== key) continue;
+    const row = i + 2;
+    if (!d[i][9]) sh.getRange(row, 10).setValue(new Date());
+    sh.getRange(row, 11).setValue((Number(d[i][10]) || 0) + 1);
+    return {
+      status: 'ok',
+      module: String(d[i][1] || 'omuz'),
+      name: String(d[i][2] || ''),
+      id: String(d[i][3] || ''),
+      surgery: fmtDate_(d[i][4]),
+      leg: String(d[i][5] || ''),
+      fu: String(d[i][6] || ''),
+      procedure: String(d[i][7] || '')
+    };
+  }
+  return { status: 'error', message: 'bulunamadı' };
+}
+
+// Tarih hücresi Date olarak dönerse YYYY-MM-DD'ye çevir (saat dilimi kaymasın)
+function fmtDate_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, 'Europe/Istanbul', 'yyyy-MM-dd');
+  return String(v || '');
 }

@@ -1171,6 +1171,13 @@ function selectDiagOpt(diag) {
 }
 
 let activeLeg = surgeryLeg; // may be updated from demographics picker
+// Ekranda gösterilecek taraf etiketi (URL'den 'sag'/'sol' gelebilir)
+function legLabel(v) {
+  if (!v) return '';
+  if (/^sag$|^sağ$|^right$/i.test(v.trim())) return 'Sağ';
+  if (/^sol$|^left$/i.test(v.trim()))        return 'Sol';
+  return v;
+}
 
 let daysPostOp = null;
 if (surgeryDateStr) {
@@ -1262,7 +1269,7 @@ function initDemographics() {
   document.getElementById('demoDays').textContent      = daysPostOp !== null ? daysPostOp + '. gün' : '—';
 
   if (activeLeg) {
-    document.getElementById('demoLeg').textContent        = activeLeg;
+    document.getElementById('demoLeg').textContent        = legLabel(activeLeg);
     document.getElementById('sidePicker').style.display   = 'none';
   } else {
     document.getElementById('demoLeg').textContent        = 'Seçilmedi';
@@ -1784,7 +1791,7 @@ erSvg.addEventListener('touchend',     () => { erDragging = false; });
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('welcomeName').textContent = patientName;
 document.getElementById('chipDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
-document.getElementById('chipLeg').textContent     = activeLeg || '—';
+document.getElementById('chipLeg').textContent     = legLabel(activeLeg) || '—';
 document.getElementById('chipFU').textContent      = getFollowup() || '—';
 updateVAS(5);
 updateSleepVAS(5);

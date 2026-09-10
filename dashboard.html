@@ -1214,7 +1214,9 @@ function syncFUOptions() {
   if (opt.hidden && sel.value === '2w') sel.value = 'preop';
 }
 
-function generateLink() {
+const SHORT_BASE_URL = window.location.href.split(/[?#]/)[0].replace(/[^\/]*$/, '') + 'q/';
+
+async function generateLink() {
   const name    = document.getElementById('pName').value.trim();
   const id      = document.getElementById('pId').value.trim() || ('P' + Date.now());
   const surgery = document.getElementById('pSurgery').value;
@@ -1225,17 +1227,31 @@ function generateLink() {
   if (!name)    { alert('Lütfen hasta adını girin.'); return; }
   if (!surgery) { alert('Lütfen girişim tarihini girin.'); return; }
 
-  const params = new URLSearchParams({ name, id, surgery, leg, fu, procedure });
-  const url = FORM_BASE_URL + '?' + params.toString();
+  const fullUrl = FORM_BASE_URL + '?' +
+    new URLSearchParams({ name, id, surgery, leg, fu, procedure }).toString();
 
-  document.getElementById('linkText').textContent = url;
+  const box = document.getElementById('linkText');
   document.getElementById('linkResult').style.display = 'block';
+  box.textContent = 'Kısa link oluşturuluyor…';
 
-  const FU_LABELS = { preop: 'Pre-op', '6w': '6. Hafta', '6m': '6. Ay' };
+  const FU_LABELS = { preop: 'Pre-op', '2w': '2. Hafta', '6w': '6. Hafta', '6m': '6. Ay' };
   const d    = new Date(surgery);
   const days = Math.floor((new Date() - d) / 86400000);
-  document.getElementById('linkMeta').textContent =
-    `${name} · ${procedure} · ${FU_LABELS[fu]} değerlendirmesi · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
+  const meta = `${name} · ${procedure} · ${FU_LABELS[fu] || fu} değerlendirmesi · ` +
+               `Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
+  document.getElementById('linkMeta').textContent = meta;
+
+  // Kısa link: hasta adı/tarihi URL'de görünmez, kod arka planda çözülür
+  try {
+    const q = new URLSearchParams({ action: 'newlink', module: 'omuz',
+                                    name, pid: id, surgery, leg, fu, procedure });
+    const j = await (await fetch(APPS_SCRIPT_URL + '?' + q.toString())).json();
+    if (j && j.status === 'ok' && j.code) { box.textContent = SHORT_BASE_URL + '?k=' + j.code; return; }
+    throw new Error('kod alınamadı');
+  } catch (err) {
+    box.textContent = fullUrl;
+    document.getElementById('linkMeta').textContent = meta + ' · ⚠︎ kısa link üretilemedi, tam link kullanılıyor';
+  }
 }
 
 function copyLink() {
@@ -2294,12 +2310,22 @@ function generateHipLink() {
   if (!surgery) { alert('Lütfen girişim tarihini girin.'); return; }
 
   const url = HIP_FORM_URL + '?' + new URLSearchParams({ name, id, surgery, leg, fu }).toString();
+  shortenHipLink({ name, pid: id, surgery, leg, fu });
   document.getElementById('lhText').textContent = url;
   document.getElementById('lhResult').style.display = 'block';
   const FU_LABELS = { preop: 'Pre-op', '1m': '1. Ay', '3m': '3. Ay', '6m': '6. Ay', '12m': '12. Ay' };
   const d = new Date(surgery), days = Math.floor((new Date() - d) / 86400000);
   document.getElementById('lhMeta').textContent =
     `${name} · Kalça Artroskopisi · ${FU_LABELS[fu]} değerlendirmesi · Girişim: ${d.toLocaleDateString('tr-TR')} · Bugün itibarıyla ${days}. gün`;
+}
+
+async function shortenHipLink(d) {
+  const box = document.getElementById('lhText');
+  try {
+    const q = new URLSearchParams(Object.assign({ action: 'newlink', module: 'hip' }, d));
+    const j = await (await fetch(APPS_SCRIPT_URL + '?' + q.toString())).json();
+    if (j && j.status === 'ok' && j.code) box.textContent = SHORT_BASE_URL + '?k=' + j.code;
+  } catch (err) { /* tam link ekranda kalır */ }
 }
 
 function copyHipLink() {
