@@ -576,7 +576,7 @@
         <div class="info-chip-label">Dönem</div>
         <div class="info-chip-value" id="chipFU">—</div>
       </div>
-      <div class="info-chip">
+      <div class="info-chip" id="chipDaysBox">
         <div class="info-chip-label">Post-op Gün</div>
         <div class="info-chip-value" id="chipDays">—</div>
       </div>
@@ -611,15 +611,15 @@
         <td class="demo-val" id="demoProcedure">—</td>
       </tr>
       <tr>
-        <td class="demo-lbl">Ameliyat tarihi</td>
+        <td class="demo-lbl" id="demoDateLbl">Ameliyat tarihi</td>
         <td class="demo-val" id="demoDate">—</td>
       </tr>
-      <tr>
+      <tr id="demoDaysRow">
         <td class="demo-lbl">Post-op süre</td>
         <td class="demo-val" id="demoDays">—</td>
       </tr>
       <tr>
-        <td class="demo-lbl">Ameliyat tarafı</td>
+        <td class="demo-lbl" id="demoLegLbl">Ameliyat tarafı</td>
         <td class="demo-val" id="demoLeg">—</td>
       </tr>
     </table>
@@ -1097,7 +1097,7 @@
         <div class="score-box-value" id="finalER">—</div>
       </div>
       <div class="score-box" style="grid-column: 1 / -1;">
-        <div class="score-box-label">Post-op Süre</div>
+        <div class="score-box-label" id="finalDaysLbl">Post-op Süre</div>
         <div class="score-box-value" id="finalDays">—</div>
       </div>
     </div>
@@ -1132,6 +1132,36 @@ const followupLabel = FU_MAP[fuParam] || fuParam || '';
 
 function has2W(diag) { return diag === 'Kalsifik Tendinit'; }
 
+// Kalsifik tendinitte ilk girişim omuz içi iğne (barbotaj/enjeksiyon), ameliyat değil
+function isInjectionFirst(diag) { return diag === 'Kalsifik Tendinit'; }
+
+// Hastaya gösterilen dönem adı. Çizelgeye yazılan değer ('Pre-op') DEĞİŞMEZ —
+// yalnızca ekrandaki metin hastanın anlayacağı dile çevrilir.
+function fuPatientLabel(seg, diag) {
+  if (seg !== 'Pre-op') return seg;
+  return isInjectionFirst(diag === undefined ? selectedDiag : diag)
+    ? 'Omuz iğnesi öncesi' : 'Ameliyat öncesi';
+}
+
+// Girişim türüne göre ekran metinlerini tazeler (iğne / ameliyat)
+function refreshPatientLabels() {
+  const inj = isInjectionFirst(selectedDiag);
+  const b0  = document.getElementById('fuBtn0');
+  if (b0) b0.textContent = inj ? 'Omuz iğnesi öncesi' : 'Ameliyat öncesi';
+  const dl = document.getElementById('demoDateLbl');
+  if (dl) dl.textContent = inj ? 'İşlem tarihi' : 'Ameliyat tarihi';
+  const ll = document.getElementById('demoLegLbl');
+  if (ll) ll.textContent = inj ? 'İşlem tarafı' : 'Ameliyat tarafı';
+  // Girişim öncesi dönemde "post-op gün" bilgisi anlamsız — gizle
+  const pre  = getFollowup() === 'Pre-op';
+  const box  = document.getElementById('chipDaysBox');
+  const row  = document.getElementById('demoDaysRow');
+  if (box) box.style.display = pre ? 'none' : '';
+  if (row) row.style.display = pre ? 'none' : '';
+  const chip = document.getElementById('chipFU');
+  if (chip) chip.textContent = fuPatientLabel(getFollowup()) || '—';
+}
+
 function deriveFU(diag, d) {
   if (d === null || d <= 0) return 'Pre-op';
   if (has2W(diag) && d <= 28) return '2. Hafta';
@@ -1151,7 +1181,7 @@ function selectFUOpt(seg) {
   selectedFU = seg;
   FU_BTNS.forEach((s, i) =>
     document.getElementById('fuBtn' + i).classList.toggle('on', s === seg));
-  document.getElementById('chipFU').textContent = seg;
+  refreshPatientLabels();
 }
 
 // Tanı seçimi — veriler tanıya göre ayrı çizelge sayfasına kaydedilir
@@ -1168,6 +1198,7 @@ function selectDiagOpt(diag) {
   if (!has2W(diag) && selectedFU === '2. Hafta') {
     selectFUOpt(deriveFU(diag, daysPostOp));
   }
+  refreshPatientLabels();
 }
 
 let activeLeg = surgeryLeg; // may be updated from demographics picker
@@ -1792,11 +1823,12 @@ erSvg.addEventListener('touchend',     () => { erDragging = false; });
 document.getElementById('welcomeName').textContent = patientName;
 document.getElementById('chipDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
 document.getElementById('chipLeg').textContent     = legLabel(activeLeg) || '—';
-document.getElementById('chipFU').textContent      = getFollowup() || '—';
+document.getElementById('chipFU').textContent      = fuPatientLabel(getFollowup()) || '—';
 updateVAS(5);
 updateSleepVAS(5);
 selectFUOpt(getFollowup());   // dönem seçiciyi linkten/türetmeden ön-seç
 selectDiagOpt(selectedDiag);  // tanıyı linkteki procedure parametresinden ön-seç
+refreshPatientLabels();       // dönem/girişim metinlerini hastanın diline çevir
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 const headerMeta = [
@@ -2592,7 +2624,14 @@ function showSuccess(now) {
   document.getElementById('finalSleep').textContent     = (scores.sleep ?? '—') + ' / 10';
   document.getElementById('finalPCS').textContent       = scores.sf12_pcs !== null ? scores.sf12_pcs : '—';
   document.getElementById('finalMCS').textContent       = scores.sf12_mcs !== null ? scores.sf12_mcs : '—';
-  document.getElementById('finalDays').textContent      = daysPostOp !== null ? daysPostOp + '. gün' : '—';
+  // Girişim öncesi dönemde post-op gün yerine dönemin kendisini göster
+  if (getFollowup() === 'Pre-op') {
+    document.getElementById('finalDaysLbl').textContent = 'Dönem';
+    document.getElementById('finalDays').textContent    = fuPatientLabel('Pre-op');
+  } else {
+    document.getElementById('finalDaysLbl').textContent = 'Post-op Süre';
+    document.getElementById('finalDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
+  }
   document.getElementById('finalAbduction').textContent = scores.rom_abduction + '°';
   document.getElementById('finalFlexion').textContent   = scores.rom_flexion + '°';
   document.getElementById('finalIR').textContent        = scores.rom_ir_label || '—';
