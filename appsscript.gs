@@ -669,3 +669,4 @@ function fmtDate_(v) {
   if (v instanceof Date) return Utilities.formatDate(v, 'Europe/Istanbul', 'yyyy-MM-dd');
   return String(v || '');
 }
+
