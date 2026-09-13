@@ -259,9 +259,38 @@
     .spark-legend { display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--muted); margin: -6px 0 12px; flex-wrap: wrap; }
     .sl-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
     .sl-note { margin-left: auto; color: #9ca3af; }
-  </style>
+  
+/* ── Kilit ekranı ── */
+#lockScreen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  background:#f8fafc;padding:24px}
+#lockScreen.hidden{display:none}
+.lock-card{width:100%;max-width:320px;text-align:center;background:#fff;border:1px solid #e2e8f0;
+  border-radius:16px;padding:32px 26px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.lock-mark{font-size:26px;margin-bottom:14px}
+.lock-card h1{font-size:17px;font-weight:600;letter-spacing:-.01em;color:#0f172a}
+.lock-card p{font-size:13px;color:#64748b;margin:6px 0 20px}
+#pinInput{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;text-align:center;
+  font:600 22px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.4em;color:#0f172a;background:#fff}
+#pinInput:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.lock-err{min-height:18px;font-size:12px;color:#dc2626;margin:8px 0 12px}
+.shake{animation:shk .35s}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
 </head>
 <body>
+
+<!-- ── Kilit ekranı — hasta verisi PIN girilmeden yüklenmez ── -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-mark">🔒</div>
+    <h1>PROM Takip Sistemi</h1>
+    <p>Devam etmek için erişim kodunu girin.</p>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off"
+           maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')submitPin()">
+    <div class="lock-err" id="pinErr"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="submitPin()">Giriş</button>
+  </div>
+</div>
 
 <div class="topbar">
   <div>
@@ -277,6 +306,7 @@
     </select>
     <span class="badge badge-blue" id="totalBadge">0 kayıt</span>
     <button class="btn btn-ghost btn-sm" onclick="loadData()">↺ Yenile</button>
+    <button class="btn btn-ghost btn-sm" onclick="lockDash()" title="Paneli kilitle">🔒</button>
   </div>
 </div>
 
@@ -731,14 +761,43 @@ function setBranch(name, btn) {
 // ─── State ────────────────────────────────────────────────────────────────────
 let allRows = [];
 
+// ─── Erişim kodu ──────────────────────────────────────────────────────────────
+// PIN burada saklanmaz; doğrulamayı sunucu (Apps Script) yapar. Kod yanlışsa
+// veri uçları 'unauthorized' döner ve hiçbir hasta verisi tarayıcıya inmez.
+const PIN_KEY = 'promPin';
+function pinQS()  { return '&pin=' + encodeURIComponent(localStorage.getItem(PIN_KEY) || ''); }
+function showLock(msg) {
+  document.getElementById('lockScreen').classList.remove('hidden');
+  const err = document.getElementById('pinErr');
+  err.textContent = msg || '';
+  const inp = document.getElementById('pinInput');
+  inp.value = '';
+  if (msg) { inp.classList.add('shake'); setTimeout(() => inp.classList.remove('shake'), 400); }
+  inp.focus();
+}
+function submitPin() {
+  const v = document.getElementById('pinInput').value.trim();
+  if (!v) { showLock('Kod girin.'); return; }
+  localStorage.setItem(PIN_KEY, v);
+  document.getElementById('pinErr').textContent = 'Kontrol ediliyor…';
+  loadData();
+}
+function lockDash() {
+  localStorage.removeItem(PIN_KEY);
+  allRows = []; renderTable([]); refreshAll();
+  showLock('');
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 window.onload = function() {
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
     document.getElementById('configBanner').style.display = 'flex';
+    document.getElementById('lockScreen').classList.add('hidden');
     loadDemoData();
-  } else {
-    loadData();
+    return;
   }
+  if (localStorage.getItem(PIN_KEY)) loadData();
+  else showLock('');
 };
 
 // ─── Demo veri ────────────────────────────────────────────────────────────────
@@ -786,9 +845,15 @@ function refreshAll() {
 // 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs  20:followup
 function loadData() {
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') { loadDemoData(); return; }
-  fetch(APPS_SCRIPT_URL + '?action=getData')
+  fetch(APPS_SCRIPT_URL + '?action=getData' + pinQS())
     .then(r => r.json())
     .then(d => {
+      if (d.status === 'unauthorized') {
+        localStorage.removeItem(PIN_KEY);
+        showLock('Kod hatalı. Tekrar deneyin.');
+        return;
+      }
+      document.getElementById('lockScreen').classList.add('hidden');
       if (!d.rows || d.rows.length < 2) { renderTable([]); return; }
       allRows = d.rows.slice(1).map(r => ({
         date:       r[1]  || '',
@@ -904,7 +969,7 @@ function hydrateTumor(rows, eventRows) {
 // Çizimler ayrı uçtan gelir (boyut nedeniyle)
 function hydrateTumorDrawings() {
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
-  fetch(APPS_SCRIPT_URL + '?action=tumorDrawings')
+  fetch(APPS_SCRIPT_URL + '?action=tumorDrawings' + pinQS())
     .then(r => r.json())
     .then(d => {
       const rows = (d.rows || []).slice(1);
@@ -1244,7 +1309,8 @@ async function generateLink() {
   // Kısa link: hasta adı/tarihi URL'de görünmez, kod arka planda çözülür
   try {
     const q = new URLSearchParams({ action: 'newlink', module: 'omuz',
-                                    name, pid: id, surgery, leg, fu, procedure });
+                                    name, pid: id, surgery, leg, fu, procedure,
+                                    pin: localStorage.getItem(PIN_KEY) || '' });
     const j = await (await fetch(APPS_SCRIPT_URL + '?' + q.toString())).json();
     if (j && j.status === 'ok' && j.code) { box.textContent = SHORT_BASE_URL + '?k=' + j.code; return; }
     throw new Error('kod alınamadı');
@@ -2322,7 +2388,8 @@ function generateHipLink() {
 async function shortenHipLink(d) {
   const box = document.getElementById('lhText');
   try {
-    const q = new URLSearchParams(Object.assign({ action: 'newlink', module: 'hip' }, d));
+    const q = new URLSearchParams(Object.assign(
+      { action: 'newlink', module: 'hip', pin: localStorage.getItem(PIN_KEY) || '' }, d));
     const j = await (await fetch(APPS_SCRIPT_URL + '?' + q.toString())).json();
     if (j && j.status === 'ok' && j.code) box.textContent = SHORT_BASE_URL + '?k=' + j.code;
   } catch (err) { /* tam link ekranda kalır */ }
