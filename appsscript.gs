@@ -338,9 +338,11 @@ function doGet(e) {
     }
   }
   if (e.parameter.action === 'getData') {
+    if (!pinOk_(e)) return unauthorized_();
     return getSheetData();
   }
   if (e.parameter.action === 'tumorDrawings') {
+    if (!pinOk_(e)) return unauthorized_();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sh = ss.getSheetByName(TUMOR_DRAWS);
     const rows = [TUMOR_DRAW_HEADERS];
@@ -352,6 +354,7 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
   if (e.parameter.action === 'newlink') {
+    if (!pinOk_(e)) return unauthorized_();
     const code = makeShortLink(e.parameter);
     return ContentService.createTextOutput(JSON.stringify({ status: 'ok', code: code }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -668,5 +671,25 @@ function resolveShortLink(code) {
 function fmtDate_(v) {
   if (v instanceof Date) return Utilities.formatDate(v, 'Europe/Istanbul', 'yyyy-MM-dd');
   return String(v || '');
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD PIN — hasta verisini okuyan uçlar PIN ister.
+// PIN kod içinde DEĞİL, Script Properties'te (DASH_PIN) durur; bu dosya
+// herkese açık depoda olduğu için buraya asla yazılmamalı.
+// Hasta anketi gönderimleri (doPost / ?data=) PIN istemez — hastada PIN yok.
+// ═══════════════════════════════════════════════════════════════════════════
+function pinOk_(e) {
+  const want = PropertiesService.getScriptProperties().getProperty('DASH_PIN');
+  if (!want) return true; // PIN kurulmamışsa sistemi kilitleme
+  return String((e && e.parameter && e.parameter.pin) || '') === String(want);
+}
+
+function unauthorized_() {
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: 'unauthorized' }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
