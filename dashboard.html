@@ -2004,6 +2004,12 @@ function timelineBodySVG(patient, prevRegions, evRegions, color) {
 
 // ── Süreç şeridi: gerçek zaman ekseni. RT/KT süre barı, diğerleri nokta işaret ──
 // Olay çizelgesi okunabilirlik için eşit aralıklı; burası ise gerçek takvim.
+// Zaman damgasını YEREL güne çevir — toISOString UTC'ye kaydırıp bir gün geri atıyor
+function localDay(ms) {
+  const d = new Date(ms), z = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
+}
+
 function renderTreatmentBand(p) {
   const ev = (p.events || []).filter(e => e.date);
   if (ev.length < 2) return '';
@@ -2041,8 +2047,8 @@ function renderTreatmentBand(p) {
     <div class="tband">
       <div class="tband-head">Süreç şeridi <span>gerçek takvim · toplam ${toplam} gün (${ay} ay)</span></div>
       <div class="tband-track">${bars}${ticks}</div>
-      <div class="tband-axis"><span>${fmtDate(new Date(min).toISOString().slice(0,10))}</span>
-        <span>${fmtDate(new Date(max).toISOString().slice(0,10))}</span></div>
+      <div class="tband-axis"><span>${fmtDate(localDay(min))}</span>
+        <span>${fmtDate(localDay(max))}</span></div>
     </div>`;
 }
 
