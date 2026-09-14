@@ -1876,40 +1876,8 @@ function syncBodyMap() {
 }
 
 // ── Kayıt ──
-let tumorPatients = [
-  { name: 'TEST Osteosarkom', id: 'TU1', age: 17, preDx: 'Kemik tümörü', biopsy: 'Var',
-    finalDx: 'Osteosarkom', regions: ['femur_distal_sol', 'tibia_prox_sol'], surgery: '2026-01-15', margin: 'Temiz',
-    rec: 'Yok', recDate: '', mets: ['akciger'], notes: 'Diz çevresi tutulum — rezeksiyon + endoprotez',
-    events: [
-      { date: '2025-11-02', type: 'tani',     note: 'Diz ağrısı ile başvuru — distal femur + proksimal tibia kitle', regions: ['femur_distal_sol', 'tibia_prox_sol'] },
-      { date: '2025-11-10', type: 'biyopsi',  note: 'Tru-cut biyopsi: Osteosarkom' },
-      { date: '2025-11-20', type: 'kt',       note: 'Neoadjuvan kemoterapi başlandı (MAP)' },
-      { date: '2026-01-15', type: 'cerrahi',  note: 'Geniş rezeksiyon + tümör endoprotezi · Sınır: Temiz' },
-      { date: '2026-02-05', type: 'kt',       note: 'Adjuvan kemoterapi' },
-      { date: '2026-04-20', type: 'kontrol',  note: '3. ay kontrol — nüks/met yok' },
-      { date: '2026-06-28', type: 'metastaz', note: 'Toraks BT: akciğer metastazı', regions: ['akciger'] },
-    ] },
-  { name: 'TEST Kondrosarkom', id: 'TU2', age: 46, preDx: 'Pelvik kitle', biopsy: 'Var',
-    finalDx: 'Kondrosarkom G2', regions: ['pelvis_sag', 'femur_prox_sag'], surgery: '2025-11-03', margin: 'Marjinal',
-    rec: 'Var', recDate: '2026-06-20', mets: [], notes: 'Asetabulum + femur başı tutulumu',
-    events: [
-      { date: '2025-10-01', type: 'tani',    note: 'Pelvik kitle — asetabulum ve femur başı tutulumu', regions: ['pelvis_sag', 'femur_prox_sag'] },
-      { date: '2025-10-12', type: 'biyopsi', note: 'İnsizyonel biyopsi: Kondrosarkom Grade 2' },
-      { date: '2025-11-03', type: 'cerrahi', note: 'İnternal hemipelvektomi · Sınır: Marjinal' },
-      { date: '2026-06-20', type: 'nuks',    note: 'Lokal nüks (7.5 ay)', regions: ['pelvis_sag'] },
-      { date: '2026-07-01', type: 'rt',      note: 'Palyatif radyoterapi planlandı' },
-    ] },
-  { name: 'TEST Miksofibrosarkom', id: 'TU3', age: 58, preDx: 'Uyluk arka yumuşak doku kitlesi', biopsy: 'Var',
-    finalDx: 'Miksofibrosarkom G2', ttype: 'yumusak', regions: ['st_uyluk_arka_sol'], surgery: '2026-03-10', margin: 'Temiz',
-    rec: 'Yok', recDate: '', mets: [], notes: 'Hamstring kompartmanı — geniş rezeksiyon',
-    events: [
-      { date: '2026-01-28', type: 'tani',    note: 'Sol uyluk arka yüzde büyüyen kitle — MR: derin yerleşimli', regions: ['st_uyluk_arka_sol'] },
-      { date: '2026-02-06', type: 'biyopsi', note: 'Tru-cut: Miksofibrosarkom Grade 2' },
-      { date: '2026-03-10', type: 'cerrahi', note: 'Geniş rezeksiyon · Sınır: Temiz' },
-      { date: '2026-04-15', type: 'rt',      note: 'Adjuvan radyoterapi (60 Gy)' },
-      { date: '2026-07-02', type: 'kontrol', note: '3. ay kontrol — lokal nüks yok, toraks BT temiz', regions: [] },
-    ] },
-];
+// Tümör hastaları yalnızca tabloya yüklenir — sabit demo kaydı yok
+let tumorPatients = [];
 
 // RT/KT "Var" seçilmedikçe zamanlama kutusu kilitli kalsın
 function syncOncoTiming() {
@@ -2819,15 +2787,8 @@ function syncHipReadout() {
 }
 
 // ── Kayıt + liste ──
-let hipPatients = [
-  { name: 'TEST Labrum', id: 'HA1', age: 29, side: 'Sağ', surgery: '2026-06-18',
-    a: 1, b: 5, anchors: [{ i: 1, t: 'knotless' }, { i: 3, t: 'knotless' }, { i: 5, t: 'knotted' }],
-    ce: 23.5, alpha: 64, clbPre: 'Yok', traction: 48, clbIntra: 'Var', fai: 'CAM', proc: 'Onarım (Repair)', notes: 'Femoroplasti + 3 ankor',
-    fu: {
-      'Pre-op': { date: '2026-06-16', vas: 7, ihot: 34.5, mhhs: 52, hosAdl: 58, hosSp: 31, rsi: 28.5, pcs: 33.2, mcs: 41.8 },
-      '1. Ay':  { date: '2026-07-18', vas: 4, ihot: 51.0, mhhs: 66, hosAdl: 69, hosSp: 42, rsi: 44.0, pcs: 40.6, mcs: 48.3 },
-    } },
-];
+// Kalça hastaları yalnızca tabloya yüklenir — sabit demo kaydı yok
+let hipPatients = [];
 
 function saveHipPatient() {
   if (hipA === null || hipB === null) { alert('Lütfen kadrandan yırtık aralığını seçin (başlangıç + bitiş).'); return; }
