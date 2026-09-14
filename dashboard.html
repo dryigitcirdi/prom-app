@@ -909,8 +909,8 @@ function loadData(attempt) {
         return;
       }
       document.getElementById('lockScreen').classList.add('hidden');
-      if (!d.rows || d.rows.length < 2) { renderTable([]); return; }
-      allRows = d.rows.slice(1).map(r => ({
+      // Omuz kaydı olmasa bile tümör/kalça yüklemesi çalışmalı — erken return YOK
+      allRows = (!d.rows || d.rows.length < 2) ? [] : d.rows.slice(1).map(r => ({
         date:       r[1]  || '',
         name:       r[4]  || '',
         pid:        r[3]  !== undefined && r[3] !== '' ? String(r[3]) : '',
