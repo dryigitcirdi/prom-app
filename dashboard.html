@@ -321,6 +321,13 @@
   transform:translateX(-1.5px);box-shadow:0 0 0 1.5px #fff}
 .tband-axis{display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:5px}
 @keyframes bandgrow{from{transform:scaleX(.2);transform-origin:left}to{transform:scaleX(1)}}
+
+.tp-incident{display:flex;align-items:flex-start;gap:7px;margin-top:8px;padding:7px 10px;
+  border-radius:9px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;
+  font-size:11.5px;line-height:1.45;cursor:pointer;transition:background .15s}
+.tp-incident:hover{background:#fce7f3}
+.tp-inc-icon{font-size:13px;line-height:1.2}
+.tp-inc-date{color:#be185d;opacity:.7;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -2017,6 +2024,9 @@ const EVENT_TYPES = {
   nuks:      { label: 'Nüks',           icon: '⚠️', color: '#ea580c' },
   metastaz:  { label: 'Metastaz',       icon: '🟣', color: '#7c3aed' },
   kontrol:   { label: 'Kontrol (temiz)',icon: '✅', color: '#16a34a' },
+  // Tümör seyrinden bağımsız ama sonuç açısından kritik olaylar (komplikasyon,
+  // girişim sırasında gelişen nörolojik hasar, enfeksiyon, implant yetmezliği...)
+  beklenmeyen: { label: 'Beklenmeyen Olay', icon: '🚨', color: '#be185d' },
   diger:     { label: 'Diğer',          icon: '📌', color: '#6b7280' },
 };
 
@@ -2156,6 +2166,10 @@ function syncEvEnd(idx) {
   const w = document.getElementById('evEndWrap_' + idx);
   w.style.display = HAS_DURATION.has(t) ? '' : 'none';
   if (!HAS_DURATION.has(t)) document.getElementById('evEnd_' + idx).value = '';
+  const note = document.getElementById('evNote_' + idx);
+  note.placeholder = t === 'beklenmeyen'
+    ? 'ne oldu, ne sırasında, sonucu ne — örn. biyopsi sırasında bilateral üst ekstremite motor paralizisi'
+    : 'örn. tru-cut biyopsi — yetersiz materyal';
 }
 
 function deleteEvent(idx, ei) {
@@ -2301,6 +2315,29 @@ async function sendTumorToSheet(p) {
   } catch (e) { console.warn('Tümör kaydı gönderilemedi:', e); }
 }
 
+// Beklenmeyen olaylar hastalık seyrinden bağımsız ama sonuç açısından kritik —
+// çizelgeyi açmadan kart üzerinde görünsünler
+function incidentBadge(p, idx) {
+  const list = (p.events || []).filter(e => e.type === 'beklenmeyen');
+  if (!list.length) return '';
+  const son = list.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+  return `<div class="tp-incident" onclick="openTimelineAt(${idx})"
+    title="Zaman çizelgesinde görmek için tıklayın">
+    <span class="tp-inc-icon">🚨</span>
+    <span><b>Beklenmeyen olay${list.length > 1 ? ' (' + list.length + ')' : ''}</b>${
+      son.note ? ' — ' + son.note : ''} <span class="tp-inc-date">${fmtDate(son.date)}</span></span>
+  </div>`;
+}
+
+function openTimelineAt(idx) {
+  openTimelines.add(idx);
+  renderTumorPatients();
+  setTimeout(() => {
+    const el = document.getElementById('tl_' + idx);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 60);
+}
+
 // Yumuşak doku parametreleri — yalnızca girilmişse rozet olarak çıkar
 function softBadges(p) {
   if ((p.ttype || 'kemik') !== 'yumusak') return '';
@@ -2346,6 +2383,7 @@ function renderTumorPatients() {
             : '<span class="score-pill score-good">Met yok</span>'}
         </div>
         ${softBadges(p)}
+        ${incidentBadge(p, idx)}
         ${p.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:7px;">${p.notes}</div>` : ''}
         ${p.drawings && Object.keys(p.drawings).length ? `<div class="tp-draws">${Object.keys(p.drawings).map(k => {
           const m = k.match(/^([a-z_]+?)(?:_(sag|sol))?$/);
