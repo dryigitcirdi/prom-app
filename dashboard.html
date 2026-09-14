@@ -1785,9 +1785,7 @@ function openDetail(kind, side) {
   document.getElementById('detailWholeBtn').textContent = `${kindTr} bütününü seç`;
   document.getElementById('detailSvgWrap').innerHTML =
     `<svg viewBox="0 0 200 262" width="100%" xmlns="http://www.w3.org/2000/svg">${kind === 'el' ? handDetailMarkup(side) : footDetailMarkup(side)}</svg>`;
-  document.getElementById('bodyMapHint').textContent = markMode === 'met'
-    ? 'Metastaz modunda: kemiğe tıkla = işaretle / kaldır'
-    : 'Tümörün yerleştiği kemiği seçin — üstteki butonla bütün bölge de seçilebilir';
+  document.getElementById('bodyMapHint').textContent = mapHint('detay');
   syncBodyMap();
 }
 
@@ -1795,9 +1793,7 @@ function closeDetail() {
   detailView = null;
   document.getElementById('detailWrap').style.display = 'none';
   document.getElementById('bodyMapWrap').style.display = '';
-  document.getElementById('bodyMapHint').textContent = markMode === 'met'
-    ? 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır'
-    : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
+  document.getElementById('bodyMapHint').textContent = mapHint();
 }
 
 function selectWholeFromDetail() {
@@ -1859,6 +1855,20 @@ function handDetailMarkup(side) {
   return out;
 }
 
+// Haritanın altındaki ipucu — aktif moda göre tek yerden üretilir
+function mapHint(view) {
+  const detay = view === 'detay';
+  if (markMode === 'met') return detay
+    ? 'Metastaz modunda: kemiğe tıkla = işaretle / kaldır'
+    : 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır';
+  if (markMode === 'rec') return detay
+    ? 'Nüks modunda: kemiğe tıkla = işaretle / kaldır'
+    : 'Nüks modunda: nüksün çıktığı bölgeye tıkla = işaretle / kaldır';
+  return detay
+    ? 'Tümörün yerleştiği kemiği seçin — üstteki butonla bütün bölge de seçilebilir'
+    : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
+}
+
 // Tek seferde tek mod açık olur — ikisi birden işaretlenemesin
 function toggleMarkMode(kind) {
   markMode = markMode === kind ? '' : kind;
@@ -1867,10 +1877,7 @@ function toggleMarkMode(kind) {
   const wrap = document.getElementById('bodyMapSvg').parentElement;
   wrap.classList.toggle('met-mode', markMode === 'met');
   wrap.classList.toggle('rec-mode', markMode === 'rec');
-  document.getElementById('bodyMapHint').textContent =
-    markMode === 'met' ? 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır'
-  : markMode === 'rec' ? 'Nüks modunda: nüksün çıktığı bölgeye tıkla = işaretle / kaldır'
-  : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
+  document.getElementById('bodyMapHint').textContent = mapHint();
   if (markMode) closeDetail();
 }
 
@@ -1900,6 +1907,7 @@ function syncBodyMap() {
   document.getElementById('recChips').innerHTML = tRecs.map(r =>
     `<span class="rec-chip" onclick="removeRec('${r}')" title="Kaldırmak için tıkla">🟠 ${REG(r).label} ✕</span>`).join('');
   document.getElementById('recHint').style.display = tRecs.length ? 'none' : '';
+  if (!detailView) document.getElementById('bodyMapHint').textContent = mapHint();
 }
 
 // ── Kayıt ──
