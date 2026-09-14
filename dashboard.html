@@ -275,6 +275,12 @@
 .lock-err{min-height:18px;font-size:12px;color:#dc2626;margin:8px 0 12px}
 .shake{animation:shk .35s}
 @keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.soft-sep{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:#64748b;margin:4px 0 10px;padding-top:10px;border-top:1px dashed #e2e8f0}
+
+.badge-rt{background:#fef9c3;color:#854d0e;border-color:#fde68a}
+.badge-kt{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
 </style>
 </head>
 <body>
@@ -677,6 +683,38 @@
             <select id="tBiopsy"><option value="">—</option><option>Var</option><option>Yok</option></select></div>
           <div class="form-group"><label>Kesin Tanı</label><input type="text" id="tFinalDx" placeholder="örn. Osteosarkom"></div>
         </div>
+        <!-- Yumuşak doku tümörlerine özel alanlar — kemik modunda gizli -->
+        <div id="tSoftBlock" style="display:none;">
+          <div class="soft-sep">Yumuşak doku parametreleri</div>
+          <div class="form-row3">
+            <div class="form-group"><label>Derinlik</label>
+              <select id="tDepth">
+                <option value="">—</option><option>Yüzeysel</option><option>Derin</option></select></div>
+            <div class="form-group"><label>Büyüklük (cm)</label>
+              <input type="number" id="tSize" min="0" max="100" step="0.1" placeholder="en uzun çap"></div>
+            <div class="form-group"><label>Grade</label>
+              <div style="display:flex;gap:6px;">
+                <select id="tGradeNum" title="Evre"><option value="">—</option>
+                  <option>1</option><option>2</option><option>3</option></select>
+                <select id="tGradeLtr" title="A: intrakompartmantal · B: ekstrakompartmantal">
+                  <option value="">—</option><option>A</option><option>B</option></select>
+              </div></div>
+          </div>
+          <div class="form-row2">
+            <div class="form-group"><label>Radyoterapi (RT)</label>
+              <div style="display:flex;gap:6px;">
+                <select id="tRT" onchange="syncOncoTiming()"><option>Yok</option><option>Var</option></select>
+                <select id="tRTWhen" style="flex:1" disabled><option value="">—</option>
+                  <option>Neoadjuvan</option><option>Adjuvan</option><option>Her ikisi</option></select>
+              </div></div>
+            <div class="form-group"><label>Kemoterapi (KT)</label>
+              <div style="display:flex;gap:6px;">
+                <select id="tKT" onchange="syncOncoTiming()"><option>Yok</option><option>Var</option></select>
+                <select id="tKTWhen" style="flex:1" disabled><option value="">—</option>
+                  <option>Neoadjuvan</option><option>Adjuvan</option><option>Her ikisi</option></select>
+              </div></div>
+          </div>
+        </div>
         <div class="form-row3">
           <div class="form-group"><label>Cerrahi Tarihi</label><input type="date" id="tSurgery"></div>
           <div class="form-group"><label>Cerrahi Sınır</label>
@@ -966,7 +1004,9 @@ function hydrateTumor(rows, eventRows) {
       surgery: isoDay(r[10]), margin: txt(r[11]),
       rec: txt(r[12]), recDate: isoDay(r[13]),
       mets: splitIds(r[17]),
-      notes: txt(r[19]),
+      notes: txt(r[20]),   // 18:Olay Sayısı 19:Çizim Sayısı 20:Notlar
+      depth: txt(r[21]), size: txt(r[22]), grade: txt(r[23]),
+      rt: txt(r[24]), rtWhen: txt(r[25]), kt: txt(r[26]), ktWhen: txt(r[27]),
       drawings: {}, events: [],
     });
   });
@@ -1431,6 +1471,7 @@ function setTumorMode(mode, btn) {
   tPrimers = []; tMets = [];
   if (metMode) toggleMetMode();
   if (detailView) closeDetail();
+  document.getElementById('tSoftBlock').style.display = mode === 'yumusak' ? '' : 'none';
   const wrap = document.getElementById('bodyMapWrap');
   wrap.dataset.built = ''; // haritayı yeni modla yeniden kur
   initBodyMap();
@@ -1858,6 +1899,23 @@ let tumorPatients = [
     ] },
 ];
 
+// RT/KT "Var" seçilmedikçe zamanlama kutusu kilitli kalsın
+function syncOncoTiming() {
+  [['tRT', 'tRTWhen'], ['tKT', 'tKTWhen']].forEach(pair => {
+    const on = document.getElementById(pair[0]).value === 'Var';
+    const w  = document.getElementById(pair[1]);
+    w.disabled = !on;
+    if (!on) w.value = '';
+  });
+}
+
+// Grade: sayı + harf → "2B" (harf seçilmezse sadece "2")
+function readGrade() {
+  const n = document.getElementById('tGradeNum').value;
+  const l = document.getElementById('tGradeLtr').value;
+  return n ? n + l : '';
+}
+
 function saveTumorPatient() {
   if (!tPrimers.length) { alert('Lütfen haritadan en az bir primer tümör bölgesi seçin.'); return; }
   const name = document.getElementById('tName').value.trim();
@@ -1882,8 +1940,16 @@ function saveTumorPatient() {
   if (tMets.length) events.push({ date: metDate || today, type: 'metastaz', note: metDate ? '' : 'Tarih: kayıt günü', regions: tMets.slice() });
   if (rec === 'Var' && recDate) events.push({ date: recDate, type: 'nuks', note: 'Lokal nüks' });
 
+  const soft = tumorMode === 'yumusak';
   tumorPatients.push({
     name, age: Number(age),
+    depth: soft ? document.getElementById('tDepth').value : '',
+    size:  soft ? document.getElementById('tSize').value  : '',
+    grade: soft ? readGrade() : '',
+    rt:     soft ? document.getElementById('tRT').value     : '',
+    rtWhen: soft ? document.getElementById('tRTWhen').value : '',
+    kt:     soft ? document.getElementById('tKT').value     : '',
+    ktWhen: soft ? document.getElementById('tKTWhen').value : '',
     id:      document.getElementById('tId').value.trim(),
     preDx:   document.getElementById('tPreDx').value.trim(),
     biopsy:  document.getElementById('tBiopsy').value,
@@ -1898,7 +1964,11 @@ function saveTumorPatient() {
   tumorDrawings = {};
 
   // formu sıfırla
-  ['tName','tId','tAge','tPreDx','tFinalDx','tSurgery','tRecDate','tMetDate','tNotes'].forEach(i => document.getElementById(i).value = '');
+  ['tName','tId','tAge','tPreDx','tFinalDx','tSurgery','tRecDate','tMetDate','tNotes','tSize']
+    .forEach(i => document.getElementById(i).value = '');
+  ['tDepth','tGradeNum','tGradeLtr','tRTWhen','tKTWhen'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('tRT').value = 'Yok'; document.getElementById('tKT').value = 'Yok';
+  syncOncoTiming();
   document.getElementById('tBiopsy').value = ''; document.getElementById('tMargin').value = '';
   document.getElementById('tRec').value = 'Yok'; document.getElementById('tRecDateWrap').style.display = 'none';
   if (metMode) toggleMetMode();
@@ -2051,6 +2121,8 @@ async function sendTumorToSheet(p) {
     preDx: p.preDx, biopsy: p.biopsy, finalDx: p.finalDx,
     regionLabels: tumorRegionLabels(regions),
     regionIds: regions.join(' | '),
+    depth: p.depth || '', size: p.size || '', grade: p.grade || '',
+    rt: p.rt || '', rtWhen: p.rtWhen || '', kt: p.kt || '', ktWhen: p.ktWhen || '',
     surgery: p.surgery, margin: p.margin,
     rec: p.rec, recDate: p.recDate, recMonths: months,
     mets: p.mets || [], metLabels: tumorRegionLabels(p.mets),
@@ -2072,6 +2144,21 @@ async function sendTumorToSheet(p) {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload) });
   } catch (e) { console.warn('Tümör kaydı gönderilemedi:', e); }
+}
+
+// Yumuşak doku parametreleri — yalnızca girilmişse rozet olarak çıkar
+function softBadges(p) {
+  if ((p.ttype || 'kemik') !== 'yumusak') return '';
+  const b = [];
+  if (p.depth) b.push(`<span class="score-pill ${p.depth === 'Derin' ? 'score-bad' : 'score-good'}">${p.depth}</span>`);
+  if (p.size)  b.push(`<span class="score-pill">${p.size} cm</span>`);
+  if (p.grade) {
+    const g = String(p.grade).charAt(0);
+    b.push(`<span class="score-pill ${g === '3' ? 'score-bad' : g === '2' ? 'score-mid' : 'score-good'}">Grade ${p.grade}</span>`);
+  }
+  if (p.rt === 'Var') b.push(`<span class="score-pill badge-rt">RT${p.rtWhen ? ' · ' + p.rtWhen : ''}</span>`);
+  if (p.kt === 'Var') b.push(`<span class="score-pill badge-kt">KT${p.ktWhen ? ' · ' + p.ktWhen : ''}</span>`);
+  return b.length ? `<div class="tp-badges">${b.join('')}</div>` : '';
 }
 
 function renderTumorPatients() {
@@ -2102,6 +2189,7 @@ function renderTumorPatients() {
             ? `<span class="score-pill badge-met">Met: ${p.mets.map(m => REG(m).label).join(', ')}</span>`
             : '<span class="score-pill score-good">Met yok</span>'}
         </div>
+        ${softBadges(p)}
         ${p.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:7px;">${p.notes}</div>` : ''}
         ${p.drawings && Object.keys(p.drawings).length ? `<div class="tp-draws">${Object.keys(p.drawings).map(k => {
           const m = k.match(/^([a-z_]+?)(?:_(sag|sol))?$/);

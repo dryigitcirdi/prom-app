@@ -146,6 +146,8 @@ const TUMOR_HEADERS = [
   'Nüks', 'Nüks Tarihi', 'Nüks Süresi (ay)',
   'Metastaz', 'Metastaz Bölgeleri', 'Metastaz Kodları',
   'Olay Sayısı', 'Çizim Sayısı', 'Notlar',
+  // Yumuşak doku tümörlerine özel (sona eklendi — mevcut sütun sırası bozulmasın)
+  'Derinlik', 'Büyüklük (cm)', 'Grade', 'RT', 'RT Zamanlama', 'KT', 'KT Zamanlama',
 ];
 const TUMOR_EVENT_HEADERS = [
   'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Olay Tarihi', 'Olay Tipi', 'Bölgeler', 'Not',
@@ -203,6 +205,8 @@ function saveTumorData(data) {
     (data.mets && data.mets.length) ? 'Var' : 'Yok', data.metLabels || '',
     (data.mets || []).join(' | '),
     n(data.eventCount), n(data.drawCount), data.notes || '',
+    data.depth || '', n(data.size), data.grade || '',
+    data.rt || '', data.rtWhen || '', data.kt || '', data.ktWhen || '',
   ];
   const last = sheet.getLastRow();
   let target = 0;
@@ -219,6 +223,8 @@ function saveTumorData(data) {
   colorMargin(sheet, target, 12, data.margin);
   colorRec(sheet, target, 13, data.rec);
   colorMet(sheet, target, 16, (data.mets && data.mets.length) ? 'Var' : 'Yok');
+  colorDepth(sheet, target, 22, data.depth);
+  colorGrade(sheet, target, 24, data.grade);
 
   // ── 2) Zaman çizelgesi olayları (hastanın satırları yeniden yazılır) ──
   if (data.events) {
@@ -694,3 +700,16 @@ function unauthorized_() {
 }
 
 
+
+
+// Derinlik ve grade renk kodları — derin ve yüksek grade daha riskli
+function colorDepth(sheet, row, col, v) {
+  const c = String(v || '') === 'Derin' ? '#fee2e2' : (String(v || '') === 'Yüzeysel' ? '#dcfce7' : null);
+  sheet.getRange(row, col).setBackground(c);
+}
+
+function colorGrade(sheet, row, col, v) {
+  const g = String(v || '').charAt(0);
+  const map = { '1': '#dcfce7', '2': '#fef9c3', '3': '#fee2e2' };
+  sheet.getRange(row, col).setBackground(map[g] || null);
+}
