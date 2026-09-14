@@ -293,6 +293,13 @@
 .tl-add-row label.grow{flex:1;min-width:160px}
 .tl-add.flash{animation:tlflash .9s ease-out}
 @keyframes tlflash{0%{background:#ccfbf1}100%{background:transparent}}
+
+.tlh-item{position:relative}
+.tlh-del{position:absolute;top:-4px;right:2px;width:18px;height:18px;line-height:1;
+  border:1px solid #e2e8f0;border-radius:50%;background:#fff;color:#94a3b8;
+  font-size:13px;cursor:pointer;opacity:0;transition:opacity .15s,color .15s,border-color .15s}
+.tlh-item:hover .tlh-del{opacity:1}
+.tlh-del:hover{color:#dc2626;border-color:#fecaca;background:#fef2f2}
 </style>
 </head>
 <body>
@@ -712,19 +719,19 @@
                   <option value="">—</option><option>A</option><option>B</option></select>
               </div></div>
           </div>
-          <div class="form-row2">
-            <div class="form-group"><label>Radyoterapi (RT)</label>
-              <div style="display:flex;gap:6px;">
-                <select id="tRT" onchange="syncOncoTiming()"><option>Yok</option><option>Var</option></select>
-                <select id="tRTWhen" style="flex:1" disabled><option value="">—</option>
-                  <option>Neoadjuvan</option><option>Adjuvan</option><option>Her ikisi</option></select>
-              </div></div>
-            <div class="form-group"><label>Kemoterapi (KT)</label>
-              <div style="display:flex;gap:6px;">
-                <select id="tKT" onchange="syncOncoTiming()"><option>Yok</option><option>Var</option></select>
-                <select id="tKTWhen" style="flex:1" disabled><option value="">—</option>
-                  <option>Neoadjuvan</option><option>Adjuvan</option><option>Her ikisi</option></select>
-              </div></div>
+          <div class="form-row3">
+            <div class="form-group"><label>RT / KT aldı mı?</label>
+              <select id="tOnko" onchange="syncOncoTiming()">
+                <option value="">Almadı</option>
+                <option value="rt">Yalnızca RT</option>
+                <option value="kt">Yalnızca KT</option>
+                <option value="rtkt">Her ikisi (RT + KT)</option></select></div>
+            <div class="form-group" id="tRTWhenWrap" style="display:none;"><label>RT zamanlaması</label>
+              <select id="tRTWhen"><option value="">—</option>
+                <option>Neoadjuvan</option><option>Adjuvan</option><option>Her ikisi</option></select></div>
+            <div class="form-group" id="tKTWhenWrap" style="display:none;"><label>KT zamanlaması</label>
+              <select id="tKTWhen"><option value="">—</option>
+                <option>Neoadjuvan</option><option>Adjuvan</option><option>Her ikisi</option></select></div>
           </div>
         </div>
         <div class="form-row3">
@@ -843,32 +850,12 @@ window.onload = function() {
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
     document.getElementById('configBanner').style.display = 'flex';
     document.getElementById('lockScreen').classList.add('hidden');
-    loadDemoData();
     return;
   }
   if (localStorage.getItem(PIN_KEY)) loadData();
   else showLock('');
 };
 
-// ─── Demo veri ────────────────────────────────────────────────────────────────
-function loadDemoData() {
-  allRows = [
-    // Fatma — 3 dönem tam (Pre-op → 6. Hafta → 6. Ay iyileşme seyri)
-    { date:'20.12.2025', name:'Fatma Kaya',   pid:'22222', diagnosis:'Kalsifik Tendinit', surgery:'2025-12-20', leg:'sol', daysPostOp:0,   followup:'Pre-op',   vas:7, abduction:80,  flexion:95,  ir_label:'Kuyruk sokumu', er:30, dash:68, constant:34, sleep:3,  sf12_pcs:30.9, sf12_mcs:42.4 },
-    { date:'05.02.2026', name:'Fatma Kaya',   pid:'22222', diagnosis:'Kalsifik Tendinit', surgery:'2025-12-20', leg:'sol', daysPostOp:44,  followup:'6. Hafta', vas:3, abduction:135, flexion:145, ir_label:'Üst bel',        er:58, dash:32, constant:68, sleep:6,  sf12_pcs:42.1, sf12_mcs:48.7 },
-    { date:'22.06.2026', name:'Fatma Kaya',   pid:'22222', diagnosis:'Kalsifik Tendinit', surgery:'2025-12-20', leg:'sol', daysPostOp:182, followup:'6. Ay',    vas:1, abduction:170, flexion:175, ir_label:'Kürek kemiği',   er:78, dash:9,  constant:90, sleep:9,  sf12_pcs:53.6, sf12_mcs:55.8 },
-    // Ahmet — Pre-op + 6. Hafta (6. Ay yaklaşıyor)
-    { date:'01.05.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:-2,  followup:'Pre-op',   vas:8, abduction:70,  flexion:85,  ir_label:'Kalça',          er:25, dash:74, constant:28, sleep:2,  sf12_pcs:28.4, sf12_mcs:39.6 },
-    { date:'17.05.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:14,  followup:'2. Hafta', vas:6, abduction:95,  flexion:105, ir_label:'Kuyruk sokumu',  er:32, dash:60, constant:40, sleep:4,  sf12_pcs:33.0, sf12_mcs:43.5 },
-    { date:'17.06.2026', name:'Ahmet Yılmaz', pid:'11111', diagnosis:'Kalsifik Tendinit', surgery:'2026-05-03', leg:'sağ', daysPostOp:45,  followup:'6. Hafta', vas:4, abduction:120, flexion:130, ir_label:'Bel',            er:45, dash:41, constant:58, sleep:6,  sf12_pcs:39.8, sf12_mcs:47.2 },
-    // Mehmet — 6. Hafta + 6. Ay var, Pre-op kaçırılmış (gecikti örneği)
-    { date:'10.03.2026', name:'Mehmet Demir', pid:'33333', diagnosis:'Rotator Manşet', surgery:'2026-01-28', leg:'sağ', daysPostOp:41,  followup:'6. Hafta', vas:5, abduction:110, flexion:125, ir_label:'Bel',            er:40, dash:48, constant:52, sleep:5,  sf12_pcs:37.2, sf12_mcs:45.9 },
-    { date:'28.06.2026', name:'Mehmet Demir', pid:'33333', diagnosis:'Rotator Manşet', surgery:'2026-01-28', leg:'sağ', daysPostOp:151, followup:'6. Ay',    vas:1, abduction:165, flexion:170, ir_label:'Kürek kemiği',   er:74, dash:18, constant:82, sleep:8,  sf12_pcs:50.2, sf12_mcs:54.1 },
-    // Ayşe — henüz sadece Pre-op (6. Hafta yaklaşıyor)
-    { date:'02.07.2026', name:'Ayşe Çelik',  pid:'44444', diagnosis:'Bankart Lezyonu', surgery:'2026-07-08', leg:'sol', daysPostOp:-6,  followup:'Pre-op',   vas:6, abduction:95,  flexion:110, ir_label:'Kuyruk sokumu', er:35, dash:59, constant:40, sleep:4,  sf12_pcs:33.5, sf12_mcs:44.0 },
-  ];
-  refreshAll();
-}
 
 // Aktif tanı filtresinden geçen kayıtlar — tüm görünümlerin tabanı
 function baseRows() {
@@ -895,7 +882,7 @@ function refreshAll() {
 // 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs  20:followup
 function loadData(attempt) {
   attempt = attempt || 1;
-  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') { loadDemoData(); return; }
+  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') { renderTable([]); return; }
   fetch(APPS_SCRIPT_URL + '?action=getData' + pinQS())
     .then(r => r.text())
     .then(t => {
@@ -1879,14 +1866,15 @@ function syncBodyMap() {
 // Tümör hastaları yalnızca tabloya yüklenir — sabit demo kaydı yok
 let tumorPatients = [];
 
-// RT/KT "Var" seçilmedikçe zamanlama kutusu kilitli kalsın
+// RT / KT / her ikisi seçimine göre ilgili zamanlama kutusunu aç
 function syncOncoTiming() {
-  [['tRT', 'tRTWhen'], ['tKT', 'tKTWhen']].forEach(pair => {
-    const on = document.getElementById(pair[0]).value === 'Var';
-    const w  = document.getElementById(pair[1]);
-    w.disabled = !on;
-    if (!on) w.value = '';
-  });
+  const v  = document.getElementById('tOnko').value;
+  const rt = v === 'rt' || v === 'rtkt';
+  const kt = v === 'kt' || v === 'rtkt';
+  document.getElementById('tRTWhenWrap').style.display = rt ? '' : 'none';
+  document.getElementById('tKTWhenWrap').style.display = kt ? '' : 'none';
+  if (!rt) document.getElementById('tRTWhen').value = '';
+  if (!kt) document.getElementById('tKTWhen').value = '';
 }
 
 // Grade: sayı + harf → "2B" (harf seçilmezse sadece "2")
@@ -1926,9 +1914,9 @@ function saveTumorPatient() {
     depth: soft ? document.getElementById('tDepth').value : '',
     size:  soft ? document.getElementById('tSize').value  : '',
     grade: soft ? readGrade() : '',
-    rt:     soft ? document.getElementById('tRT').value     : '',
+    rt:     soft && /rt/.test(document.getElementById('tOnko').value) ? 'Var' : '',
     rtWhen: soft ? document.getElementById('tRTWhen').value : '',
-    kt:     soft ? document.getElementById('tKT').value     : '',
+    kt:     soft && /kt/.test(document.getElementById('tOnko').value) ? 'Var' : '',
     ktWhen: soft ? document.getElementById('tKTWhen').value : '',
     id:      document.getElementById('tId').value.trim(),
     preDx:   document.getElementById('tPreDx').value.trim(),
@@ -1946,8 +1934,8 @@ function saveTumorPatient() {
   // formu sıfırla
   ['tName','tId','tAge','tPreDx','tFinalDx','tSurgery','tRecDate','tMetDate','tNotes','tSize']
     .forEach(i => document.getElementById(i).value = '');
-  ['tDepth','tGradeNum','tGradeLtr','tRTWhen','tKTWhen'].forEach(i => document.getElementById(i).value = '');
-  document.getElementById('tRT').value = 'Yok'; document.getElementById('tKT').value = 'Yok';
+  ['tDepth','tGradeNum','tGradeLtr','tOnko','tRTWhen','tKTWhen']
+    .forEach(i => document.getElementById(i).value = '');
   syncOncoTiming();
   document.getElementById('tBiopsy').value = ''; document.getElementById('tMargin').value = '';
   document.getElementById('tRec').value = 'Yok'; document.getElementById('tRecDateWrap').style.display = 'none';
@@ -1996,9 +1984,10 @@ function timelineBodySVG(patient, prevRegions, evRegions, color) {
 }
 
 function renderTimeline(p, idx) {
-  const evs = (p.events || []).slice().sort((x, y) => String(x.date).localeCompare(String(y.date)));
+  const evs = (p.events || []).map((e, i) => [e, i])
+    .sort((x, y) => String(x[0].date).localeCompare(String(y[0].date)));
   const seen = []; // [regionId, renk] birikimi
-  const items = evs.map(ev => {
+  const items = evs.map(([ev, ei]) => {
     const meta = EVENT_TYPES[ev.type] || EVENT_TYPES.diger;
     const hasR = ev.regions && ev.regions.length;
     const body = hasR ? timelineBodySVG(p, seen.slice(), ev.regions, meta.color) : '';
@@ -2006,6 +1995,7 @@ function renderTimeline(p, idx) {
     const regTxt = hasR ? `<div class="tlh-note">${ev.regions.map(r => REG(r).label).join(' + ')}</div>` : '';
     return `
       <div class="tlh-item">
+        <button class="tlh-del" title="Bu olayı sil" onclick="deleteEvent(${idx}, ${ei})">×</button>
         <div class="tlh-date">${fmtDate(ev.date)}</div>
         <div class="tlh-dotwrap"><span class="tlh-dot" style="background:${meta.color}"></span></div>
         <div class="tlh-label" style="color:${meta.color}">${meta.icon} ${meta.label}</div>
@@ -2044,6 +2034,33 @@ const openTimelines = new Set();
 function toggleTl(idx) {
   if (openTimelines.has(idx)) openTimelines.delete(idx); else openTimelines.add(idx);
   renderTumorPatients();
+}
+
+function deleteEvent(idx, ei) {
+  const p  = tumorPatients[idx];
+  const ev = p && (p.events || [])[ei];
+  if (!ev) return;
+  const meta = EVENT_TYPES[ev.type] || EVENT_TYPES.diger;
+  if (!confirm('Bu olay silinsin mi?\n\n' + fmtDate(ev.date) + ' · ' + meta.label +
+               (ev.note ? '\n' + ev.note : ''))) return;
+  p.events.splice(ei, 1);
+  resyncTumorFlags(p);
+  openTimelines.add(idx);
+  renderTumorPatients();
+  sendTumorToSheet(p);
+}
+
+// Nüks ve metastaz rozetleri olay listesinin aynası — silince de tutarlı kalsın.
+// RT/KT klinik künye bilgisi olduğu için olay silmekle sıfırlanmaz.
+function resyncTumorFlags(p) {
+  const ev = p.events || [];
+  const nuks = ev.filter(e => e.type === 'nuks').map(e => e.date).sort();
+  if (nuks.length) { p.rec = 'Var'; p.recDate = nuks[0]; }
+  else             { p.rec = 'Yok'; p.recDate = ''; }
+  const mets = new Set();
+  ev.filter(e => e.type === 'metastaz')
+    .forEach(e => (e.regions || []).forEach(r => mets.add(r)));
+  p.mets = [...mets];
 }
 
 // Kart üzerindeki "Olay Ekle" — çizelgeyi açar ve forma odaklanır
