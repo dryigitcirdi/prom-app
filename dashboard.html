@@ -1903,7 +1903,8 @@ function saveTumorPatient() {
   // Kayıt anındaki bilgilerden başlangıç zaman çizelgesi
   const events = [];
   events.push({ date: surgery || today, type: 'tani', note: finalDx || 'Primer tümör', regions: tPrimers.slice() });
-  if (document.getElementById('tBiopsy').value === 'Var') events.push({ date: surgery || today, type: 'biyopsi', note: 'Biyopsi yapıldı' });
+  // Biyopsi için otomatik olay ÜRETİLMEZ — gerçek tarihi bilinmiyor.
+  // Hekim biyopsileri 'Olay Ekle' ile kendi tarihleriyle girer.
   if (surgery) events.push({ date: surgery, type: 'cerrahi', note: margin ? 'Sınır: ' + margin : '' });
   if (tMets.length) events.push({ date: metDate || today, type: 'metastaz', note: metDate ? '' : 'Tarih: kayıt günü', regions: tMets.slice() });
   if (rec === 'Var' && recDate) events.push({ date: recDate, type: 'nuks', note: 'Lokal nüks' });
