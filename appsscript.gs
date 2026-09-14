@@ -148,10 +148,11 @@ const TUMOR_HEADERS = [
   'Olay Sayısı', 'Çizim Sayısı', 'Notlar',
   // Yumuşak doku tümörlerine özel (sona eklendi — mevcut sütun sırası bozulmasın)
   'Derinlik', 'Büyüklük (cm)', 'Grade', 'RT', 'RT Zamanlama', 'KT', 'KT Zamanlama',
+  'Tanı Tarihi',
 ];
 const TUMOR_EVENT_HEADERS = [
   'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Olay Tarihi', 'Olay Tipi', 'Bölgeler', 'Not',
-  'Olay Kodu', 'Bölge Kodları',
+  'Olay Kodu', 'Bölge Kodları', 'Bitiş Tarihi',
 ];
 const TUMOR_DRAW_HEADERS = [
   'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Bölge', 'Çizim (PNG)',
@@ -207,6 +208,7 @@ function saveTumorData(data) {
     n(data.eventCount), n(data.drawCount), data.notes || '',
     data.depth || '', n(data.size), data.grade || '',
     data.rt || '', data.rtWhen || '', data.kt || '', data.ktWhen || '',
+    data.dxDate || '',
   ];
   const last = sheet.getLastRow();
   let target = 0;
@@ -233,7 +235,7 @@ function saveTumorData(data) {
     data.events.forEach(function (e) {
       ev.appendRow([data.timestamp || '', data.patientId || '', data.patientName || '',
                     e.date || '', e.typeLabel || e.type || '', e.regionLabels || '', e.note || '',
-                    e.type || '', (e.regionIds || []).join(' | ')]);
+                    e.type || '', (e.regionIds || []).join(' | '), e.end || '']);
     });
   }
 

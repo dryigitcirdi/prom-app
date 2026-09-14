@@ -300,6 +300,20 @@
   font-size:13px;cursor:pointer;opacity:0;transition:opacity .15s,color .15s,border-color .15s}
 .tlh-item:hover .tlh-del{opacity:1}
 .tlh-del:hover{color:#dc2626;border-color:#fecaca;background:#fef2f2}
+
+.tband{margin:2px 2px 14px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
+.tband-head{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  color:#64748b;margin-bottom:8px}
+.tband-head span{font-weight:500;letter-spacing:0;text-transform:none;color:#94a3b8;margin-left:6px}
+.tband-track{position:relative;height:20px;border-radius:10px;background:#f1f5f9;overflow:hidden}
+.tband-bar{position:absolute;top:0;height:20px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;overflow:hidden;animation:bandgrow .45s ease-out}
+.tband-bar span{font-size:10px;font-weight:700;color:#fff;white-space:nowrap;padding:0 5px;
+  text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.tband-tick{position:absolute;top:2px;width:3px;height:16px;border-radius:2px;
+  transform:translateX(-1.5px);box-shadow:0 0 0 1.5px #fff}
+.tband-axis{display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:5px}
+@keyframes bandgrow{from{transform:scaleX(.2);transform-origin:left}to{transform:scaleX(1)}}
 </style>
 </head>
 <body>
@@ -735,6 +749,7 @@
           </div>
         </div>
         <div class="form-row3">
+          <div class="form-group"><label>Tanı Tarihi</label><input type="date" id="tDxDate"></div>
           <div class="form-group"><label>Cerrahi Tarihi</label><input type="date" id="tSurgery"></div>
           <div class="form-group"><label>Cerrahi Sınır</label>
             <select id="tMargin"><option value="">—</option><option>Temiz</option><option>Marjinal</option><option>Pozitif</option></select></div>
@@ -1000,7 +1015,7 @@ function hydrateTumor(rows, eventRows) {
       ttype: txt(r[4]) === 'Yumuşak Doku' ? 'yumusak' : 'kemik',
       preDx: txt(r[5]), biopsy: txt(r[6]), finalDx: txt(r[7]),
       regions: splitIds(r[9]),
-      surgery: isoDay(r[10]), margin: txt(r[11]),
+      surgery: isoDay(r[10]), margin: txt(r[11]), dxDate: isoDay(r[28]),
       rec: txt(r[12]), recDate: isoDay(r[13]),
       mets: splitIds(r[17]),
       notes: txt(r[20]),   // 18:Olay Sayısı 19:Çizim Sayısı 20:Notlar
@@ -1014,7 +1029,7 @@ function hydrateTumor(rows, eventRows) {
     const p = byKey.get(key);
     if (!p) return;
     p.events.push({ date: isoDay(r[3]), type: txt(r[7]) || 'diger',
-                    note: txt(r[6]), regions: splitIds(r[8]) });
+                    note: txt(r[6]), regions: splitIds(r[8]), end: isoDay(r[9]) });
   });
   tumorPatients = [...byKey.values()];
 }
@@ -1902,7 +1917,9 @@ function saveTumorPatient() {
 
   // Kayıt anındaki bilgilerden başlangıç zaman çizelgesi
   const events = [];
-  events.push({ date: surgery || today, type: 'tani', note: finalDx || 'Primer tümör', regions: tPrimers.slice() });
+  const dxDate = document.getElementById('tDxDate').value;
+  events.push({ date: dxDate || surgery || today, type: 'tani',
+                note: finalDx || 'Primer tümör', regions: tPrimers.slice() });
   // Biyopsi için otomatik olay ÜRETİLMEZ — gerçek tarihi bilinmiyor.
   // Hekim biyopsileri 'Olay Ekle' ile kendi tarihleriyle girer.
   if (surgery) events.push({ date: surgery, type: 'cerrahi', note: margin ? 'Sınır: ' + margin : '' });
@@ -1920,6 +1937,7 @@ function saveTumorPatient() {
     kt:     soft && /kt/.test(document.getElementById('tOnko').value) ? 'Var' : '',
     ktWhen: soft ? document.getElementById('tKTWhen').value : '',
     id:      document.getElementById('tId').value.trim(),
+    dxDate,
     preDx:   document.getElementById('tPreDx').value.trim(),
     biopsy:  document.getElementById('tBiopsy').value,
     finalDx,
@@ -1933,7 +1951,7 @@ function saveTumorPatient() {
   tumorDrawings = {};
 
   // formu sıfırla
-  ['tName','tId','tAge','tPreDx','tFinalDx','tSurgery','tRecDate','tMetDate','tNotes','tSize']
+  ['tName','tId','tAge','tPreDx','tFinalDx','tDxDate','tSurgery','tRecDate','tMetDate','tNotes','tSize']
     .forEach(i => document.getElementById(i).value = '');
   ['tDepth','tGradeNum','tGradeLtr','tOnko','tRTWhen','tKTWhen']
     .forEach(i => document.getElementById(i).value = '');
@@ -1984,6 +2002,50 @@ function timelineBodySVG(patient, prevRegions, evRegions, color) {
   return `<svg viewBox="${base.vb}" width="${w}" xmlns="http://www.w3.org/2000/svg">${base.markup}${dots.join('')}</svg>`;
 }
 
+// ── Süreç şeridi: gerçek zaman ekseni. RT/KT süre barı, diğerleri nokta işaret ──
+// Olay çizelgesi okunabilirlik için eşit aralıklı; burası ise gerçek takvim.
+function renderTreatmentBand(p) {
+  const ev = (p.events || []).filter(e => e.date);
+  if (ev.length < 2) return '';
+  const t = d => new Date(String(d) + 'T00:00:00').getTime();
+  let min = Infinity, max = -Infinity;
+  ev.forEach(e => {
+    const a = t(e.date), b = t(e.end || e.date);
+    if (isFinite(a)) min = Math.min(min, a);
+    if (isFinite(b)) max = Math.max(max, b);
+  });
+  if (!isFinite(min) || !isFinite(max) || max <= min) return '';
+  const span = max - min;
+  const pct  = v => ((v - min) / span) * 100;
+  const days = (a, b) => Math.round((b - a) / 86400000);
+
+  const bars = ev.filter(e => HAS_DURATION.has(e.type) && e.end).map(e => {
+    const m = EVENT_TYPES[e.type] || EVENT_TYPES.diger;
+    const l = pct(t(e.date)), w = Math.max(1.5, pct(t(e.end)) - l);
+    const g = days(t(e.date), t(e.end));
+    const short = m.label === 'Radyoterapi' ? 'RT' : m.label === 'Kemoterapi' ? 'KT' : m.label;
+    return `<div class="tband-bar" style="left:${l}%;width:${w}%;background:${m.color}"
+      title="${m.label}: ${fmtDate(e.date)} → ${fmtDate(e.end)} · ${g} gün"
+      ><span>${w > 12 ? short + ' · ' + g + ' gün' : short}</span></div>`;
+  }).join('');
+
+  const ticks = ev.filter(e => !(HAS_DURATION.has(e.type) && e.end)).map(e => {
+    const m = EVENT_TYPES[e.type] || EVENT_TYPES.diger;
+    return `<div class="tband-tick" style="left:${pct(t(e.date))}%;background:${m.color}"
+      title="${m.label} · ${fmtDate(e.date)}${e.note ? ' — ' + e.note : ''}"></div>`;
+  }).join('');
+
+  const toplam = days(min, max);
+  const ay = Math.round(toplam / 30.44 * 10) / 10;
+  return `
+    <div class="tband">
+      <div class="tband-head">Süreç şeridi <span>gerçek takvim · toplam ${toplam} gün (${ay} ay)</span></div>
+      <div class="tband-track">${bars}${ticks}</div>
+      <div class="tband-axis"><span>${fmtDate(new Date(min).toISOString().slice(0,10))}</span>
+        <span>${fmtDate(new Date(max).toISOString().slice(0,10))}</span></div>
+    </div>`;
+}
+
 function renderTimeline(p, idx) {
   const evs = (p.events || []).map((e, i) => [e, i])
     .sort((x, y) => String(x[0].date).localeCompare(String(y[0].date)));
@@ -2014,12 +2076,14 @@ function renderTimeline(p, idx) {
 
   return `
     <div class="tp-tl" id="tl_${idx}" style="display:${openTimelines.has(idx) ? '' : 'none'};">
+      ${renderTreatmentBand(p)}
       <div class="tlh">${items || '<div class="tlh-note">Henüz olay yok</div>'}</div>
       <div class="tl-add" id="tlAdd_${idx}">
         <div class="tl-add-title">Sürece yeni olay ekle</div>
         <div class="tl-add-row">
           <label>Tarih<input type="date" id="evDate_${idx}"></label>
-          <label>Olay<select id="evType_${idx}">${typeOpts}</select></label>
+          <label>Olay<select id="evType_${idx}" onchange="syncEvEnd(${idx})">${typeOpts}</select></label>
+          <label id="evEndWrap_${idx}" style="display:none;">Bitiş<input type="date" id="evEnd_${idx}"></label>
           <label>Bölge<select id="evRegion_${idx}">${regionOpts}</select></label>
           <label class="grow">Not<input type="text" id="evNote_${idx}"
             placeholder="örn. tru-cut biyopsi — yetersiz materyal"
@@ -2035,6 +2099,16 @@ const openTimelines = new Set();
 function toggleTl(idx) {
   if (openTimelines.has(idx)) openTimelines.delete(idx); else openTimelines.add(idx);
   renderTumorPatients();
+}
+
+// Süresi olan olaylar — çizelgede bar olarak çizilir
+const HAS_DURATION = new Set(['rt', 'kt']);
+
+function syncEvEnd(idx) {
+  const t = document.getElementById('evType_' + idx).value;
+  const w = document.getElementById('evEndWrap_' + idx);
+  w.style.display = HAS_DURATION.has(t) ? '' : 'none';
+  if (!HAS_DURATION.has(t)) document.getElementById('evEnd_' + idx).value = '';
 }
 
 function deleteEvent(idx, ei) {
@@ -2084,10 +2158,12 @@ function addEvent(idx) {
   const type = document.getElementById('evType_' + idx).value;
   const region = document.getElementById('evRegion_' + idx).value;
   const note = document.getElementById('evNote_' + idx).value.trim();
+  const end  = document.getElementById('evEnd_' + idx).value;
   if (!date) { alert('Lütfen olay tarihini girin.'); return; }
+  if (end && end < date) { alert('Bitiş tarihi başlangıçtan önce olamaz.'); return; }
   const p = tumorPatients[idx];
   p.events = p.events || [];
-  p.events.push({ date, type, note, regions: region ? [region] : [] });
+  p.events.push({ date, type, note, end: HAS_DURATION.has(type) ? end : '', regions: region ? [region] : [] });
   // Metastaz/nüks olayları kart rozetlerine de yansısın
   if (type === 'metastaz' && region && !(p.mets || []).includes(region)) (p.mets = p.mets || []).push(region);
   if (type === 'nuks') { p.rec = 'Var'; if (!p.recDate) p.recDate = date; }
@@ -2144,6 +2220,7 @@ async function sendTumorToSheet(p) {
     preDx: p.preDx, biopsy: p.biopsy, finalDx: p.finalDx,
     regionLabels: tumorRegionLabels(regions),
     regionIds: regions.join(' | '),
+    dxDate: p.dxDate || '',
     depth: p.depth || '', size: p.size || '', grade: p.grade || '',
     rt: p.rt || '', rtWhen: p.rtWhen || '', kt: p.kt || '', ktWhen: p.ktWhen || '',
     surgery: p.surgery, margin: p.margin,
@@ -2153,7 +2230,7 @@ async function sendTumorToSheet(p) {
     drawCount: drawings.length,
     notes: p.notes,
     events: (p.events || []).map(e => ({
-      date: e.date, type: e.type,
+      date: e.date, end: e.end || '', type: e.type,
       typeLabel: (EVENT_TYPES[e.type] || EVENT_TYPES.diger).label,
       regionLabels: tumorRegionLabels(e.regions),
       regionIds: e.regions || [],
