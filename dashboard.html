@@ -281,6 +281,18 @@
 
 .badge-rt{background:#fef9c3;color:#854d0e;border-color:#fde68a}
 .badge-kt{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+
+.btn-addev{color:#0d9488;border-color:#99f6e4;background:#f0fdfa}
+.btn-addev:hover{background:#ccfbf1}
+.tl-add{flex-direction:column;align-items:stretch}
+.tl-add-title{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  color:#64748b;margin-bottom:8px}
+.tl-add-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.tl-add-row label{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase;color:#94a3b8}
+.tl-add-row label.grow{flex:1;min-width:160px}
+.tl-add.flash{animation:tlflash .9s ease-out}
+@keyframes tlflash{0%{background:#ccfbf1}100%{background:transparent}}
 </style>
 </head>
 <body>
@@ -2044,12 +2056,17 @@ function renderTimeline(p, idx) {
   return `
     <div class="tp-tl" id="tl_${idx}" style="display:${openTimelines.has(idx) ? '' : 'none'};">
       <div class="tlh">${items || '<div class="tlh-note">Henüz olay yok</div>'}</div>
-      <div class="tl-add">
-        <input type="date" id="evDate_${idx}">
-        <select id="evType_${idx}">${typeOpts}</select>
-        <select id="evRegion_${idx}">${regionOpts}</select>
-        <input type="text" id="evNote_${idx}" placeholder="Not (örn. diz üstü amputasyon)">
-        <button class="btn btn-primary" onclick="addEvent(${idx})">Ekle</button>
+      <div class="tl-add" id="tlAdd_${idx}">
+        <div class="tl-add-title">Sürece yeni olay ekle</div>
+        <div class="tl-add-row">
+          <label>Tarih<input type="date" id="evDate_${idx}"></label>
+          <label>Olay<select id="evType_${idx}">${typeOpts}</select></label>
+          <label>Bölge<select id="evRegion_${idx}">${regionOpts}</select></label>
+          <label class="grow">Not<input type="text" id="evNote_${idx}"
+            placeholder="örn. tru-cut biyopsi — yetersiz materyal"
+            onkeydown="if(event.key==='Enter')addEvent(${idx})"></label>
+          <button class="btn btn-primary" onclick="addEvent(${idx})">Ekle</button>
+        </div>
       </div>
     </div>`;
 }
@@ -2059,6 +2076,21 @@ const openTimelines = new Set();
 function toggleTl(idx) {
   if (openTimelines.has(idx)) openTimelines.delete(idx); else openTimelines.add(idx);
   renderTumorPatients();
+}
+
+// Kart üzerindeki "Olay Ekle" — çizelgeyi açar ve forma odaklanır
+function openAddEvent(idx) {
+  if (!openTimelines.has(idx)) { openTimelines.add(idx); renderTumorPatients(); }
+  setTimeout(() => {
+    const d = document.getElementById('evDate_' + idx);
+    if (!d) return;
+    if (!d.value) d.value = new Date().toISOString().slice(0, 10);
+    const box = document.getElementById('tlAdd_' + idx);
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    box.classList.add('flash');
+    setTimeout(() => box.classList.remove('flash'), 900);
+    d.focus();
+  }, 60);
 }
 
 function addEvent(idx) {
@@ -2073,7 +2105,12 @@ function addEvent(idx) {
   // Metastaz/nüks olayları kart rozetlerine de yansısın
   if (type === 'metastaz' && region && !(p.mets || []).includes(region)) (p.mets = p.mets || []).push(region);
   if (type === 'nuks') { p.rec = 'Var'; if (!p.recDate) p.recDate = date; }
+  // RT/KT olayları kart rozetleriyle de tutarlı olsun
+  if (type === 'rt' && p.rt !== 'Var') p.rt = 'Var';
+  if (type === 'kt' && p.kt !== 'Var') p.kt = 'Var';
+  openTimelines.add(idx);
   renderTumorPatients();
+  setTimeout(() => { const d = document.getElementById('evDate_' + idx); if (d) d.focus(); }, 60);
   sendTumorToSheet(p);
 }
 
@@ -2198,6 +2235,7 @@ function renderTumorPatients() {
         }).join('')}</div>` : ''}
         <div class="tp-actions">
           <button class="btn btn-ghost" onclick="toggleTl(${idx})">🕐 Zaman Çizelgesi${evCount ? ' (' + evCount + ')' : ''}</button>
+          <button class="btn btn-ghost btn-addev" onclick="openAddEvent(${idx})">➕ Olay Ekle</button>
         </div>
       </div>
       ${renderTimeline(p, idx)}
