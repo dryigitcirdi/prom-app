@@ -157,6 +157,13 @@
     .met-chip:hover { background: #e9d5ff; }
     .btn-met { background: #f3e8ff; color: #7c3aed; border: 1px solid #d8b4fe; }
     .btn-met.active { background: #7c3aed; color: white; }
+    .tz.sel-rec    { fill: #fdba74 !important; stroke: #ea580c !important; }
+    .rec-mode .tz:hover { fill: #fdba74 !important; stroke: #f97316 !important; }
+    .rec-chip { display: inline-flex; align-items: center; gap: 6px; background: #ffedd5; color: #ea580c;
+                border-radius: 999px; padding: 3px 9px; font-size: 11.5px; cursor: pointer; margin-left: 6px; }
+    .rec-chip:hover { background: #fed7aa; }
+    .btn-rec { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; }
+    .btn-rec.active { background: #ea580c; color: white; }
     .badge-met { background: #f3e8ff; color: #7c3aed; }
     /* Tümör hasta kartları */
     .tp-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
@@ -753,19 +760,20 @@
           <div class="form-group"><label>Cerrahi Tarihi</label><input type="date" id="tSurgery"></div>
           <div class="form-group"><label>Cerrahi Sınır</label>
             <select id="tMargin"><option value="">—</option><option>Temiz</option><option>Marjinal</option><option>Pozitif</option></select></div>
-          <div class="form-group"><label>Nüks</label>
-            <select id="tRec" onchange="document.getElementById('tRecDateWrap').style.display = this.value==='Var' ? '' : 'none'">
-              <option>Yok</option><option>Var</option></select></div>
         </div>
-        <div class="form-row2" id="tRecDateWrap" style="display:none;">
-          <div class="form-group"><label>Nüks Tarihi</label><input type="date" id="tRecDate"></div>
-          <div class="form-group"><label>&nbsp;</label>
-            <div style="font-size:12px;color:var(--muted);padding-top:10px;">Nüks süresi cerrahi tarihine göre otomatik hesaplanır</div></div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Nüks</label>
+          <div>
+            <button class="btn btn-sm btn-rec" id="btnRecMode" onclick="toggleMarkMode('rec')">🟠 Haritadan nüks işaretle</button>
+            <input type="date" id="tRecDate" title="Nüks saptanma tarihi" style="margin-left:6px; padding:6px 8px; font-size:12px;">
+            <span id="recChips"></span>
+            <span id="recHint" style="font-size:11px;color:var(--muted);margin-left:6px;">nüks süresi cerrahi tarihine göre hesaplanır</span>
+          </div>
         </div>
         <div class="form-group" style="margin-bottom:12px;">
           <label>Metastaz</label>
           <div>
-            <button class="btn btn-sm btn-met" id="btnMetMode" onclick="toggleMetMode()">🟣 Haritadan metastaz işaretle</button>
+            <button class="btn btn-sm btn-met" id="btnMetMode" onclick="toggleMarkMode('met')">🟣 Haritadan metastaz işaretle</button>
             <input type="date" id="tMetDate" title="Metastaz saptanma tarihi" style="margin-left:6px; padding:6px 8px; font-size:12px;">
             <span id="metChips"></span>
           </div>
@@ -1016,7 +1024,7 @@ function hydrateTumor(rows, eventRows) {
       preDx: txt(r[5]), biopsy: txt(r[6]), finalDx: txt(r[7]),
       regions: splitIds(r[9]),
       surgery: isoDay(r[10]), margin: txt(r[11]), dxDate: isoDay(r[28]),
-      rec: txt(r[12]), recDate: isoDay(r[13]),
+      rec: txt(r[12]), recDate: isoDay(r[13]), recRegions: splitIds(r[30]),
       mets: splitIds(r[17]),
       notes: txt(r[20]),   // 18:Olay Sayısı 19:Çizim Sayısı 20:Notlar
       depth: txt(r[21]), size: txt(r[22]), grade: txt(r[23]),
@@ -1482,8 +1490,8 @@ function setTumorMode(mode, btn) {
   document.querySelectorAll('.t-subtab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   // seçim durumunu sıfırla (bölge kümeleri farklı)
-  tPrimers = []; tMets = [];
-  if (metMode) toggleMetMode();
+  tPrimers = []; tMets = []; tRecs = [];
+  if (markMode) toggleMarkMode(markMode);
   if (detailView) closeDetail();
   document.getElementById('tSoftBlock').style.display = mode === 'yumusak' ? '' : 'none';
   const wrap = document.getElementById('bodyMapWrap');
@@ -1730,7 +1738,8 @@ function softMarkup(interactive) {
 // ── Etkileşim durumu ──
 let tPrimers = [];  // primer tümör bölgeleri (tümör birden çok bölgeye uzanabilir)
 let tMets = [];     // metastaz bölge id listesi
-let metMode = false;
+let tRecs = [];     // nüks bölge id listesi
+let markMode = '';  // '' = primer · 'met' = metastaz · 'rec' = nüks
 
 function tumorZoneClick(id) {
   // El/ayak ana bölgeleri detay görünümü açar — seçim detaydan yapılır (kemik modu)
@@ -1738,14 +1747,18 @@ function tumorZoneClick(id) {
   if (dm) { openDetail(dm[1], dm[2]); return; }
   tumorSelect(id);
   // Yumuşak dokuda primer seçilen bölge için lezyon çizim paneli açılır
-  if (tumorMode === 'yumusak' && !metMode && tPrimers.includes(id)) openBrush(id);
+  if (tumorMode === 'yumusak' && !markMode && tPrimers.includes(id)) openBrush(id);
 }
 
 function tumorSelect(id) {
-  if (metMode) {
+  if (markMode === 'met') {
     if (tPrimers.includes(id)) return; // primer bölge met olamaz
     const i = tMets.indexOf(id);
-    if (i === -1) tMets.push(id); else tMets.splice(i, 1);
+    if (i === -1) { tMets.push(id); tRecs = tRecs.filter(r => r !== id); } else tMets.splice(i, 1);
+  } else if (markMode === 'rec') {
+    // Nüks primer bölgede olabilir — kısıt yok, lokal nüks en sık orada çıkar
+    const i = tRecs.indexOf(id);
+    if (i === -1) { tRecs.push(id); tMets = tMets.filter(m => m !== id); } else tRecs.splice(i, 1);
   } else {
     const i = tPrimers.indexOf(id);
     if (i === -1) { tPrimers.push(id); tMets = tMets.filter(m => m !== id); }
@@ -1756,6 +1769,7 @@ function tumorSelect(id) {
 
 function removePrimer(id) { tPrimers = tPrimers.filter(p => p !== id); syncBodyMap(); }
 function removeMet(id)    { tMets = tMets.filter(m => m !== id); syncBodyMap(); }
+function removeRec(id)    { tRecs = tRecs.filter(r => r !== id); syncBodyMap(); }
 
 // ── El / Ayak detay görünümü ──────────────────────────────────────────────────
 let detailView = null; // { kind:'el'|'ayak', side:'sag'|'sol' }
@@ -1771,7 +1785,7 @@ function openDetail(kind, side) {
   document.getElementById('detailWholeBtn').textContent = `${kindTr} bütününü seç`;
   document.getElementById('detailSvgWrap').innerHTML =
     `<svg viewBox="0 0 200 262" width="100%" xmlns="http://www.w3.org/2000/svg">${kind === 'el' ? handDetailMarkup(side) : footDetailMarkup(side)}</svg>`;
-  document.getElementById('bodyMapHint').textContent = metMode
+  document.getElementById('bodyMapHint').textContent = markMode === 'met'
     ? 'Metastaz modunda: kemiğe tıkla = işaretle / kaldır'
     : 'Tümörün yerleştiği kemiği seçin — üstteki butonla bütün bölge de seçilebilir';
   syncBodyMap();
@@ -1781,7 +1795,7 @@ function closeDetail() {
   detailView = null;
   document.getElementById('detailWrap').style.display = 'none';
   document.getElementById('bodyMapWrap').style.display = '';
-  document.getElementById('bodyMapHint').textContent = metMode
+  document.getElementById('bodyMapHint').textContent = markMode === 'met'
     ? 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır'
     : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
 }
@@ -1789,7 +1803,7 @@ function closeDetail() {
 function selectWholeFromDetail() {
   if (!detailView) return;
   tumorSelect(detailView.kind + '_' + detailView.side);
-  if (metMode) closeDetail();
+  if (markMode) closeDetail();
 }
 
 // Detay zone sarmalayıcı
@@ -1845,22 +1859,30 @@ function handDetailMarkup(side) {
   return out;
 }
 
-function toggleMetMode() {
-  metMode = !metMode;
-  document.getElementById('btnMetMode').classList.toggle('active', metMode);
-  document.getElementById('bodyMapSvg').parentElement.classList.toggle('met-mode', metMode);
-  document.getElementById('bodyMapHint').textContent = metMode
-    ? 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır'
-    : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
+// Tek seferde tek mod açık olur — ikisi birden işaretlenemesin
+function toggleMarkMode(kind) {
+  markMode = markMode === kind ? '' : kind;
+  document.getElementById('btnMetMode').classList.toggle('active', markMode === 'met');
+  document.getElementById('btnRecMode').classList.toggle('active', markMode === 'rec');
+  const wrap = document.getElementById('bodyMapSvg').parentElement;
+  wrap.classList.toggle('met-mode', markMode === 'met');
+  wrap.classList.toggle('rec-mode', markMode === 'rec');
+  document.getElementById('bodyMapHint').textContent =
+    markMode === 'met' ? 'Metastaz modunda: bölgeye tıkla = işaretle / kaldır'
+  : markMode === 'rec' ? 'Nüks modunda: nüksün çıktığı bölgeye tıkla = işaretle / kaldır'
+  : 'Primer tümörün bölgesine tıklayın · görünüm AP (Sağ = solda)';
+  if (markMode) closeDetail();
 }
 
 function syncBodyMap() {
   const primerParents = tPrimers.map(parentZoneOf).filter(Boolean);
   const metParents = tMets.map(parentZoneOf).filter(Boolean);
+  const recParents = tRecs.map(parentZoneOf).filter(Boolean);
   Object.keys(T_REGIONS).concat(Object.keys(ST_REGIONS)).forEach(id => {
     const el = document.getElementById('tz_' + id);
     if (!el) return;
     el.classList.toggle('sel-met', tMets.includes(id) || metParents.includes(id));
+    el.classList.toggle('sel-rec', tRecs.includes(id) || recParents.includes(id));
     el.classList.toggle('sel-primer', tPrimers.includes(id) || primerParents.includes(id));
   });
   const banner = document.getElementById('tLocBanner');
@@ -1875,6 +1897,9 @@ function syncBodyMap() {
   }
   document.getElementById('metChips').innerHTML = tMets.map(m =>
     `<span class="met-chip" onclick="removeMet('${m}')" title="Kaldırmak için tıkla">🟣 ${REG(m).label} ✕</span>`).join('');
+  document.getElementById('recChips').innerHTML = tRecs.map(r =>
+    `<span class="rec-chip" onclick="removeRec('${r}')" title="Kaldırmak için tıkla">🟠 ${REG(r).label} ✕</span>`).join('');
+  document.getElementById('recHint').style.display = tRecs.length ? 'none' : '';
 }
 
 // ── Kayıt ──
@@ -1909,7 +1934,7 @@ function saveTumorPatient() {
 
   const surgery = document.getElementById('tSurgery').value;
   const margin  = document.getElementById('tMargin').value;
-  const rec     = document.getElementById('tRec').value;
+  const rec     = tRecs.length ? 'Var' : 'Yok';
   const recDate = document.getElementById('tRecDate').value;
   const metDate = document.getElementById('tMetDate').value;
   const notes   = document.getElementById('tNotes').value.trim();
@@ -1924,7 +1949,8 @@ function saveTumorPatient() {
   // Hekim biyopsileri 'Olay Ekle' ile kendi tarihleriyle girer.
   if (surgery) events.push({ date: surgery, type: 'cerrahi', note: margin ? 'Sınır: ' + margin : '' });
   if (tMets.length) events.push({ date: metDate || today, type: 'metastaz', note: metDate ? '' : 'Tarih: kayıt günü', regions: tMets.slice() });
-  if (rec === 'Var' && recDate) events.push({ date: recDate, type: 'nuks', note: 'Lokal nüks' });
+  if (tRecs.length) events.push({ date: recDate || today, type: 'nuks',
+                                  note: recDate ? '' : 'Tarih: kayıt günü', regions: tRecs.slice() });
 
   const soft = tumorMode === 'yumusak';
   tumorPatients.push({
@@ -1944,6 +1970,7 @@ function saveTumorPatient() {
     regions: tPrimers.slice(),
     ttype: tumorMode,
     surgery, margin, rec, recDate,
+    recRegions: tRecs.slice(),
     mets:    tMets.slice(),
     drawings: Object.assign({}, tumorDrawings),
     notes, events,
@@ -1957,9 +1984,8 @@ function saveTumorPatient() {
     .forEach(i => document.getElementById(i).value = '');
   syncOncoTiming();
   document.getElementById('tBiopsy').value = ''; document.getElementById('tMargin').value = '';
-  document.getElementById('tRec').value = 'Yok'; document.getElementById('tRecDateWrap').style.display = 'none';
-  if (metMode) toggleMetMode();
-  tPrimers = []; tMets = [];
+  if (markMode) toggleMarkMode(markMode);
+  tPrimers = []; tMets = []; tRecs = [];
   syncBodyMap();
   renderTumorPatients();
   document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
@@ -2075,10 +2101,17 @@ function renderTimeline(p, idx) {
   }).join('');
 
   const typeOpts = Object.keys(EVENT_TYPES).map(t => `<option value="${t}">${EVENT_TYPES[t].label}</option>`).join('');
-  const reg = (p.ttype || 'kemik') === 'yumusak' ? ST_REGIONS : T_REGIONS;
+  // Uzun listede aramak zor — hastanın kendi bölgeleri en üstte ayrı grupta.
+  // Lokal nüks çoğunlukla primer bölgede çıktığı için en sık seçim tek tık ötede.
+  const reg  = (p.ttype || 'kemik') === 'yumusak' ? ST_REGIONS : T_REGIONS;
+  const mine = [...new Set([...(p.regions || []), ...(p.recRegions || []), ...(p.mets || [])])]
+                 .filter(r => reg[r]);
+  const opt  = r => `<option value="${r}">${reg[r].label}</option>`;
+  const rest = Object.keys(reg).filter(r => !mine.includes(r))
+                 .sort((x, y) => reg[x].label.localeCompare(reg[y].label, 'tr'));
   const regionOpts = '<option value="">Bölge (opsiyonel)</option>' +
-    Object.keys(reg).sort((x, y) => reg[x].label.localeCompare(reg[y].label, 'tr'))
-      .map(r => `<option value="${r}">${reg[r].label}</option>`).join('');
+    (mine.length ? `<optgroup label="Bu hastanın bölgeleri">${mine.map(opt).join('')}</optgroup>` : '') +
+    `<optgroup label="Tüm bölgeler">${rest.map(opt).join('')}</optgroup>`;
 
   return `
     <div class="tp-tl" id="tl_${idx}" style="display:${openTimelines.has(idx) ? '' : 'none'};">
@@ -2135,9 +2168,12 @@ function deleteEvent(idx, ei) {
 // RT/KT klinik künye bilgisi olduğu için olay silmekle sıfırlanmaz.
 function resyncTumorFlags(p) {
   const ev = p.events || [];
-  const nuks = ev.filter(e => e.type === 'nuks').map(e => e.date).sort();
-  if (nuks.length) { p.rec = 'Var'; p.recDate = nuks[0]; }
+  const nuks = ev.filter(e => e.type === 'nuks').sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  if (nuks.length) { p.rec = 'Var'; p.recDate = nuks[0].date; }
   else             { p.rec = 'Yok'; p.recDate = ''; }
+  const recR = new Set();
+  nuks.forEach(e => (e.regions || []).forEach(r => recR.add(r)));
+  p.recRegions = [...recR];
   const mets = new Set();
   ev.filter(e => e.type === 'metastaz')
     .forEach(e => (e.regions || []).forEach(r => mets.add(r)));
@@ -2172,7 +2208,11 @@ function addEvent(idx) {
   p.events.push({ date, type, note, end: HAS_DURATION.has(type) ? end : '', regions: region ? [region] : [] });
   // Metastaz/nüks olayları kart rozetlerine de yansısın
   if (type === 'metastaz' && region && !(p.mets || []).includes(region)) (p.mets = p.mets || []).push(region);
-  if (type === 'nuks') { p.rec = 'Var'; if (!p.recDate) p.recDate = date; }
+  if (type === 'nuks') {
+    p.rec = 'Var';
+    if (!p.recDate) p.recDate = date;
+    if (region && !(p.recRegions || []).includes(region)) (p.recRegions = p.recRegions || []).push(region);
+  }
   // RT/KT olayları kart rozetleriyle de tutarlı olsun
   if (type === 'rt' && p.rt !== 'Var') p.rt = 'Var';
   if (type === 'kt' && p.kt !== 'Var') p.kt = 'Var';
@@ -2231,6 +2271,7 @@ async function sendTumorToSheet(p) {
     rt: p.rt || '', rtWhen: p.rtWhen || '', kt: p.kt || '', ktWhen: p.ktWhen || '',
     surgery: p.surgery, margin: p.margin,
     rec: p.rec, recDate: p.recDate, recMonths: months,
+    recRegions: p.recRegions || [], recLabels: tumorRegionLabels(p.recRegions),
     mets: p.mets || [], metLabels: tumorRegionLabels(p.mets),
     eventCount: (p.events || []).length,
     drawCount: drawings.length,
@@ -2289,7 +2330,8 @@ function renderTumorPatients() {
         <div class="tp-badges">
           ${p.margin ? `<span class="score-pill ${marginCls}">Sınır: ${p.margin}</span>` : ''}
           ${p.rec === 'Var'
-            ? `<span class="score-pill score-bad">Nüks${months !== null ? ': ' + months + ' ay' : ' var'}</span>`
+            ? `<span class="score-pill score-bad">Nüks${months !== null ? ': ' + months + ' ay' : ' var'}${
+                (p.recRegions || []).length ? ' · ' + p.recRegions.map(r => REG(r).label).join(', ') : ''}</span>`
             : '<span class="score-pill score-good">Nüks yok</span>'}
           ${p.mets && p.mets.length
             ? `<span class="score-pill badge-met">Met: ${p.mets.map(m => REG(m).label).join(', ')}</span>`

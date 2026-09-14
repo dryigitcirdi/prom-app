@@ -148,7 +148,7 @@ const TUMOR_HEADERS = [
   'Olay Sayısı', 'Çizim Sayısı', 'Notlar',
   // Yumuşak doku tümörlerine özel (sona eklendi — mevcut sütun sırası bozulmasın)
   'Derinlik', 'Büyüklük (cm)', 'Grade', 'RT', 'RT Zamanlama', 'KT', 'KT Zamanlama',
-  'Tanı Tarihi',
+  'Tanı Tarihi', 'Nüks Bölgeleri', 'Nüks Kodları',
 ];
 const TUMOR_EVENT_HEADERS = [
   'Zaman Damgası', 'Hasta ID', 'Hasta Adı', 'Olay Tarihi', 'Olay Tipi', 'Bölgeler', 'Not',
@@ -208,7 +208,7 @@ function saveTumorData(data) {
     n(data.eventCount), n(data.drawCount), data.notes || '',
     data.depth || '', n(data.size), data.grade || '',
     data.rt || '', data.rtWhen || '', data.kt || '', data.ktWhen || '',
-    data.dxDate || '',
+    data.dxDate || '', data.recLabels || '', (data.recRegions || []).join(' | '),
   ];
   const last = sheet.getLastRow();
   let target = 0;
