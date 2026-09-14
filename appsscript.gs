@@ -713,3 +713,4 @@ function colorGrade(sheet, row, col, v) {
   const map = { '1': '#dcfce7', '2': '#fef9c3', '3': '#fee2e2' };
   sheet.getRange(row, col).setBackground(map[g] || null);
 }
+
