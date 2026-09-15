@@ -2061,7 +2061,7 @@ function saveTumorPatient() {
   syncBodyMap();
   renderTumorPatients();
   document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
-  sendTumorToSheet(tumorPatients[tumorPatients.length - 1]);
+  queueTumorSend(tumorPatients[tumorPatients.length - 1]);
 }
 
 function tRecMonths(p) {
@@ -2247,7 +2247,7 @@ function deleteEvent(idx, ei) {
   resyncTumorFlags(p);
   openTimelines.add(idx);
   renderTumorPatients();
-  sendTumorToSheet(p);
+  queueTumorSend(p);
 }
 
 // Nüks ve metastaz rozetleri olay listesinin aynası — silince de tutarlı kalsın.
@@ -2307,7 +2307,7 @@ function addEvent(idx) {
   openTimelines.add(idx);
   renderTumorPatients();
   setTimeout(() => { const d = document.getElementById('evDate_' + idx); if (d) d.focus(); }, 60);
-  sendTumorToSheet(p);
+  queueTumorSend(p);
 }
 
 // ── Tümör kaydını hasta takip tablosuna gönder ──────────────────────────────
@@ -2329,6 +2329,27 @@ function shrinkDrawing(dataUrl) {
     };
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
+  });
+}
+
+// Art arda hızlı olay eklemek iki kaydı aynı anda gönderiyor ve tabloda çift
+// satır oluşuyordu. Hasta başına tek gönderim: biri uçarken gelen istek
+// sıraya girer, sonra EN GÜNCEL hâli gönderilir (tam kayıt gittiği için yeterli).
+const tumorSending = {};
+const tumorPending = {};
+
+function queueTumorSend(p) {
+  if (!p) return;
+  const k = String(p.id || p.name || '').toLowerCase();
+  if (tumorSending[k]) { tumorPending[k] = p; return; }
+  tumorSending[k] = true;
+  sendTumorToSheet(p).finally(() => {
+    // no-cors gönderimde tamamlanma bilinemez — sunucuya nefes payı bırak
+    setTimeout(() => {
+      tumorSending[k] = false;
+      const next = tumorPending[k];
+      if (next) { delete tumorPending[k]; queueTumorSend(next); }
+    }, 1400);
   });
 }
 

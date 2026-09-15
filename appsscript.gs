@@ -325,7 +325,7 @@ const HEADERS = [
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    saveToSheet(data);
+    saveGuarded_(data);
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok' }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -340,7 +340,7 @@ function doGet(e) {
   if (e.parameter.data) {
     try {
       const data = JSON.parse(e.parameter.data);
-      saveToSheet(data);
+      saveGuarded_(data);
       return HtmlService.createHtmlOutput('<script>window.close();</script>');
     } catch (err) {
       return HtmlService.createHtmlOutput('<script>window.close();</script>');
@@ -376,6 +376,19 @@ function doGet(e) {
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'ok', message: 'PROM API çalışıyor' }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Aynı hastanın iki kaydı aynı anda işlenirse satırlar çakışıyor: biri silerken
+// diğeri okuyor, sonuç çift satır. Yazma işlemini betik kilidiyle sıraya sok.
+function saveGuarded_(data) {
+  const lock = LockService.getScriptLock();
+  let alindi = false;
+  try { alindi = lock.tryLock(25000); } catch (err) { alindi = false; }
+  try {
+    saveToSheet(data);
+  } finally {
+    if (alindi) { try { lock.releaseLock(); } catch (err2) {} }
+  }
 }
 
 function saveToSheet(data) {
