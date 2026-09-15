@@ -1099,6 +1099,17 @@ function hydrateTumor(rows, eventRows) {
                     note: txt(r[6]), regions: splitIds(r[8]), end: isoDay(r[9]),
                     outcome: txt(r[10]) });
   });
+  // Savunma: tabloda bir sebeple çift satır oluşursa çizelgede iki kez görünmesin
+  byKey.forEach(p => {
+    const gorulen = new Set();
+    p.events = p.events.filter(e => {
+      const k = [e.date, e.type, e.note, e.end || '', e.outcome || '',
+                 (e.regions || []).join(',')].join('|');
+      if (gorulen.has(k)) return false;
+      gorulen.add(k);
+      return true;
+    });
+  });
   tumorPatients = [...byKey.values()];
 }
 
