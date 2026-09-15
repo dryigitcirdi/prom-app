@@ -954,6 +954,8 @@ function refreshAll() {
 // 6:surgeryDate 7:daysPostOp 8:surgeryLeg
 // 9:vas  10:rom_abduction  11:rom_flexion  12:rom_ir  13:rom_ir_label  14:rom_er
 // 15:dash  16:constant  17:sleep_vas  18:sf12_pcs  19:sf12_mcs  20:followup
+const LOAD_TRIES = 8;   // Apps Script ucu ara sıra 404 dönüyor, ısrarcı ol
+
 function loadData(attempt) {
   attempt = attempt || 1;
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') { renderTable([]); return; }
@@ -1001,14 +1003,19 @@ function loadData(attempt) {
       hydrateTumorDrawings();
     })
     .catch(() => {
-      // Google tarafı ara sıra 404/HTML dönüyor; birkaç kez tekrar dene
-      if (attempt < 4) { setTimeout(() => loadData(attempt + 1), 900 * attempt); return; }
+      // Google tarafı ara sıra 404/HTML dönüyor — ısrarla tekrar dene.
+      // Sessizce kilitli kalmasın: kaçıncı denemede olduğumuz ekranda yazsın.
       const locked = !document.getElementById('lockScreen').classList.contains('hidden');
-      if (locked) {
-        showLock('Sunucuya ulaşılamadı. Biraz bekleyip tekrar deneyin.');
-      } else {
-        document.getElementById('totalBadge').textContent = '⚠︎ bağlantı yok';
+      if (attempt < LOAD_TRIES) {
+        if (locked) document.getElementById('pinErr').textContent =
+          'Sunucuya ulaşılamıyor, yeniden deneniyor (' + attempt + '/' + LOAD_TRIES + ')…';
+        else document.getElementById('totalBadge').textContent =
+          '↻ yeniden deneniyor (' + attempt + '/' + LOAD_TRIES + ')';
+        setTimeout(() => loadData(attempt + 1), Math.min(6000, 700 * attempt));
+        return;
       }
+      if (locked) showLock('Sunucuya ulaşılamadı. Giriş tuşuna basıp tekrar deneyin.');
+      else document.getElementById('totalBadge').textContent = '⚠︎ bağlantı yok — ↺ Yenile';
     });
 }
 
