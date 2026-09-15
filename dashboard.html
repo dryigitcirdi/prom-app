@@ -328,6 +328,21 @@
 .tp-incident:hover{background:#fce7f3}
 .tp-inc-icon{font-size:13px;line-height:1.2}
 .tp-inc-date{color:#be185d;opacity:.7;white-space:nowrap}
+
+.dx-hint{font-size:11.5px;color:var(--muted);padding-top:9px;line-height:1.45}
+.dx-snap{display:inline-block;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;
+  border-radius:999px;padding:2px 9px;cursor:pointer;font-weight:600;margin-left:4px}
+.dx-snap:hover{background:#bfdbfe}
+.dx-ok{color:#16a34a;font-weight:600}
+
+.tp-sub{display:inline-block;background:#f1f5f9;color:#475569;border-radius:5px;
+  padding:1px 6px;font-size:10.5px;font-weight:600;margin-left:2px}
+.tlh-out{display:inline-block;margin-top:4px;padding:1px 8px;border-radius:999px;
+  font-size:10.5px;font-weight:700}
+.tp-inc-out{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700}
+.out-ok{background:#dcfce7;color:#15803d}
+.out-mid{background:#fef9c3;color:#854d0e}
+.out-bad{background:#fee2e2;color:#b91c1c}
 </style>
 </head>
 <body>
@@ -728,7 +743,18 @@
           <div class="form-group"><label>Ön Tanı</label><input type="text" id="tPreDx" placeholder="örn. Kemik tümörü"></div>
           <div class="form-group"><label>Biyopsi</label>
             <select id="tBiopsy"><option value="">—</option><option>Var</option><option>Yok</option></select></div>
-          <div class="form-group"><label>Kesin Tanı</label><input type="text" id="tFinalDx" placeholder="örn. Osteosarkom"></div>
+          <div class="form-group"><label>Kesin Tanı</label>
+            <input type="text" id="tFinalDx" list="dxList" autocomplete="off"
+                   placeholder="örn. Osteosarkom" oninput="dxTyped()" onfocus="dxTyped()" onchange="dxSettle()">
+            <datalist id="dxList"></datalist></div>
+        </div>
+        <div class="form-row2" id="subtypeRow" style="display:none;">
+          <div class="form-group"><label id="subtypeLbl">Alt Tip</label>
+            <input type="text" id="tSubtype" list="subList" autocomplete="off"
+                   placeholder="örn. Pleomorfik" oninput="dxTyped()">
+            <datalist id="subList"></datalist></div>
+          <div class="form-group"><label>&nbsp;</label>
+            <div class="dx-hint" id="dxHint"></div></div>
         </div>
         <!-- Yumuşak doku tümörlerine özel alanlar — kemik modunda gizli -->
         <div id="tSoftBlock" style="display:none;">
@@ -1028,7 +1054,7 @@ function hydrateTumor(rows, eventRows) {
     byKey.set(key, {
       id: txt(r[1]), name: txt(r[2]), age: num(r[3]),
       ttype: txt(r[4]) === 'Yumuşak Doku' ? 'yumusak' : 'kemik',
-      preDx: txt(r[5]), biopsy: txt(r[6]), finalDx: txt(r[7]),
+      preDx: txt(r[5]), biopsy: txt(r[6]), finalDx: txt(r[7]), subtype: txt(r[31]),
       regions: splitIds(r[9]),
       surgery: isoDay(r[10]), margin: txt(r[11]), dxDate: isoDay(r[28]),
       rec: txt(r[12]), recDate: isoDay(r[13]), recRegions: splitIds(r[30]),
@@ -1044,7 +1070,8 @@ function hydrateTumor(rows, eventRows) {
     const p = byKey.get(key);
     if (!p) return;
     p.events.push({ date: isoDay(r[3]), type: txt(r[7]) || 'diger',
-                    note: txt(r[6]), regions: splitIds(r[8]), end: isoDay(r[9]) });
+                    note: txt(r[6]), regions: splitIds(r[8]), end: isoDay(r[9]),
+                    outcome: txt(r[10]) });
   });
   tumorPatients = [...byKey.values()];
 }
@@ -1501,6 +1528,7 @@ function setTumorMode(mode, btn) {
   if (markMode) toggleMarkMode(markMode);
   if (detailView) closeDetail();
   document.getElementById('tSoftBlock').style.display = mode === 'yumusak' ? '' : 'none';
+  dxTyped(); // kanonik tanı listesi kemik/yumuşak dokuya göre değişir
   const wrap = document.getElementById('bodyMapWrap');
   wrap.dataset.built = ''; // haritayı yeni modla yeniden kur
   initBodyMap();
@@ -1982,6 +2010,7 @@ function saveTumorPatient() {
     preDx:   document.getElementById('tPreDx').value.trim(),
     biopsy:  document.getElementById('tBiopsy').value,
     finalDx,
+    subtype: document.getElementById('tSubtype').value.trim(),
     regions: tPrimers.slice(),
     ttype: tumorMode,
     surgery, margin, rec, recDate,
@@ -1993,7 +2022,7 @@ function saveTumorPatient() {
   tumorDrawings = {};
 
   // formu sıfırla
-  ['tName','tId','tAge','tPreDx','tFinalDx','tDxDate','tSurgery','tRecDate','tMetDate','tNotes','tSize']
+  ['tName','tId','tAge','tPreDx','tFinalDx','tSubtype','tDxDate','tSurgery','tRecDate','tMetDate','tNotes','tSize']
     .forEach(i => document.getElementById(i).value = '');
   ['tDepth','tGradeNum','tGradeLtr','tOnko','tRTWhen','tKTWhen']
     .forEach(i => document.getElementById(i).value = '');
@@ -2001,6 +2030,8 @@ function saveTumorPatient() {
   document.getElementById('tBiopsy').value = ''; document.getElementById('tMargin').value = '';
   if (markMode) toggleMarkMode(markMode);
   tPrimers = []; tMets = []; tRecs = [];
+  document.getElementById('subtypeRow').style.display = 'none';
+  document.getElementById('dxHint').innerHTML = '';
   syncBodyMap();
   renderTumorPatients();
   document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
@@ -2113,6 +2144,7 @@ function renderTimeline(p, idx) {
         <div class="tlh-dotwrap"><span class="tlh-dot" style="background:${meta.color}"></span></div>
         <div class="tlh-label" style="color:${meta.color}">${meta.icon} ${meta.label}</div>
         ${ev.note ? `<div class="tlh-note">${ev.note}</div>` : ''}
+        ${ev.outcome ? `<div class="tlh-out ${outCls(ev.outcome)}">${ev.outcome}</div>` : ''}
         ${regTxt}
         ${body}
       </div>`;
@@ -2142,6 +2174,9 @@ function renderTimeline(p, idx) {
           <label>Olay<select id="evType_${idx}" onchange="syncEvEnd(${idx})">${typeOpts}</select></label>
           <label id="evEndWrap_${idx}" style="display:none;">Bitiş<input type="date" id="evEnd_${idx}"></label>
           <label>Bölge<select id="evRegion_${idx}">${regionOpts}</select></label>
+          <label id="evOutWrap_${idx}" style="display:none;">Sonuç<select id="evOut_${idx}">
+            <option value="">—</option><option>Düzeldi</option><option>Sekel kaldı</option>
+            <option>Devam ediyor</option><option>Ölümle sonuçlandı</option></select></label>
           <label class="grow">Not<input type="text" id="evNote_${idx}"
             placeholder="örn. tru-cut biyopsi — yetersiz materyal"
             onkeydown="if(event.key==='Enter')addEvent(${idx})"></label>
@@ -2168,8 +2203,11 @@ function syncEvEnd(idx) {
   if (!HAS_DURATION.has(t)) document.getElementById('evEnd_' + idx).value = '';
   const note = document.getElementById('evNote_' + idx);
   note.placeholder = t === 'beklenmeyen'
-    ? 'ne oldu, ne sırasında, sonucu ne — örn. biyopsi sırasında bilateral üst ekstremite motor paralizisi'
+    ? 'ne oldu ve ne sırasında — örn. biyopsi sırasında bilateral üst ekstremite motor paralizisi'
     : 'örn. tru-cut biyopsi — yetersiz materyal';
+  const ow = document.getElementById('evOutWrap_' + idx);
+  ow.style.display = t === 'beklenmeyen' ? '' : 'none';
+  if (t !== 'beklenmeyen') document.getElementById('evOut_' + idx).value = '';
 }
 
 function deleteEvent(idx, ei) {
@@ -2227,7 +2265,9 @@ function addEvent(idx) {
   if (end && end < date) { alert('Bitiş tarihi başlangıçtan önce olamaz.'); return; }
   const p = tumorPatients[idx];
   p.events = p.events || [];
-  p.events.push({ date, type, note, end: HAS_DURATION.has(type) ? end : '', regions: region ? [region] : [] });
+  p.events.push({ date, type, note, end: HAS_DURATION.has(type) ? end : '',
+                  outcome: type === 'beklenmeyen' ? document.getElementById('evOut_' + idx).value : '',
+                  regions: region ? [region] : [] });
   // Metastaz/nüks olayları kart rozetlerine de yansısın
   if (type === 'metastaz' && region && !(p.mets || []).includes(region)) (p.mets = p.mets || []).push(region);
   if (type === 'nuks') {
@@ -2285,7 +2325,7 @@ async function sendTumorToSheet(p) {
     timestamp: new Date().toISOString(),
     patientId: p.id, patientName: p.name, age: p.age,
     ttype: (p.ttype || 'kemik') === 'yumusak' ? 'Yumuşak Doku' : 'Kemik',
-    preDx: p.preDx, biopsy: p.biopsy, finalDx: p.finalDx,
+    preDx: p.preDx, biopsy: p.biopsy, finalDx: p.finalDx, subtype: p.subtype || '',
     regionLabels: tumorRegionLabels(regions),
     regionIds: regions.join(' | '),
     dxDate: p.dxDate || '',
@@ -2299,7 +2339,7 @@ async function sendTumorToSheet(p) {
     drawCount: drawings.length,
     notes: p.notes,
     events: (p.events || []).map(e => ({
-      date: e.date, end: e.end || '', type: e.type,
+      date: e.date, end: e.end || '', outcome: e.outcome || '', type: e.type,
       typeLabel: (EVENT_TYPES[e.type] || EVENT_TYPES.diger).label,
       regionLabels: tumorRegionLabels(e.regions),
       regionIds: e.regions || [],
@@ -2317,6 +2357,13 @@ async function sendTumorToSheet(p) {
 
 // Beklenmeyen olaylar hastalık seyrinden bağımsız ama sonuç açısından kritik —
 // çizelgeyi açmadan kart üzerinde görünsünler
+// Komplikasyon sonucu — düzeldiyse yeşil, kalıcıysa kırmızı
+function outCls(v) {
+  return v === 'Düzeldi' ? 'out-ok'
+       : v === 'Devam ediyor' ? 'out-mid'
+       : v ? 'out-bad' : '';
+}
+
 function incidentBadge(p, idx) {
   const list = (p.events || []).filter(e => e.type === 'beklenmeyen');
   if (!list.length) return '';
@@ -2325,7 +2372,9 @@ function incidentBadge(p, idx) {
     title="Zaman çizelgesinde görmek için tıklayın">
     <span class="tp-inc-icon">🚨</span>
     <span><b>Beklenmeyen olay${list.length > 1 ? ' (' + list.length + ')' : ''}</b>${
-      son.note ? ' — ' + son.note : ''} <span class="tp-inc-date">${fmtDate(son.date)}</span></span>
+      son.note ? ' — ' + son.note : ''}${
+      son.outcome ? ` <span class="tp-inc-out ${outCls(son.outcome)}">${son.outcome}</span>` : ''
+      } <span class="tp-inc-date">${fmtDate(son.date)}</span></span>
   </div>`;
 }
 
@@ -2336,6 +2385,157 @@ function openTimelineAt(idx) {
     const el = document.getElementById('tl_' + idx);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 60);
+}
+
+// ═══ Tanı standardizasyonu ═══════════════════════════════════════════════════
+// Amaç: "Osteosarkom" ve "pleomorfik osteosarkom" ayrı tanı gibi sayılmasın.
+// Ana tanı tek bir yazımda toplanır, varyant "Alt Tip" olarak ayrı sütuna gider.
+// Böylece "osteosarkom" sorgusu bütün alt tipleri de getirir.
+const DX_CANON = {
+  kemik: ['Osteosarkom', 'Kondrosarkom', 'Ewing Sarkomu', 'Dev Hücreli Tümör', 'Kordoma',
+          'Adamantinom', 'Osteoid Osteoma', 'Osteoblastom', 'Kondroblastom', 'Kondromiksoid Fibrom',
+          'Enkondrom', 'Osteokondrom', 'Anevrizmal Kemik Kisti', 'Basit Kemik Kisti',
+          'Fibröz Displazi', 'Non-ossifiye Fibrom', 'Langerhans Hücreli Histiyositoz',
+          'Multipl Myelom', 'Lenfoma', 'Metastatik Karsinom'],
+  yumusak: ['Liposarkom', 'Miksofibrosarkom', 'Leiomyosarkom', 'Sinovyal Sarkom',
+            'Undiferansiye Pleomorfik Sarkom', 'Malign Periferik Sinir Kılıfı Tümörü',
+            'Rabdomiyosarkom', 'Anjiyosarkom', 'Epiteloid Sarkom', 'Berrak Hücreli Sarkom',
+            'Dermatofibrosarkoma Protuberans', 'Desmoid Tümör', 'Fibromatozis',
+            'Lipom', 'Schwannom', 'Nörofibrom', 'Hemanjiyom', 'Miksom',
+            'Tenosinovyal Dev Hücreli Tümör', 'Elastofibrom'],
+};
+
+// Sık kullanılan alt tipler — liste kapalı değil, yeni alt tip serbestçe yazılabilir
+const DX_SUBTYPES = {
+  'osteosarkom': ['Konvansiyonel', 'Osteoblastik', 'Kondroblastik', 'Fibroblastik',
+                  'Telanjiektatik', 'Küçük Hücreli', 'Parosteal', 'Periosteal',
+                  'Yüksek Dereceli Yüzey', 'Sekonder', 'Pleomorfik'],
+  'kondrosarkom': ['Konvansiyonel', 'Dediferansiye', 'Mezenkimal', 'Berrak Hücreli', 'Miksoid'],
+  'liposarkom': ['İyi Diferansiye', 'Dediferansiye', 'Miksoid', 'Pleomorfik'],
+  'ewing sarkomu': ['Klasik', 'Atipik', 'Ekstraossöz'],
+  'rabdomiyosarkom': ['Embriyonal', 'Alveolar', 'Pleomorfik', 'İğsi Hücreli/Sklerozan'],
+  'leiomyosarkom': ['Konvansiyonel', 'Miksoid', 'Pleomorfik'],
+};
+
+// Türkçe karakterleri katlayarak karşılaştırma anahtarı üret
+function normDx(v) {
+  return String(v || '').toLocaleLowerCase('tr')
+    .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+// Daha önce girilmiş tanılar — yazım tutarlılığı buradan sağlanır
+function knownDx() {
+  const m = new Map();  // norm → görünen yazım
+  (DX_CANON[tumorMode] || []).forEach(d => m.set(normDx(d), d));
+  tumorPatients.forEach(p => {
+    const d = String(p.finalDx || '').trim();
+    if (d && !m.has(normDx(d))) m.set(normDx(d), d);
+  });
+  return m;
+}
+
+function knownSubtypes(mainDx) {
+  const key = normDx(mainDx);
+  const m = new Map();
+  (DX_SUBTYPES[key] || []).forEach(t => m.set(normDx(t), t));
+  tumorPatients.filter(p => normDx(p.finalDx) === key).forEach(p => {
+    const t = String(p.subtype || '').trim();
+    if (t && !m.has(normDx(t))) m.set(normDx(t), t);
+  });
+  return m;
+}
+
+// "pleomorfik osteosarkom" yazıldığında bilinen ana tanıyı içeriyorsa ayrıştır
+function splitDx(raw) {
+  const n = normDx(raw);
+  if (!n) return null;
+  let best = null;
+  knownDx().forEach((disp, key) => {
+    if (key === n) return;                       // birebir aynı, ayrıştırma gerekmez
+    if (!new RegExp('(^| )' + key + '( |$)').test(n)) return;
+    if (!best || key.length > normDx(best).length) best = disp;
+  });
+  if (!best) return null;
+  const rest = n.replace(new RegExp('(^| )' + normDx(best) + '( |$)'), ' ').trim();
+  return { main: best, sub: rest ? titleTr(rest) : '' };
+}
+
+function titleTr(v) {
+  return v.split(' ').filter(Boolean)
+    .map(w => w.charAt(0).toLocaleUpperCase('tr') + w.slice(1)).join(' ');
+}
+
+// Küçük yazım farkları (1-2 harf) için düzenleme mesafesi
+function editDist(a, b) {
+  if (Math.abs(a.length - b.length) > 2) return 99;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i].concat(Array(b.length).fill(0)));
+  for (let j = 0; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1,
+                         d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+
+function dxTyped() {
+  const raw  = document.getElementById('tFinalDx').value;
+  const list = knownDx();
+  document.getElementById('dxList').innerHTML =
+    [...list.values()].sort((a, b) => a.localeCompare(b, 'tr')).map(d => `<option value="${d}">`).join('');
+
+  const row = document.getElementById('subtypeRow');
+  const hint = document.getElementById('dxHint');
+  row.style.display = raw.trim() ? '' : 'none';
+  document.getElementById('subtypeLbl').textContent =
+    raw.trim() ? 'Alt Tip — ' + raw.trim() : 'Alt Tip';
+
+  const subs = knownSubtypes(raw);
+  document.getElementById('subList').innerHTML =
+    [...subs.values()].sort((a, b) => a.localeCompare(b, 'tr')).map(t => `<option value="${t}">`).join('');
+
+  const n = normDx(raw);
+  if (!n) { hint.innerHTML = ''; return; }
+
+  // 1) Birebir tanınan tanı
+  if (list.has(n)) {
+    const kac = tumorPatients.filter(p => normDx(p.finalDx) === n).length;
+    hint.innerHTML = `<span class="dx-ok">✓ Bilinen tanı</span>` +
+      (kac ? ` — kayıtlı ${kac} hasta` : ' — ilk kayıt');
+    return;
+  }
+  // 2) İçinde bilinen bir ana tanı geçiyor → ayrıştırmayı öner
+  const sp = splitDx(raw);
+  if (sp) {
+    hint.innerHTML = `Bu bir alt tip olabilir: ana tanı <b>${sp.main}</b>` +
+      (sp.sub ? `, alt tip <b>${sp.sub}</b>` : '') +
+      ` <span class="dx-snap" onclick="applyDxSplit('${sp.main.replace(/'/g, "\\'")}','${sp.sub.replace(/'/g, "\\'")}')">Böyle ayır</span>`;
+    return;
+  }
+  // 3) Yazım farkı olabilir
+  let yakin = null;
+  list.forEach((disp, key) => { if (!yakin && editDist(n, key) <= 2) yakin = disp; });
+  if (yakin) {
+    hint.innerHTML = `Benzer kayıtlı tanı: <b>${yakin}</b>` +
+      ` <span class="dx-snap" onclick="applyDxSplit('${yakin.replace(/'/g, "\\'")}','')">Bunu kullan</span>`;
+    return;
+  }
+  hint.innerHTML = 'Yeni tanı olarak kaydedilecek.';
+}
+
+function applyDxSplit(main, sub) {
+  document.getElementById('tFinalDx').value = main;
+  if (sub) document.getElementById('tSubtype').value = sub;
+  dxTyped();
+}
+
+// Alandan çıkarken bilinen bir yazıma oturt (büyük/küçük harf, Türkçe karakter farkı)
+function dxSettle() {
+  const el = document.getElementById('tFinalDx');
+  const hit = knownDx().get(normDx(el.value));
+  if (hit && hit !== el.value.trim()) el.value = hit;
+  dxTyped();
 }
 
 // Yumuşak doku parametreleri — yalnızca girilmişse rozet olarak çıkar
@@ -2369,7 +2569,8 @@ function renderTumorPatients() {
       <div>${miniBodySVG(p)}</div>
       <div>
         <div class="tp-name">${p.name}${p.age ? ' · ' + p.age + 'y' : ''}</div>
-        <div class="tp-dx">${p.finalDx || p.preDx || '—'} · ${
+        <div class="tp-dx">${p.finalDx || p.preDx || '—'}${
+          p.subtype ? ` <span class="tp-sub">${p.subtype}</span>` : ''} · ${
           (p.regions || (p.regionId ? [p.regionId] : [])).map(r => REG(r).label).join(' + ') || '—'
         }${p.biopsy ? ' · Biyopsi: ' + p.biopsy : ''}</div>
         <div class="tp-badges">
