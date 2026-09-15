@@ -343,6 +343,20 @@
 .out-ok{background:#dcfce7;color:#15803d}
 .out-mid{background:#fef9c3;color:#854d0e}
 .out-bad{background:#fee2e2;color:#b91c1c}
+
+.ac-wrap{position:relative}
+.ac-wrap input{width:100%}
+.ac-list{position:absolute;z-index:60;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;
+  list-style:none;max-height:246px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;
+  border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.10)}
+.ac-item{display:flex;align-items:baseline;gap:8px;padding:7px 10px;border-radius:7px;
+  font-size:13px;color:#0f172a;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-item.on,.ac-item:hover{background:#eff6ff}
+.ac-item b{font-weight:700;color:#1d4ed8}
+.ac-meta{margin-left:auto;font-size:10.5px;color:#94a3b8;flex:0 0 auto}
+.ac-empty{padding:8px 10px;font-size:12px;color:#94a3b8}
+.ac-head{padding:6px 10px 3px;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#94a3b8}
 </style>
 </head>
 <body>
@@ -744,15 +758,17 @@
           <div class="form-group"><label>Biyopsi</label>
             <select id="tBiopsy"><option value="">—</option><option>Var</option><option>Yok</option></select></div>
           <div class="form-group"><label>Kesin Tanı</label>
-            <input type="text" id="tFinalDx" list="dxList" autocomplete="off"
-                   placeholder="örn. Osteosarkom" oninput="dxTyped()" onfocus="dxTyped()" onchange="dxSettle()">
-            <datalist id="dxList"></datalist></div>
+            <div class="ac-wrap">
+              <input type="text" id="tFinalDx" autocomplete="off" placeholder="yazmaya başlayın — örn. osteo">
+              <ul class="ac-list" id="tFinalDx_ac" hidden></ul>
+            </div></div>
         </div>
         <div class="form-row2" id="subtypeRow" style="display:none;">
           <div class="form-group"><label id="subtypeLbl">Alt Tip</label>
-            <input type="text" id="tSubtype" list="subList" autocomplete="off"
-                   placeholder="örn. Pleomorfik" oninput="dxTyped()">
-            <datalist id="subList"></datalist></div>
+            <div class="ac-wrap">
+              <input type="text" id="tSubtype" autocomplete="off" placeholder="örn. Pleomorfik">
+              <ul class="ac-list" id="tSubtype_ac" hidden></ul>
+            </div></div>
           <div class="form-group"><label>&nbsp;</label>
             <div class="dx-hint" id="dxHint"></div></div>
         </div>
@@ -908,6 +924,8 @@ window.onload = function() {
     document.getElementById('lockScreen').classList.add('hidden');
     return;
   }
+  attachAC('tFinalDx', dxOptions);
+  attachAC('tSubtype', subOptions);
   if (localStorage.getItem(PIN_KEY)) loadData();
   else showLock('');
 };
@@ -2479,21 +2497,114 @@ function editDist(a, b) {
   return d[a.length][b.length];
 }
 
+// ═══ Otomatik tamamlama ══════════════════════════════════════════════════════
+// Safari'nin <datalist> desteği güvenilmez (liste çoğu zaman hiç açılmıyor),
+// bu yüzden kendi açılır listemiz. Eşleşme baştan DEĞİL, kelime içinde de arar:
+// "osteo" → Osteosarkom, Osteoid Osteoma, Osteoblastom, Osteokondrom.
+const acState = {};   // inputId → { idx, items }
+
+function acRank(q, cand) {
+  const c = normDx(cand);
+  if (!q) return 3;
+  if (c.startsWith(q)) return 0;                                   // baştan
+  if (new RegExp('(^| )' + q).test(c)) return 1;                   // kelime başı
+  return c.includes(q) ? 2 : -1;                                   // içinde / yok
+}
+
+function acMark(label, q) {
+  if (!q) return label;
+  // Normalize edilmiş metinde bulup ham metinde aynı konumu işaretle
+  const i = normDx(label).indexOf(q);
+  if (i < 0) return label;
+  return label.slice(0, i) + '<b>' + label.slice(i, i + q.length) + '</b>' + label.slice(i + q.length);
+}
+
+function acRender(id, optsFn) {
+  const inp = document.getElementById(id);
+  const box = document.getElementById(id + '_ac');
+  const q   = normDx(inp.value);
+  const all = optsFn();
+  const hit = all.map(o => [acRank(q, o.value), o])
+                 .filter(([r]) => r >= 0)
+                 .sort((a, b) => a[0] - b[0] || a[1].value.localeCompare(b[1].value, 'tr'))
+                 .map(([, o]) => o).slice(0, 40);
+  acState[id] = { idx: -1, items: hit };
+  if (!hit.length) {
+    box.innerHTML = `<li class="ac-empty">${q ? 'Eşleşme yok — yeni tanı olarak kaydedilecek' : 'Kayıt yok'}</li>`;
+  } else {
+    box.innerHTML = hit.map((o, i) =>
+      `<li class="ac-item" data-i="${i}" onmousedown="event.preventDefault();acPick('${id}',${i})">
+         <span>${acMark(o.value, q)}</span>${o.meta ? `<span class="ac-meta">${o.meta}</span>` : ''}
+       </li>`).join('');
+  }
+  box.hidden = false;
+}
+
+function acMove(id, d) {
+  const st = acState[id]; if (!st || !st.items.length) return;
+  st.idx = (st.idx + d + st.items.length) % st.items.length;
+  const box = document.getElementById(id + '_ac');
+  [...box.querySelectorAll('.ac-item')].forEach((el, i) => el.classList.toggle('on', i === st.idx));
+  const on = box.querySelector('.ac-item.on');
+  if (on) on.scrollIntoView({ block: 'nearest' });
+}
+
+function acPick(id, i) {
+  const st = acState[id]; if (!st) return;
+  const o = st.items[i !== undefined && i >= 0 ? i : st.idx];
+  if (!o) return;
+  document.getElementById(id).value = o.value;
+  acClose(id);
+  dxTyped();
+}
+
+function acClose(id) { const b = document.getElementById(id + '_ac'); if (b) b.hidden = true; }
+
+function attachAC(id, optsFn) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  inp.addEventListener('input', () => { acRender(id, optsFn); dxTyped(); });
+  inp.addEventListener('focus', () => acRender(id, optsFn));
+  inp.addEventListener('blur',  () => setTimeout(() => {
+    acClose(id);
+    if (id === 'tFinalDx') dxSettle();   // bilinen yazıma oturt
+  }, 120));
+  inp.addEventListener('keydown', e => {
+    const box = document.getElementById(id + '_ac');
+    if (e.key === 'ArrowDown') { if (box.hidden) acRender(id, optsFn); acMove(id, 1);  e.preventDefault(); }
+    else if (e.key === 'ArrowUp')   { acMove(id, -1); e.preventDefault(); }
+    else if (e.key === 'Enter')     { if (!box.hidden && acState[id] && acState[id].idx >= 0) { acPick(id); e.preventDefault(); } else acClose(id); }
+    else if (e.key === 'Escape')    { acClose(id); }
+  });
+}
+
+function dxOptions() {
+  const out = [];
+  knownDx().forEach((disp, key) => {
+    const n = tumorPatients.filter(p => normDx(p.finalDx) === key).length;
+    out.push({ value: disp, meta: n ? n + ' hasta' : '' });
+  });
+  return out;
+}
+
+function subOptions() {
+  const main = document.getElementById('tFinalDx').value;
+  const out = [];
+  knownSubtypes(main).forEach((disp, key) => {
+    const n = tumorPatients.filter(p => normDx(p.finalDx) === normDx(main) && normDx(p.subtype) === key).length;
+    out.push({ value: disp, meta: n ? n + ' hasta' : '' });
+  });
+  return out;
+}
+
 function dxTyped() {
   const raw  = document.getElementById('tFinalDx').value;
   const list = knownDx();
-  document.getElementById('dxList').innerHTML =
-    [...list.values()].sort((a, b) => a.localeCompare(b, 'tr')).map(d => `<option value="${d}">`).join('');
-
   const row = document.getElementById('subtypeRow');
   const hint = document.getElementById('dxHint');
   row.style.display = raw.trim() ? '' : 'none';
   document.getElementById('subtypeLbl').textContent =
     raw.trim() ? 'Alt Tip — ' + raw.trim() : 'Alt Tip';
-
-  const subs = knownSubtypes(raw);
-  document.getElementById('subList').innerHTML =
-    [...subs.values()].sort((a, b) => a.localeCompare(b, 'tr')).map(t => `<option value="${t}">`).join('');
 
   const n = normDx(raw);
   if (!n) { hint.innerHTML = ''; return; }
