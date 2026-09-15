@@ -970,6 +970,7 @@ function loadData(attempt) {
         return;
       }
       document.getElementById('lockScreen').classList.add('hidden');
+      document.getElementById('pinErr').textContent = '';
       // Omuz kaydı olmasa bile tümör/kalça yüklemesi çalışmalı — erken return YOK
       allRows = (!d.rows || d.rows.length < 2) ? [] : d.rows.slice(1).map(r => ({
         date:       r[1]  || '',
