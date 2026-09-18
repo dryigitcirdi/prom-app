@@ -119,14 +119,14 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 
 /* ── 24 saatlik kadran ─────────────────────────────────── */
 .clock-wrap{display:flex;justify-content:center;padding-top:6px}
-.clock{width:100%;max-width:268px;height:auto;overflow:visible}
+.clock{width:100%;max-width:290px;height:auto;overflow:visible}
 .seg{cursor:pointer}
 .seg-bg{fill:#f4f4f5;stroke:#fff;stroke-width:1.5;
-  transition:fill .26s var(--ease),transform .2s var(--ease);transform-origin:115px 115px}
+  transition:fill .26s var(--ease),transform .2s var(--ease);transform-origin:120px 120px}
 .seg:active .seg-bg{transform:scale(.975)}
-.seg-h{font-size:14.5px;font-weight:700;fill:var(--ink);text-anchor:middle;
+.seg-h{font-size:13px;font-weight:700;fill:var(--ink);text-anchor:middle;
   letter-spacing:-.02em;pointer-events:none;transition:fill .26s var(--ease)}
-.seg-w{font-size:10.5px;font-weight:600;fill:var(--muted);text-anchor:middle;
+.seg-w{font-size:9.5px;font-weight:600;fill:var(--muted);text-anchor:middle;
   letter-spacing:.04em;pointer-events:none;transition:fill .26s var(--ease)}
 .seg.on .seg-bg{fill:var(--ink)}
 .seg.on .seg-h{fill:#fff}
@@ -286,24 +286,24 @@ function donutArc(cx, cy, R, r, h0, h1, gapH){
          ` L${ix1.toFixed(1)} ${iy1.toFixed(1)} A${r} ${r} 0 ${big} 0 ${ix0.toFixed(1)} ${iy0.toFixed(1)} Z`;
 }
 function clockSVG(){
-  const C = 115, R = 90, r = 56, MID = (R + r) / 2;
+  const C = 120, R = 100, r = 50, MID = (R + r) / 2;   // 50px'lik bant — etiket taşmasın
   const segs = SLOTS.map((sl, k) => {
     const [lx, ly] = polar(C, C, MID, (sl.from + sl.to) / 2);
     return `<g class="seg" data-v="${sl.v}" data-k="${k}">
       <path class="seg-bg" d="${donutArc(C,C,R,r,sl.from,sl.to,0.34)}"/>
-      <text class="seg-h" x="${lx.toFixed(1)}" y="${(ly-3).toFixed(1)}">${String(sl.from).padStart(2,'0')}–${String(sl.to%24).padStart(2,'0')}</text>
+      <text class="seg-h" x="${lx.toFixed(1)}" y="${(ly-1).toFixed(1)}">${String(sl.from).padStart(2,'0')}–${String(sl.to%24).padStart(2,'0')}</text>
       <text class="seg-w" x="${lx.toFixed(1)}" y="${(ly+11).toFixed(1)}">${sl.word}</text>
     </g>`;
   }).join('');
   const marks = [0,6,12,18].map(h => {
-    const [x,y] = polar(C, C, R + 16, h);
+    const [x,y] = polar(C, C, R + 14, h);
     return `<text class="mk" x="${x.toFixed(1)}" y="${(y+3.5).toFixed(1)}">${String(h).padStart(2,'0')}</text>`;
   }).join('');
-  return `<svg class="clock" viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg">
+  return `<svg class="clock" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
     ${marks}${segs}
-    <circle cx="${C}" cy="${C}" r="${r-7}" fill="#fff"/>
-    <text class="ctr-a" id="ctrA" x="${C}" y="${C-3}">Saat</text>
-    <text class="ctr-b" id="ctrB" x="${C}" y="${C+16}">aralığını seçin</text>
+    <circle cx="${C}" cy="${C}" r="${r-5}" fill="#fff"/>
+    <text class="ctr-a" id="ctrA" x="${C}" y="${C+2}">Seçin</text>
+    <text class="ctr-b" id="ctrB" x="${C}" y="${C+20}"></text>
   </svg>`;
 }
 
