@@ -528,9 +528,14 @@ function submitForm() {
     painHours: (A.painHours || []).join(', '),
   };
 
+  // Gizli iframe ile gönder: açılır pencere engelleyicilere takılmaz,
+  // hastanın ekranında hiçbir şey açılıp kapanmaz.
   const url = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
-  const popup = window.open(url, 'uyku_submit', 'width=1,height=1,left=0,top=0');
-  setTimeout(() => { try { if (popup) popup.close(); } catch (e) {} show(LAST); }, 2500);
+  const f = document.createElement('iframe');
+  f.style.display = 'none';
+  f.src = url;
+  document.body.appendChild(f);
+  setTimeout(() => { try { f.remove(); } catch (e) {} show(LAST); }, 2600);
 }
 
 // ── Başlangıç ────────────────────────────────────────────────────────────────

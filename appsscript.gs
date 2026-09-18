@@ -752,6 +752,8 @@ const UYKU_HEADERS = [
 ];
 
 function saveUykuRow(data) {
+  // n() bu projede global değil, her fonksiyonda ayrı tanımlı
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
   const sheet = ensureSheet(UYKU_SHEET, UYKU_HEADERS, [[4, 150], [5, 160], [11, 140], [14, 200], [15, 130]]);
   const ts = data.timestamp ? new Date(data.timestamp) : new Date();
   sheet.appendRow([
