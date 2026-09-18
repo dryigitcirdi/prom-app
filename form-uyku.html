@@ -49,6 +49,7 @@ button,input{font:inherit;color:inherit}
 .screen{flex:1;display:none;flex-direction:column;padding:22px 22px 132px;max-width:600px;
   width:100%;margin:0 auto}
 .screen.live{display:flex}
+.screen > .mid{margin-top:auto;margin-bottom:auto;width:100%}
 .screen.in-f{animation:inF var(--mid) var(--ease) both}
 .screen.in-b{animation:inB var(--mid) var(--ease) both}
 @keyframes inF{from{opacity:0;transform:translate3d(26px,0,0)}to{opacity:1;transform:none}}
@@ -139,6 +140,7 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 
 /* ── Kapak ─────────────────────────────────────────────── */
 .cover{justify-content:center;padding-bottom:150px}
+.cover > *{width:100%}
 .cover h1{font-size:clamp(32px,9vw,44px);letter-spacing:-.04em;line-height:1.06}
 .cover .sub{font-size:16.5px;color:var(--ink-2);margin-top:16px;max-width:38ch}
 .facts{display:flex;gap:26px;margin-top:34px;padding-top:24px;border-top:1px solid var(--line)}
@@ -368,7 +370,8 @@ stage.innerHTML = `
        ve bireysel bilgileriniz kimseyle paylaşılmaz. Anketi tamamlayarak katılmayı kabul etmiş olursunuz;
        dilediğiniz anda bırakabilirsiniz.</p>
   </section>
-  ${QS.map((q, i) => `<section class="screen" data-i="${i+1}">${head(q)}${bodyFor(q)}</section>`).join('')}
+  ${QS.map((q, i) =>
+    `<section class="screen" data-i="${i+1}"><div class="mid">${head(q)}${bodyFor(q)}</div></section>`).join('')}
   <section class="screen done" data-i="${QS.length+1}">
     <div class="ring"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff"
       stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
