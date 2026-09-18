@@ -357,6 +357,25 @@
 .ac-empty{padding:8px 10px;font-size:12px;color:#94a3b8}
 .ac-head{padding:6px 10px 3px;font-size:10px;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;color:#94a3b8}
+
+.study-tabs{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.study-tab{text-align:left;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;
+  background:#fff;cursor:pointer;transition:all .16s}
+.study-tab.active{border-color:var(--primary);background:#eff6ff}
+.st-name{font-size:14px;font-weight:700;color:var(--text)}
+.st-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.study-soon{font-size:12px;color:#94a3b8;font-style:italic}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bar-lbl{flex:0 0 122px;font-size:12.5px;font-weight:600;color:var(--text)}
+.bar-track{flex:1;height:22px;background:#f1f5f9;border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,#1e6fff,#60a5fa);border-radius:6px;
+  transition:width .6s cubic-bezier(.22,1,.36,1)}
+.bar-val{flex:0 0 74px;font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.conc-grid{display:flex;gap:14px;flex-wrap:wrap}
+.conc{flex:1 1 180px;border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:#fafafa}
+.conc-k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.conc-v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.conc-s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -396,6 +415,7 @@
   <button class="branch-tab active" onclick="setBranch('Sports Medicine', this)">🏃 Sports Medicine</button>
   <button class="branch-tab" onclick="setBranch('Tümör', this)">🧬 Tümör</button>
   <button class="branch-tab" onclick="setBranch('Kalça Artroskopisi', this)">🦵 Kalça Artroskopisi</button>
+  <button class="branch-tab" onclick="setBranch('PROM Çalışmaları', this)">📋 PROM Çalışmaları</button>
 </div>
 
 <div class="main">
@@ -842,6 +862,61 @@
     </div>
   </div>
 
+  <!-- ═══ PROM ÇALIŞMALARI — bağımsız anket toplama ═══ -->
+  <div id="uykuView" style="display:none;">
+    <div class="card" style="margin-bottom:20px;">
+      <div class="section-title">📚 Çalışmalar</div>
+      <div class="study-tabs">
+        <button class="study-tab active" data-s="uyku">
+          <div class="st-name">Uyku Pozisyonu &amp; Omuz Ağrısı</div>
+          <div class="st-meta">22 soru · kesitsel · <span id="stCount">0</span> katılımcı</div>
+        </button>
+        <div class="study-soon">Yeni çalışma eklemek için söyleyin — aynı yapı kullanılır</div>
+      </div>
+    </div>
+
+    <div class="card link-card" style="margin-bottom:20px;">
+      <div class="section-title">🔗 Katılımcı Linki Oluştur</div>
+      <div class="form-row">
+        <div class="form-group"><label>Ad Soyad <span style="font-weight:400;color:var(--muted);">(boş bırakılabilir)</span></label>
+          <input type="text" id="luName" placeholder="Katılımcı adı"></div>
+        <div class="form-group"><label>Katılımcı No</label><input type="text" id="luId" placeholder="otomatik"></div>
+        <div class="form-group"><label>Tanı <span style="font-weight:400;color:var(--muted);">(varsa)</span></label>
+          <input type="text" id="luDx" placeholder="örn. Rotator manşet tendinopatisi"></div>
+        <div><button class="btn btn-primary" onclick="generateUykuLink()">Link Oluştur</button></div>
+      </div>
+      <div class="link-result" id="luResult">
+        <div class="link-box">
+          <span class="link-text" id="luText"></span>
+          <button class="btn btn-ghost btn-sm" onclick="copyUykuLink()">Kopyala</button>
+          <button class="btn btn-ghost btn-sm" onclick="whatsappUyku()">WhatsApp</button>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;" id="luMeta"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;">
+        Ad girmeden de link üretebilirsiniz — katılımcı kendi adını ankette yazar.
+        Anonim toplamak isterseniz yalnızca katılımcı numarası verin.
+      </div>
+    </div>
+
+    <div class="stats-grid" id="uykuStats"></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="section-title">🛏 Uyku Pozisyonu Dağılımı</div>
+      <div id="posDist"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="section-title">🎯 Yattığı Taraf ile Ağrılı Taraf İlişkisi</div>
+      <div id="sideConcord"></div>
+    </div>
+
+    <div class="card table-card">
+      <div class="section-title">📋 Katılımcılar</div>
+      <div style="overflow-x:auto;"><table class="data-table" id="uykuTable"></table></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -855,6 +930,7 @@ const BRANCHES = {
   'Sports Medicine': ['Kalsifik Tendinit', 'Rotator Manşet', 'Bankart Lezyonu'],
   'Tümör': [],
   'Kalça Artroskopisi': [],
+  'PROM Çalışmaları': [],
 };
 let activeBranch = 'Sports Medicine';
 
@@ -867,7 +943,8 @@ function setBranch(name, btn) {
   activeBranch = name;
   document.querySelectorAll('.branch-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  const VIEWS = { 'Sports Medicine': 'sportsView', 'Tümör': 'tumorView', 'Kalça Artroskopisi': 'hipView' };
+  const VIEWS = { 'Sports Medicine': 'sportsView', 'Tümör': 'tumorView',
+                  'Kalça Artroskopisi': 'hipView', 'PROM Çalışmaları': 'uykuView' };
   Object.keys(VIEWS).forEach(k =>
     document.getElementById(VIEWS[k]).style.display = k === name ? '' : 'none');
   const sports = name === 'Sports Medicine';
@@ -880,11 +957,149 @@ function setBranch(name, btn) {
     document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
     initBodyMap();
     renderTumorPatients();
+  } else if (name === 'PROM Çalışmaları') {
+    document.getElementById('totalBadge').textContent = uykuRows.length + ' katılımcı';
+    renderUyku();
   } else {
     document.getElementById('totalBadge').textContent = hipPatients.length + ' hasta';
     initHipClock();
     renderHipPatients();
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROM ÇALIŞMALARI — bağımsız anket toplama (ilk çalışma: Uyku Pozisyonu)
+// ═══════════════════════════════════════════════════════════════════════════
+const UYKU_FORM_URL = window.location.href.split(/[?#]/)[0].replace(/[^\/]*$/, '') + 'form-uyku.html';
+let uykuRows = [];   // {ad, cinsiyet, yas, vki, meslek, poz, pozKod, kol, agriTaraf, sure, gece, tutuk, yuk, saat, tarih}
+
+function hydrateUyku(rows) {
+  if (!rows || rows.length < 2) { uykuRows = []; return; }
+  uykuRows = rows.slice(1).map(r => ({
+    tarih: isoDay(r[1]), id: txt(r[2]), ad: txt(r[3]), tani: txt(r[4]),
+    cinsiyet: txt(r[5]), yas: num(r[6]), boy: num(r[7]), kilo: num(r[8]), vki: num(r[9]),
+    meslek: txt(r[10]), mesai: txt(r[11]), dominant: txt(r[12]), ek: txt(r[13]),
+    poz: txt(r[14]), pozKod: txt(r[15]), kol: txt(r[16]),
+    partner: txt(r[17]), yatakTaraf: txt(r[18]),
+    agriTaraf: txt(r[19]), sure: txt(r[20]), gece: txt(r[21]), tutuk: txt(r[22]),
+    gecmis: txt(r[23]), baslangic: txt(r[24]), yuk: txt(r[25]),
+    izin: txt(r[26]), haftasonu: txt(r[27]), saat: txt(r[28]),
+  }));
+}
+
+function pctOf(list, fn) {
+  const ok = list.filter(x => x[fn.k] === fn.v).length;
+  const tot = list.filter(x => x[fn.k]).length;
+  return tot ? Math.round(ok / tot * 100) : null;
+}
+
+function renderUyku() {
+  const R = uykuRows;
+  document.getElementById('stCount').textContent = R.length;
+  document.getElementById('totalBadge').textContent = R.length + ' katılımcı';
+
+  const avg = arr => { const v = arr.filter(x => x !== null && !isNaN(x)); 
+    return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10 : null; };
+  const geceP = pctOf(R, {k:'gece', v:'Evet'});
+  const tutukP = pctOf(R, {k:'tutuk', v:'Evet'});
+  const yukP  = pctOf(R, {k:'yuk',  v:'Evet'});
+
+  document.getElementById('uykuStats').innerHTML = [
+    ['Katılımcı', R.length, ''],
+    ['Ort. Yaş', avg(R.map(x=>x.yas)) ?? '—', ''],
+    ['Ort. VKİ', avg(R.map(x=>x.vki)) ?? '—', 'kg/m²'],
+    ['Gece Uyandıran Ağrı', geceP === null ? '—' : geceP + '%', ''],
+    ['Sabah Tutukluğu', tutukP === null ? '—' : tutukP + '%', ''],
+    ['Omza Yük Binen İş', yukP === null ? '—' : yukP + '%', ''],
+  ].map(([k,v,u]) => `<div class="stat-card"><div class="stat-label">${k}</div>
+      <div class="stat-value">${v}</div><div class="stat-sub">${u}</div></div>`).join('');
+
+  // Pozisyon dağılımı
+  const POZ = ['Sırtüstü','Yüzüstü','Sağ yan','Sol yan','Değişken'];
+  const say = {}; R.forEach(x => { if (x.poz) say[x.poz] = (say[x.poz]||0)+1; });
+  const diger = R.filter(x => x.poz && !POZ.includes(x.poz)).length;
+  const sirali = POZ.map(p => [p, say[p]||0]).concat(diger ? [['Diğer', diger]] : []);
+  const enCok = Math.max(1, ...sirali.map(x => x[1]));
+  document.getElementById('posDist').innerHTML = R.length
+    ? sirali.map(([p,n]) => `<div class="bar-row">
+        <div class="bar-lbl">${p}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${n/enCok*100}%"></div></div>
+        <div class="bar-val">${n} · ${R.length ? Math.round(n/R.length*100) : 0}%</div></div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px;">Henüz katılımcı yok</div>';
+
+  // Yattığı taraf ↔ ağrılı taraf — çalışmanın temel sorusu
+  const yan = R.filter(x => x.pozKod === 'sag_yan' || x.pozKod === 'sol_yan');
+  const ayni = yan.filter(x => (x.pozKod === 'sag_yan' && x.agriTaraf === 'Sağ') ||
+                               (x.pozKod === 'sol_yan' && x.agriTaraf === 'Sol')).length;
+  const kolYan = R.filter(x => x.kol === 'Sağ' || x.kol === 'Sol');
+  const kolAyni = kolYan.filter(x => x.kol === x.agriTaraf).length;
+  document.getElementById('sideConcord').innerHTML = `
+    <div class="conc-grid">
+      <div class="conc"><div class="conc-k">Yan yatanlar</div>
+        <div class="conc-v">${yan.length}</div>
+        <div class="conc-s">sağ veya sol yan uyuyan katılımcı</div></div>
+      <div class="conc"><div class="conc-k">Uyku tarafı = ağrı tarafı</div>
+        <div class="conc-v">${yan.length ? Math.round(ayni/yan.length*100) + '%' : '—'}</div>
+        <div class="conc-s">${ayni} / ${yan.length} katılımcıda aynı taraf</div></div>
+      <div class="conc"><div class="conc-k">Yattığı kol = ağrı tarafı</div>
+        <div class="conc-v">${kolYan.length ? Math.round(kolAyni/kolYan.length*100) + '%' : '—'}</div>
+        <div class="conc-s">${kolAyni} / ${kolYan.length} katılımcıda aynı taraf</div></div>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5;">
+      Bu oranlar tanımlayıcıdır, nedensellik göstermez. Anlamlılık için ki-kare testi gerekir —
+      veri yeterli sayıya ulaşınca hesaplatabiliriz.
+    </div>`;
+
+  // Tablo
+  const t = document.getElementById('uykuTable');
+  if (!R.length) { t.innerHTML = '<tr><td style="padding:18px;color:var(--muted);">Henüz katılımcı yok</td></tr>'; return; }
+  const H = ['Tarih','Ad','Cins','Yaş','VKİ','Meslek','Uyku Poz.','Yattığı Kol','Ağrı','Süre','Gece','Tutukluk'];
+  t.innerHTML = '<thead><tr>' + H.map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>' +
+    R.slice().reverse().map(x => `<tr>
+      <td>${fmtDate(x.tarih)}</td><td><b>${x.ad || '—'}</b></td><td>${x.cinsiyet||'—'}</td>
+      <td>${x.yas ?? '—'}</td><td>${x.vki ?? '—'}</td><td>${x.meslek||'—'}</td>
+      <td>${x.poz||'—'}</td><td>${x.kol||'—'}</td><td>${x.agriTaraf||'—'}</td>
+      <td>${x.sure||'—'}</td>
+      <td>${x.gece === 'Evet' ? '<span class="score-pill score-bad">Evet</span>' : (x.gece||'—')}</td>
+      <td>${x.tutuk === 'Evet' ? '<span class="score-pill score-mid">Evet</span>' : (x.tutuk||'—')}</td>
+    </tr>`).join('') + '</tbody>';
+}
+
+// ── Katılımcı linki ──
+function generateUykuLink() {
+  const name = document.getElementById('luName').value.trim();
+  const id   = document.getElementById('luId').value.trim() || ('U' + Date.now().toString(36).toUpperCase());
+  const dx   = document.getElementById('luDx').value.trim();
+  const full = UYKU_FORM_URL + '?' + new URLSearchParams({ name, id, dx }).toString();
+
+  const box = document.getElementById('luText');
+  document.getElementById('luResult').style.display = 'block';
+  box.textContent = 'Kısa link oluşturuluyor…';
+  document.getElementById('luMeta').textContent =
+    `${name || 'İsimsiz katılımcı'} · Katılımcı no: ${id}` + (dx ? ' · ' + dx : '');
+
+  const q = new URLSearchParams({ action:'newlink', module:'uyku', name, pid:id,
+                                  procedure:dx, pin: localStorage.getItem(PIN_KEY) || '' });
+  fetch(APPS_SCRIPT_URL + '?' + q.toString()).then(r => r.json()).then(j => {
+    if (j && j.status === 'ok' && j.code) box.textContent = SHORT_BASE_URL + '?k=' + j.code;
+    else throw new Error('kod yok');
+  }).catch(() => {
+    box.textContent = full;
+    document.getElementById('luMeta').textContent += ' · ⚠︎ kısa link üretilemedi';
+  });
+}
+function copyUykuLink() {
+  navigator.clipboard.writeText(document.getElementById('luText').textContent)
+    .then(() => alert('Link kopyalandı!'));
+}
+function whatsappUyku() {
+  const text = document.getElementById('luText').textContent;
+  const name = document.getElementById('luName').value.trim();
+  const msg = encodeURIComponent(
+    `Merhaba${name ? ' ' + name : ''},\n\nOmuz ağrısı ve uyku pozisyonu üzerine yürüttüğümüz ` +
+    `bilimsel çalışma için kısa bir anket hazırladık (yaklaşık 3 dakika). ` +
+    `Katkınız bizim için çok değerli.\n\n${text}\n\nTeşekkürler.`);
+  window.open('https://wa.me/?text=' + msg, '_blank');
 }
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -997,9 +1212,11 @@ function loadData(attempt) {
       // Tümör ve kalça kartlarını da tablodan besle
       try { hydrateTumor(d.tumorRows, d.tumorEventRows); } catch (e) { console.warn('tümör yükleme:', e); }
       try { hydrateHip(d.hipOpRows, d.hipRows); } catch (e) { console.warn('kalça yükleme:', e); }
+      try { hydrateUyku(d.uykuRows); } catch (e) { console.warn('uyku yükleme:', e); }
       refreshAll();
       if (activeBranch === 'Tümör') renderTumorPatients();
       if (activeBranch === 'Kalça Artroskopisi') renderHipPatients();
+      if (activeBranch === 'PROM Çalışmaları') renderUyku();
       hydrateTumorDrawings();
     })
     .catch(() => {
