@@ -118,24 +118,30 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 @keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 
 /* ── 24 saatlik kadran ─────────────────────────────────── */
-.clock-wrap{display:flex;justify-content:center;padding-top:6px}
-.clock{width:100%;max-width:290px;height:auto;overflow:visible}
+.clock-wrap{display:flex;justify-content:center;padding-top:4px}
+.clock{width:100%;max-width:300px;height:auto;overflow:visible}
 .seg{cursor:pointer}
-.seg-bg{fill:#f4f4f5;stroke:#fff;stroke-width:1.5;
-  transition:fill .26s var(--ease),transform .2s var(--ease);transform-origin:120px 120px}
+.seg-bg{stroke:#fff;stroke-width:2;
+  transition:fill .28s var(--ease),transform .2s var(--ease);transform-origin:125px 125px}
 .seg:active .seg-bg{transform:scale(.975)}
-.seg-h{font-size:13px;font-weight:700;fill:var(--ink);text-anchor:middle;
-  letter-spacing:-.02em;pointer-events:none;transition:fill .26s var(--ease)}
-.seg-w{font-size:9.5px;font-weight:600;fill:var(--muted);text-anchor:middle;
-  letter-spacing:.04em;pointer-events:none;transition:fill .26s var(--ease)}
+/* Gündüz sıcak, akşam alacakaranlık, gece serin — tonlar hafif tutuldu */
+.tone-gunduz .seg-bg{fill:#fdf3dd}  .tone-gunduz .ico{color:#d97706}
+.tone-aksam  .seg-bg{fill:#fbe8de}  .tone-aksam  .ico{color:#e07a4c}
+.tone-gece   .seg-bg{fill:#e9edf4}  .tone-gece   .ico{color:#64748b}
+.ico{pointer-events:none;transition:color .28s var(--ease)}
+.seg-h{font-size:13.5px;font-weight:700;fill:var(--ink);text-anchor:middle;
+  letter-spacing:-.02em;pointer-events:none;transition:fill .28s var(--ease)}
+.seg-w{font-size:10px;font-weight:600;fill:var(--muted);text-anchor:middle;
+  letter-spacing:.05em;pointer-events:none;transition:fill .28s var(--ease)}
 .seg.on .seg-bg{fill:var(--ink)}
+.seg.on .ico{color:#fff}
 .seg.on .seg-h{fill:#fff}
-.seg.on .seg-w{fill:rgba(255,255,255,.68)}
-.mk{font-size:10px;font-weight:700;fill:#c4c4cc;text-anchor:middle;letter-spacing:.06em}
+.seg.on .seg-w{fill:rgba(255,255,255,.7)}
+.mk{font-size:9.5px;font-weight:700;fill:#b9b9c2;text-anchor:middle;letter-spacing:.04em}
 .ctr-a{font-size:15px;font-weight:700;fill:var(--muted);text-anchor:middle;letter-spacing:-.01em;
-  transition:fill .26s var(--ease)}
+  transition:fill .28s var(--ease)}
 .ctr-a.set{fill:var(--ink)}
-.ctr-b{font-size:12px;font-weight:600;fill:#b8b8c0;text-anchor:middle;letter-spacing:.02em}
+.ctr-b{font-size:11.5px;font-weight:600;fill:#b8b8c0;text-anchor:middle;letter-spacing:.02em}
 
 /* ── Çoklu seçim ───────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:9px}
@@ -272,9 +278,12 @@ const POSITIONS = [
 ];
 
 /* ─── 24 saatlik kadran ──────────────────────────────────────────────────
-   Gün üç eşit dilime ayrılır (120°). 00.00 tepede, saat yönünde ilerler.   */
-function polar(cx, cy, r, h){            // h: 0-24 saat → tepeden saat yönü
-  const a = (h / 24) * Math.PI * 2 - Math.PI / 2;
+   Gün üç eşit dilime ayrılır. Kadran 08.00'de başlar: gündüz SAĞ ÜSTTE,
+   akşam altta, gece sol üstte. Her dilimde güneş / batan güneş / ay simgesi
+   var — hasta "gece nerede, gündüz nerede" diye düşünmesin.                */
+const DIAL_START = 8;
+function polar(cx, cy, r, h){
+  const a = ((h - DIAL_START) / 24) * Math.PI * 2 - Math.PI / 2;
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
 }
 function donutArc(cx, cy, R, r, h0, h1, gapH){
@@ -285,33 +294,51 @@ function donutArc(cx, cy, R, r, h0, h1, gapH){
   return `M${ox0.toFixed(1)} ${oy0.toFixed(1)} A${R} ${R} 0 ${big} 1 ${ox1.toFixed(1)} ${oy1.toFixed(1)}` +
          ` L${ix1.toFixed(1)} ${iy1.toFixed(1)} A${r} ${r} 0 ${big} 0 ${ix0.toFixed(1)} ${iy0.toFixed(1)} Z`;
 }
+
+/* Simgeler — currentColor kullanır, seçilince beyaza döner */
+const ICONS = {
+  gunduz: `<circle r="4.4" fill="currentColor"/>
+    <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M0-9.2V-7"/><path d="M0 7V9.2"/><path d="M-9.2 0H-7"/><path d="M7 0H9.2"/>
+      <path d="M-6.5-6.5l1.6 1.6"/><path d="M4.9 4.9l1.6 1.6"/>
+      <path d="M-6.5 6.5l1.6-1.6"/><path d="M4.9-4.9l1.6-1.6"/></g>`,
+  aksam: `<path d="M-6.4 3.2a6.4 6.4 0 0 1 12.8 0Z" fill="currentColor"/>
+    <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <path d="M-9.4 6.2H9.4"/><path d="M-6.6 9.4H-2.4"/><path d="M2.4 9.4H6.6"/></g>`,
+  gece: `<path d="M2.6-8.1A8.4 8.4 0 1 0 6.6 7.4 9.6 9.6 0 0 1 2.6-8.1Z" fill="currentColor"/>
+    <circle cx="7.4" cy="-6.2" r="1.25" fill="currentColor"/>
+    <circle cx="9.6" cy="-1.8" r=".85" fill="currentColor"/>`,
+};
+
 function clockSVG(){
-  const C = 120, R = 100, r = 50, MID = (R + r) / 2;   // 50px'lik bant — etiket taşmasın
+  const C = 125, R = 105, r = 45, MID = (R + r) / 2;
   const segs = SLOTS.map((sl, k) => {
     const [lx, ly] = polar(C, C, MID, (sl.from + sl.to) / 2);
-    return `<g class="seg" data-v="${sl.v}" data-k="${k}">
-      <path class="seg-bg" d="${donutArc(C,C,R,r,sl.from,sl.to,0.34)}"/>
-      <text class="seg-h" x="${lx.toFixed(1)}" y="${(ly-1).toFixed(1)}">${String(sl.from).padStart(2,'0')}–${String(sl.to%24).padStart(2,'0')}</text>
-      <text class="seg-w" x="${lx.toFixed(1)}" y="${(ly+11).toFixed(1)}">${sl.word}</text>
+    return `<g class="seg tone-${sl.tone}" data-v="${sl.v}" data-k="${k}">
+      <path class="seg-bg" d="${donutArc(C,C,R,r,sl.from,sl.to,0.32)}"/>
+      <g class="ico" transform="translate(${lx.toFixed(1)},${(ly-19).toFixed(1)})">${ICONS[sl.tone]}</g>
+      <text class="seg-h" x="${lx.toFixed(1)}" y="${(ly+6).toFixed(1)}">${String(sl.from).padStart(2,'0')}–${String(sl.to%24).padStart(2,'0')}</text>
+      <text class="seg-w" x="${lx.toFixed(1)}" y="${(ly+18).toFixed(1)}">${sl.word}</text>
     </g>`;
   }).join('');
-  const marks = [0,6,12,18].map(h => {
-    const [x,y] = polar(C, C, R + 14, h);
-    return `<text class="mk" x="${x.toFixed(1)}" y="${(y+3.5).toFixed(1)}">${String(h).padStart(2,'0')}</text>`;
+  // İşaretler dilim SINIRLARINDA — geçiş saatlerini gösterir
+  const marks = [8,16,24].map(h => {
+    const [x,y] = polar(C, C, R + 16, h);
+    return `<text class="mk" x="${x.toFixed(1)}" y="${(y+3.5).toFixed(1)}">${String(h%24).padStart(2,'0')}.00</text>`;
   }).join('');
-  return `<svg class="clock" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  return `<svg class="clock" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
     ${marks}${segs}
-    <circle cx="${C}" cy="${C}" r="${r-5}" fill="#fff"/>
+    <circle cx="${C}" cy="${C}" r="${r-4}" fill="#fff"/>
     <text class="ctr-a" id="ctrA" x="${C}" y="${C+2}">Seçin</text>
-    <text class="ctr-b" id="ctrB" x="${C}" y="${C+20}"></text>
+    <text class="ctr-b" id="ctrB" x="${C}" y="${C+19}"></text>
   </svg>`;
 }
 
 /* ─── Sorular ────────────────────────────────────────────────────────────── */
 const SLOTS = [
-  { v:'00.00 – 08.00', from:0,  to:8,  word:'Gece'   },
-  { v:'08.00 – 16.00', from:8,  to:16, word:'Gündüz' },
-  { v:'16.00 – 00.00', from:16, to:24, word:'Akşam'  },
+  { v:'00.00 – 08.00', from:0,  to:8,  word:'Gece',   tone:'gece'   },
+  { v:'08.00 – 16.00', from:8,  to:16, word:'Gündüz', tone:'gunduz' },
+  { v:'16.00 – 00.00', from:16, to:24, word:'Akşam',  tone:'aksam'  },
 ];
 const QS = [
   {k:'ident', n:1,  type:'ident', title:'Önce sizi tanıyalım',
