@@ -47,12 +47,16 @@ if (!/^[A-Z0-9]{4,8}$/.test(k)) {
     .then(r => r.json())
     .then(d => {
       if (!d || d.status !== 'ok') { fail('Bu bağlantı bulunamadı. Lütfen doktorunuza bildirin.', true); return; }
-      const page = d.module === 'hip' ? '../form-hip.html' : '../form.html';
-      const p = new URLSearchParams({
-        name: d.name || '', id: d.id || '', surgery: d.surgery || '',
-        leg: d.leg || '', fu: d.fu || ''
-      });
-      if (d.module !== 'hip') p.set('procedure', d.procedure || 'Kalsifik Tendinit');
+      const page = d.module === 'hip'  ? '../form-hip.html'
+                 : d.module === 'uyku' ? '../form-uyku.html'
+                 : '../form.html';
+      const p = new URLSearchParams({ name: d.name || '', id: d.id || '' });
+      if (d.module === 'uyku') {
+        if (d.procedure) p.set('dx', d.procedure);
+      } else {
+        p.set('surgery', d.surgery || ''); p.set('leg', d.leg || ''); p.set('fu', d.fu || '');
+        if (d.module !== 'hip') p.set('procedure', d.procedure || 'Kalsifik Tendinit');
+      }
       location.replace(page + '?' + p.toString());
     })
     .catch(() => fail('İnternet bağlantınızı kontrol edip sayfayı yenileyin.', true));

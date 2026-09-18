@@ -392,6 +392,7 @@ function saveGuarded_(data) {
 }
 
 function saveToSheet(data) {
+  if (data && data.module === 'uyku') { saveUykuRow(data); return; }
   if (isTumor(data)) { saveTumorData(data); return; }
   if (isHipOp(data)) { saveHipOpRow(data); return; }
   if (isHip(data)) { saveHipRow(data); return; }
@@ -616,10 +617,12 @@ function getSheetData() {
   }
   const tumorRows = dumpSheet(TUMOR_SHEET, TUMOR_HEADERS);
   const tumorEventRows = dumpSheet(TUMOR_EVENTS, TUMOR_EVENT_HEADERS);
+  const uykuRows = dumpSheet(UYKU_SHEET, UYKU_HEADERS);
 
   return ContentService
     .createTextOutput(JSON.stringify({ rows: rows, hipRows: hipRows, hipOpRows: hipOpRows,
-                                       tumorRows: tumorRows, tumorEventRows: tumorEventRows }))
+                                       tumorRows: tumorRows, tumorEventRows: tumorEventRows,
+                                       uykuRows: uykuRows }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -730,3 +733,53 @@ function colorGrade(sheet, row, col, v) {
   sheet.getRange(row, col).setBackground(map[g] || null);
 }
 
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROM ÇALIŞMALARI — Uyku Pozisyonu ve Omuz Ağrısı
+// Bu çalışma diğer modüllerden bağımsız; kendi sayfasında toplanır.
+// ═══════════════════════════════════════════════════════════════════════════
+const UYKU_SHEET = 'PROM_Uyku_Pozisyonu';
+const UYKU_HEADERS = [
+  'Zaman Damgası', 'Tarih', 'Hasta ID', 'Ad Soyad', 'Tanı',
+  'Cinsiyet', 'Yaş', 'Boy (cm)', 'Kilo (kg)', 'VKİ',
+  'Meslek', 'Mesai', 'Dominant El', 'Ek Hastalıklar',
+  'Uyku Pozisyonu', 'Pozisyon Kodu', 'Yattığı Kol',
+  'Partner', 'Yatak Tarafı',
+  'Ağrılı Omuz', 'Ağrı Süresi', 'Gece Uyandırma', 'Sabah Tutukluğu',
+  'Geçmiş Omuz Ağrısı', 'Başlangıç', 'Omuza Yük',
+  'İzinde Ağrı', 'Hafta Sonu Ağrı', 'Ağrı Saatleri',
+];
+
+function saveUykuRow(data) {
+  const sheet = ensureSheet(UYKU_SHEET, UYKU_HEADERS, [[4, 150], [5, 160], [11, 140], [14, 200], [15, 130]]);
+  const ts = data.timestamp ? new Date(data.timestamp) : new Date();
+  sheet.appendRow([
+    ts, Utilities.formatDate(ts, 'Europe/Istanbul', 'yyyy-MM-dd'),
+    data.patientId || '', data.name || '', data.dx || '',
+    data.gender || '', n(data.age), n(data.height), n(data.weight), n(data.bmi),
+    data.job || '', data.shift || '', data.dominant || '', data.comorbid || '',
+    data.sleepPos || '', data.sleepPosCode || '', data.lieOnArm || '',
+    data.partner || '', data.bedSide || '',
+    data.painSide || '', data.duration || '', data.nightPain || '', data.stiffness || '',
+    data.priorPain || '', data.onset || '', data.load || '',
+    data.leavePain || '', data.weekendPain || '', data.painHours || '',
+  ]);
+  const row = sheet.getLastRow();
+  colorEvetHayir(sheet, row, 22, data.nightPain);
+  colorEvetHayir(sheet, row, 23, data.stiffness);
+  colorBmi(sheet, row, 10, data.bmi);
+}
+
+// Evet = dikkat (kırmızımsı), Hayır = sakin (yeşilimsi)
+function colorEvetHayir(sheet, row, col, v) {
+  const c = String(v || '') === 'Evet' ? '#fee2e2' : (String(v || '') === 'Hayır' ? '#dcfce7' : null);
+  sheet.getRange(row, col).setBackground(c);
+}
+
+function colorBmi(sheet, row, col, v) {
+  const b = Number(v);
+  if (!b) { sheet.getRange(row, col).setBackground(null); return; }
+  const c = b < 18.5 ? '#fef9c3' : b < 25 ? '#dcfce7' : b < 30 ? '#fef9c3' : '#fee2e2';
+  sheet.getRange(row, col).setBackground(c);
+}

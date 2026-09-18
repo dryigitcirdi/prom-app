@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Uyku Pozisyonu ve Omuz Ağrısı Anketi</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary:#1e6fff; --primary-light:#e8f0fe; --success:#16a34a; --success-light:#dcfce7;
+  --text:#1a1a2e; --muted:#6b7280; --border:#e5e7eb; --bg:#f8fafc; --card:#ffffff; --danger:#dc2626;
+}
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh; font-size:16px; line-height:1.5;
+  -webkit-text-size-adjust:100%; }
+
+.progress-bar-container { position:fixed; top:0; left:0; right:0; height:4px; background:var(--border); z-index:100; }
+.progress-bar-fill { height:100%; background:linear-gradient(90deg,#1e6fff,#06b6d4);
+  transition:width .4s ease; border-radius:0 2px 2px 0; }
+
+.header { background:#fff; padding:16px 20px 12px; border-bottom:1px solid var(--border);
+  position:sticky; top:4px; z-index:90; }
+.header-title { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); }
+.header-sub { font-size:19px; font-weight:700; letter-spacing:-.01em; margin-top:2px; }
+.header-step { font-size:12px; color:var(--muted); margin-top:3px; }
+
+.wrap { padding:20px 16px 108px; max-width:560px; margin:0 auto; }
+.section { display:none; animation:fade .3s ease; }
+.section.active { display:block; }
+@keyframes fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:18px 16px; margin-bottom:14px; }
+.q { margin-bottom:22px; }
+.q:last-child { margin-bottom:4px; }
+.q-num { display:inline-block; min-width:22px; height:22px; line-height:22px; text-align:center;
+  background:var(--primary-light); color:var(--primary); border-radius:6px;
+  font-size:11px; font-weight:800; margin-right:7px; padding:0 5px; }
+.q-text { font-size:15.5px; font-weight:600; line-height:1.4; margin-bottom:10px; }
+.q-hint { font-size:12.5px; color:var(--muted); margin:-6px 0 10px; line-height:1.45; }
+
+input[type=text], input[type=number], textarea, select {
+  width:100%; padding:13px 14px; border:1.5px solid var(--border); border-radius:12px;
+  font-size:16px; font-family:inherit; color:var(--text); background:#fff; -webkit-appearance:none; }
+input:focus, textarea:focus, select:focus { outline:none; border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(30,111,255,.12); }
+textarea { min-height:76px; resize:vertical; line-height:1.5; }
+
+.opts { display:flex; flex-wrap:wrap; gap:8px; }
+.opt { flex:1 1 0; min-width:92px; padding:13px 10px; border:1.5px solid var(--border);
+  border-radius:12px; background:#fff; font-size:15px; font-weight:600; color:var(--text);
+  cursor:pointer; text-align:center; transition:all .16s; -webkit-tap-highlight-color:transparent; }
+.opt:active { transform:scale(.97); }
+.opt.on { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+.opts.stack .opt { flex:1 1 100%; text-align:left; padding-left:16px; }
+
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { padding:10px 14px; border:1.5px solid var(--border); border-radius:999px; background:#fff;
+  font-size:14px; font-weight:600; cursor:pointer; transition:all .16s; -webkit-tap-highlight-color:transparent; }
+.chip.on { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+
+/* Uyku pozisyonu görsel seçici */
+.pos-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.pos { border:1.5px solid var(--border); border-radius:14px; background:#fff; padding:10px 8px 9px;
+  cursor:pointer; transition:all .18s; -webkit-tap-highlight-color:transparent; }
+.pos:active { transform:scale(.97); }
+.pos.on { border-color:var(--primary); background:var(--primary-light); box-shadow:0 0 0 3px rgba(30,111,255,.10); }
+.pos svg { display:block; width:100%; height:auto; }
+.pos-name { font-size:13.5px; font-weight:700; text-align:center; margin-top:6px; }
+.pos.on .pos-name { color:var(--primary); }
+.pos-sub { font-size:11px; color:var(--muted); text-align:center; line-height:1.3; }
+
+.bmi { margin-top:8px; font-size:13px; color:var(--muted); }
+.bmi b { color:var(--text); }
+
+.cond { margin-top:12px; padding-left:12px; border-left:3px solid var(--primary-light); }
+
+.intro p { font-size:14.5px; color:#374151; line-height:1.62; margin-bottom:12px; }
+.intro .lead { font-size:16px; color:var(--text); }
+.consent { background:var(--primary-light); border-radius:12px; padding:13px 14px;
+  font-size:13.5px; color:#1e40af; line-height:1.55; margin-top:4px; }
+.meta-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.meta { flex:1 1 0; min-width:110px; background:var(--bg); border:1px solid var(--border);
+  border-radius:12px; padding:10px 12px; }
+.meta-lbl { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.meta-val { font-size:15px; font-weight:700; margin-top:1px; }
+
+.nav-bar { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom)); display:flex; gap:10px; z-index:100; }
+.btn { flex:1; padding:14px; border-radius:12px; font-size:16px; font-weight:600; border:none;
+  cursor:pointer; transition:all .2s; -webkit-tap-highlight-color:transparent; font-family:inherit; }
+.btn:active { transform:scale(.97); }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); flex:0 0 96px; }
+
+.done { text-align:center; padding:48px 20px; }
+.done-mark { width:74px; height:74px; margin:0 auto 20px; border-radius:50%;
+  background:var(--success-light); display:flex; align-items:center; justify-content:center; font-size:34px; }
+.done h2 { font-size:21px; font-weight:700; }
+.done p { font-size:14.5px; color:var(--muted); margin-top:8px; line-height:1.6; }
+
+.warn { font-size:13px; color:var(--danger); margin-top:8px; display:none; }
+.warn.show { display:block; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+
+<div class="header">
+  <div class="header-title">Bilimsel Araştırma Anketi</div>
+  <div class="header-sub">Uyku Pozisyonu ve Omuz Ağrısı</div>
+  <div class="header-step" id="stepInfo">Başlangıç</div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══ 0 · Giriş ve onam ═══ -->
+<div class="section active" id="sec0">
+  <div class="card intro">
+    <p class="lead">Değerli katılımcı,</p>
+    <p>Bu anket, <b>uyku pozisyonları ve mesleğin omuz ağrıları üzerine olan etkisinin</b>
+       araştırılması ve olası ilişkisinin ortaya konulması amacıyla hazırlanmıştır.</p>
+    <p>Vereceğiniz yanıtlar diğer anketlerle birlikte istatistiksel olarak değerlendirilecektir.
+       Bu değerlendirme, omuz ağrılarını tetikleyen faktörlerin daha iyi anlaşılması ve ağrıların
+       nüksetmeden önlenmesi açısından önem taşımaktadır.</p>
+    <div class="consent">
+      Katılım tamamen gönüllüdür. Yanıtlarınız gizli tutulur, yalnızca araştırma için kullanılır ve
+      bireysel bilgileriniz kimseyle paylaşılmaz. Anketi tamamlayarak katılmayı kabul etmiş olursunuz;
+      dilediğiniz anda bırakabilirsiniz.
+    </div>
+    <div class="meta-row">
+      <div class="meta"><div class="meta-lbl">Soru sayısı</div><div class="meta-val">22</div></div>
+      <div class="meta"><div class="meta-lbl">Süre</div><div class="meta-val">~4 dakika</div></div>
+      <div class="meta"><div class="meta-lbl">Tarih</div><div class="meta-val" id="todayLbl">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 1 · Sizi tanıyalım ═══ -->
+<div class="section" id="sec1">
+  <div class="card">
+    <div class="q">
+      <div class="q-text"><span class="q-num">1</span>Ad Soyad</div>
+      <input type="text" id="fName" placeholder="Ad Soyad" autocomplete="name">
+      <div class="warn" id="wName">Lütfen adınızı yazın.</div>
+    </div>
+    <div class="q">
+      <div class="q-text">Tanı <span style="font-weight:500;color:var(--muted);font-size:13px;">(biliyorsanız)</span></div>
+      <input type="text" id="fDx" placeholder="örn. Rotator manşet tendinopatisi">
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">2</span>Cinsiyet</div>
+      <div class="opts" id="oGender"></div>
+      <div class="warn" id="wGender">Lütfen seçim yapın.</div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">3</span>Yaş</div>
+      <input type="number" id="fAge" inputmode="numeric" min="0" max="120" placeholder="örn. 45">
+      <div class="warn" id="wAge">Lütfen yaşınızı yazın.</div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">4-5</span>Boy ve kilo</div>
+      <div style="display:flex;gap:10px;">
+        <input type="number" id="fHeight" inputmode="numeric" min="80" max="250" placeholder="Boy (cm)" oninput="calcBmi()">
+        <input type="number" id="fWeight" inputmode="decimal" min="20" max="300" step="0.1" placeholder="Kilo (kg)" oninput="calcBmi()">
+      </div>
+      <div class="bmi" id="bmiOut"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">8</span>Dominant eliniz</div>
+      <div class="opts" id="oDom"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 2 · Çalışma hayatı ═══ -->
+<div class="section" id="sec2">
+  <div class="card">
+    <div class="q">
+      <div class="q-text"><span class="q-num">6</span>Mesleğiniz</div>
+      <input type="text" id="fJob" placeholder="örn. öğretmen, tornacı, hemşire">
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">7</span>Mesai saatleriniz</div>
+      <div class="opts" id="oShift"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">9</span>Ek hastalıklarınız</div>
+      <div class="q-hint">Birden fazla seçebilirsiniz. Yoksa "Yok" işaretleyin.</div>
+      <div class="chips" id="oComorb"></div>
+      <div class="cond" id="comorbOtherWrap" style="display:none;">
+        <input type="text" id="fComorbOther" placeholder="Diğer hastalığınızı yazın">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 3 · Uyku düzeni ═══ -->
+<div class="section" id="sec3">
+  <div class="card">
+    <div class="q">
+      <div class="q-text"><span class="q-num">10</span>Genellikle hangi pozisyonda uyumayı tercih edersiniz?</div>
+      <div class="q-hint">Gecenin çoğunu geçirdiğiniz pozisyonu seçin.</div>
+      <div class="pos-grid" id="oPos"></div>
+      <div class="cond" id="posOtherWrap" style="display:none;">
+        <input type="text" id="fPosOther" placeholder="Pozisyonunuzu kendi ifadenizle yazın">
+      </div>
+      <div class="warn" id="wPos">Lütfen bir pozisyon seçin.</div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">11</span>Hangi kolunuzun üzerine yatıyorsunuz?</div>
+      <div class="opts" id="oArm"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">12</span>Yatağınızı partnerinizle paylaşıyor musunuz?</div>
+      <div class="opts" id="oPartner"></div>
+      <div class="cond" id="bedSideWrap" style="display:none;">
+        <div class="q-text" style="font-size:14.5px;">12.1 · Yatağın hangi tarafında yatıyorsunuz?</div>
+        <div class="opts" id="oBedSide"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 4 · Ağrınız ═══ -->
+<div class="section" id="sec4">
+  <div class="card">
+    <div class="q">
+      <div class="q-text"><span class="q-num">13</span>Ağrınız hangi taraf omuzdadır?</div>
+      <div class="opts" id="oPainSide"></div>
+      <div class="warn" id="wPainSide">Lütfen seçim yapın.</div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">14</span>Ağrınız ne kadar zamandır var?</div>
+      <div class="opts stack" id="oDur"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">15</span>Gece sizi uykudan uyandıran bir omuz ağrınız var mı?</div>
+      <div class="opts" id="oNight"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">16</span>Omuzlarınızda sabah tutukluğu oluyor mu?</div>
+      <div class="opts" id="oStiff"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">17</span>Daha önce omuz ağrısı geçirdiniz mi?</div>
+      <div class="opts" id="oPrior"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">18</span>Ağrınız nasıl başladı?</div>
+      <div class="opts" id="oOnset"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 5 · Yük ve zamanlama ═══ -->
+<div class="section" id="sec5">
+  <div class="card">
+    <div class="q">
+      <div class="q-text"><span class="q-num">19</span>Mesleğiniz veya sportif faaliyetleriniz nedeniyle omzunuza yük biniyor mu?</div>
+      <div class="opts" id="oLoad"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">20</span>Yıllık izin dönemlerinizde ağrınız oluyor mu?</div>
+      <div class="opts" id="oLeave"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">21</span>Hafta sonları ağrınız oluyor mu?</div>
+      <div class="opts" id="oWeekend"></div>
+    </div>
+    <div class="q">
+      <div class="q-text"><span class="q-num">22</span>Ağrınız günün hangi saatlerinde oluyor?</div>
+      <div class="q-hint">Birden fazla seçebilirsiniz.</div>
+      <div class="chips" id="oPainHours"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 6 · Teşekkür ═══ -->
+<div class="section" id="sec6">
+  <div class="card done">
+    <div class="done-mark">✓</div>
+    <h2>Teşekkür ederiz</h2>
+    <p>Yanıtlarınız kaydedildi.<br>Zamanınızı ayırıp araştırmamıza katkı verdiğiniz için teşekkürler.</p>
+    <p style="margin-top:14px;font-size:13px;">Bu sayfayı kapatabilirsiniz.</p>
+  </div>
+</div>
+
+</div>
+
+<div class="nav-bar" id="navBar">
+  <button class="btn btn-secondary" id="btnBack" onclick="goBack()" style="display:none">Geri</button>
+  <button class="btn btn-primary" id="btnNext" onclick="goNext()">Başla</button>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
+
+const params   = new URLSearchParams(window.location.search);
+const linkName = params.get('name') || '';
+const linkId   = params.get('id')   || '';
+const linkDx   = params.get('dx')   || params.get('procedure') || '';
+
+const A = {};   // tüm yanıtlar
+
+// ── Uyku pozisyonu çizimleri (kuş bakışı, baş yatağın üst tarafında) ──────────
+function bed(inner) {
+  return `<svg viewBox="0 0 120 96" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="4" width="108" height="88" rx="10" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect x="14" y="10" width="92" height="18" rx="7" fill="#e2e8f0"/>
+    ${inner}</svg>`;
+}
+const SKIN = '#fcd9b8', BODY = '#1e6fff', LINE = '#1e40af';
+
+const POSITIONS = [
+  { id:'sirtustu', name:'Sırtüstü', sub:'yüzünüz yukarı', svg: bed(`
+      <ellipse cx="60" cy="26" rx="11" ry="11" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
+      <circle cx="56" cy="24" r="1.4" fill="${LINE}"/><circle cx="64" cy="24" r="1.4" fill="${LINE}"/>
+      <path d="M56 30 Q60 32 64 30" stroke="${LINE}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <rect x="48" y="37" width="24" height="34" rx="9" fill="${BODY}"/>
+      <rect x="37" y="39" width="9" height="30" rx="4.5" fill="${BODY}" opacity=".78"/>
+      <rect x="74" y="39" width="9" height="30" rx="4.5" fill="${BODY}" opacity=".78"/>
+      <rect x="50" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>
+      <rect x="61.5" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>`) },
+
+  { id:'yuzustu', name:'Yüzüstü', sub:'yüzünüz aşağı', svg: bed(`
+      <ellipse cx="60" cy="26" rx="11" ry="11" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
+      <path d="M52 22 Q60 18 68 22" stroke="${LINE}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <rect x="48" y="37" width="24" height="34" rx="9" fill="${BODY}"/>
+      <path d="M48 42 L36 30" stroke="${BODY}" stroke-width="8.5" stroke-linecap="round" opacity=".78"/>
+      <path d="M72 42 L84 30" stroke="${BODY}" stroke-width="8.5" stroke-linecap="round" opacity=".78"/>
+      <rect x="50" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>
+      <rect x="61.5" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>`) },
+
+  { id:'sag_yan', name:'Sağ yan', sub:'sağ omzunuz altta', svg: bed(`
+      <ellipse cx="56" cy="26" rx="10.5" ry="10.5" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
+      <circle cx="63" cy="25" r="1.4" fill="${LINE}"/>
+      <path d="M64 29 Q66.5 28.5 66.5 27" stroke="${LINE}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <rect x="49" y="37" width="16" height="33" rx="8" fill="${BODY}"/>
+      <path d="M64 44 L77 50" stroke="${BODY}" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+      <path d="M55 69 L57 80 L68 85" stroke="${BODY}" stroke-width="8.5" fill="none"
+            stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`) },
+
+  { id:'sol_yan', name:'Sol yan', sub:'sol omzunuz altta', svg: bed(`
+      <ellipse cx="64" cy="26" rx="10.5" ry="10.5" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
+      <circle cx="57" cy="25" r="1.4" fill="${LINE}"/>
+      <path d="M56 29 Q53.5 28.5 53.5 27" stroke="${LINE}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <rect x="55" y="37" width="16" height="33" rx="8" fill="${BODY}"/>
+      <path d="M56 44 L43 50" stroke="${BODY}" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+      <path d="M65 69 L63 80 L52 85" stroke="${BODY}" stroke-width="8.5" fill="none"
+            stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`) },
+
+  { id:'degisken', name:'Değişken', sub:'sabit bir pozisyonum yok', svg: bed(`
+      <ellipse cx="60" cy="26" rx="10.5" ry="10.5" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2" opacity=".55"/>
+      <rect x="49" y="37" width="22" height="33" rx="9" fill="${BODY}" opacity=".35"/>
+      <rect x="50" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".3"/>
+      <rect x="61.5" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".3"/>
+      <path d="M26 50 Q34 40 42 50" stroke="${BODY}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M78 50 Q86 60 94 50" stroke="${BODY}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <text x="60" y="55" text-anchor="middle" font-size="17" font-weight="700" fill="${BODY}" opacity=".8">?</text>`) },
+
+  { id:'diger', name:'Diğer', sub:'kendim yazayım', svg: bed(`
+      <text x="60" y="56" text-anchor="middle" font-size="26" fill="#94a3b8">✎</text>`) },
+];
+
+// ── Seçenek grupları ─────────────────────────────────────────────────────────
+const GROUPS = {
+  oGender:  { key:'gender',   opts:['Kadın','Erkek','Diğer'] },
+  oDom:     { key:'dominant', opts:['Sağ','Sol'] },
+  oShift:   { key:'shift',    opts:['00–08','08–16','16–00','Vardiyalı','Düzensiz'] },
+  oArm:     { key:'lieOnArm', opts:['Sağ','Sol','Hiçbiri'] },
+  oPartner: { key:'partner',  opts:['Evet','Hayır'] },
+  oBedSide: { key:'bedSide',  opts:['Sağ','Sol'] },
+  oPainSide:{ key:'painSide', opts:['Sağ','Sol','İkisi de'] },
+  oDur:     { key:'duration', opts:['1 aydan az','1–3 ay','3–6 ay','6–12 ay','1–2 yıl','2 yıldan uzun'] },
+  oNight:   { key:'nightPain',opts:['Evet','Hayır'] },
+  oStiff:   { key:'stiffness',opts:['Evet','Hayır'] },
+  oPrior:   { key:'priorPain',opts:['Evet','Hayır'] },
+  oOnset:   { key:'onset',    opts:['Travma sonrası','Kendiliğinden'] },
+  oLoad:    { key:'load',     opts:['Evet','Hayır'] },
+  oLeave:   { key:'leavePain',opts:['Evet','Hayır'] },
+  oWeekend: { key:'weekendPain', opts:['Evet','Hayır'] },
+};
+const MULTI = {
+  oComorb:    { key:'comorbid', opts:['Yok','Diyabet','Tiroid hastalığı','Romatolojik hastalık',
+                                      'Kalp / damar hastalığı','Boyun fıtığı','Diğer'] },
+  oPainHours: { key:'painHours', opts:['00–08','08–16','16–00','Sürekli'] },
+};
+
+function buildOpts() {
+  Object.keys(GROUPS).forEach(id => {
+    const g = GROUPS[id], el = document.getElementById(id);
+    el.innerHTML = g.opts.map(o =>
+      `<button type="button" class="opt" data-v="${o}" onclick="pick('${id}','${g.key}','${o}',this)">${o}</button>`).join('');
+  });
+  Object.keys(MULTI).forEach(id => {
+    const g = MULTI[id], el = document.getElementById(id);
+    el.innerHTML = g.opts.map(o =>
+      `<button type="button" class="chip" data-v="${o}" onclick="pickMulti('${id}','${g.key}','${o}',this)">${o}</button>`).join('');
+  });
+  document.getElementById('oPos').innerHTML = POSITIONS.map(p =>
+    `<button type="button" class="pos" data-v="${p.id}" onclick="pickPos('${p.id}',this)">
+       ${p.svg}<div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div></button>`).join('');
+}
+
+function pick(groupId, key, val, btn) {
+  A[key] = val;
+  [...document.getElementById(groupId).children].forEach(b => b.classList.toggle('on', b === btn));
+  if (key === 'partner') {
+    const on = val === 'Evet';
+    document.getElementById('bedSideWrap').style.display = on ? '' : 'none';
+    if (!on) { delete A.bedSide; [...document.getElementById('oBedSide').children].forEach(b => b.classList.remove('on')); }
+  }
+  hideWarns();
+}
+
+function pickMulti(groupId, key, val, btn) {
+  const list = A[key] = A[key] || [];
+  const box  = document.getElementById(groupId);
+  const i = list.indexOf(val);
+  if (i === -1) list.push(val); else list.splice(i, 1);
+  // "Yok" diğerleriyle birlikte seçilemez
+  if (key === 'comorbid') {
+    if (val === 'Yok' && list.includes('Yok')) A[key] = ['Yok'];
+    else if (list.includes('Yok')) A[key] = list.filter(x => x !== 'Yok');
+  }
+  [...box.children].forEach(b => b.classList.toggle('on', A[key].includes(b.dataset.v)));
+  if (key === 'comorbid')
+    document.getElementById('comorbOtherWrap').style.display = A[key].includes('Diğer') ? '' : 'none';
+}
+
+function pickPos(id, btn) {
+  A.sleepPos = id;
+  [...document.getElementById('oPos').children].forEach(b => b.classList.toggle('on', b === btn));
+  document.getElementById('posOtherWrap').style.display = id === 'diger' ? '' : 'none';
+  hideWarns();
+}
+
+function calcBmi() {
+  const h = +document.getElementById('fHeight').value, w = +document.getElementById('fWeight').value;
+  const out = document.getElementById('bmiOut');
+  if (!h || !w || h < 80) { out.textContent = ''; return; }
+  const b = w / Math.pow(h / 100, 2);
+  const s = b < 18.5 ? 'zayıf' : b < 25 ? 'normal' : b < 30 ? 'fazla kilolu' : 'obez';
+  out.innerHTML = `Vücut kitle indeksi: <b>${b.toFixed(1)}</b> · ${s}`;
+}
+
+// ── Bölüm gezinmesi ──────────────────────────────────────────────────────────
+const TITLES = ['Başlangıç','Sizi tanıyalım','Çalışma hayatı','Uyku düzeni','Ağrınız','Ağrınızın seyri','Tamamlandı'];
+const LAST = 6;
+let cur = 0;
+
+function show(n) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec' + n).classList.add('active');
+  cur = n;
+  document.getElementById('progressFill').style.width = (n / LAST * 100) + '%';
+  document.getElementById('stepInfo').textContent =
+    n === 0 || n === LAST ? TITLES[n] : `${n}/5 · ${TITLES[n]}`;
+  document.getElementById('btnBack').style.display = (n > 0 && n < LAST) ? '' : 'none';
+  document.getElementById('btnNext').textContent = n === 0 ? 'Başla' : n === 5 ? 'Anketi Gönder' : 'Devam';
+  document.getElementById('navBar').style.display = n === LAST ? 'none' : 'flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideWarns() { document.querySelectorAll('.warn').forEach(w => w.classList.remove('show')); }
+function warn(id) {
+  const w = document.getElementById(id);
+  w.classList.add('show');
+  w.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  return false;
+}
+
+function validate(n) {
+  if (n === 1) {
+    if (!document.getElementById('fName').value.trim()) return warn('wName');
+    if (!A.gender) return warn('wGender');
+    if (!document.getElementById('fAge').value)  return warn('wAge');
+  }
+  if (n === 3 && !A.sleepPos)  return warn('wPos');
+  if (n === 4 && !A.painSide)  return warn('wPainSide');
+  return true;
+}
+
+function goNext() {
+  hideWarns();
+  if (cur > 0 && !validate(cur)) return;
+  if (cur === 5) { submitForm(); return; }
+  show(cur + 1);
+}
+function goBack() { if (cur > 0) show(cur - 1); }
+
+// ── Gönderim ─────────────────────────────────────────────────────────────────
+function submitForm() {
+  const btn = document.getElementById('btnNext');
+  btn.disabled = true; btn.textContent = 'Gönderiliyor…';
+
+  const comorb = (A.comorbid || []).slice();
+  const other  = document.getElementById('fComorbOther').value.trim();
+  if (comorb.includes('Diğer') && other) comorb[comorb.indexOf('Diğer')] = 'Diğer: ' + other;
+
+  const posObj = POSITIONS.find(p => p.id === A.sleepPos);
+  const posTxt = A.sleepPos === 'diger'
+    ? (document.getElementById('fPosOther').value.trim() || 'Diğer')
+    : (posObj ? posObj.name : '');
+
+  const h = +document.getElementById('fHeight').value, w = +document.getElementById('fWeight').value;
+  const payload = {
+    module: 'uyku',
+    timestamp: new Date().toISOString(),
+    name: document.getElementById('fName').value.trim(),
+    patientId: linkId,
+    dx: document.getElementById('fDx').value.trim(),
+    gender: A.gender || '', age: document.getElementById('fAge').value,
+    height: h || '', weight: w || '',
+    bmi: (h && w) ? Math.round(w / Math.pow(h / 100, 2) * 10) / 10 : '',
+    job: document.getElementById('fJob').value.trim(),
+    shift: A.shift || '', dominant: A.dominant || '',
+    comorbid: comorb.join(', '),
+    sleepPos: posTxt, sleepPosCode: A.sleepPos || '',
+    lieOnArm: A.lieOnArm || '', partner: A.partner || '', bedSide: A.bedSide || '',
+    painSide: A.painSide || '', duration: A.duration || '',
+    nightPain: A.nightPain || '', stiffness: A.stiffness || '',
+    priorPain: A.priorPain || '', onset: A.onset || '',
+    load: A.load || '', leavePain: A.leavePain || '', weekendPain: A.weekendPain || '',
+    painHours: (A.painHours || []).join(', '),
+  };
+
+  const url = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  const popup = window.open(url, 'uyku_submit', 'width=1,height=1,left=0,top=0');
+  setTimeout(() => { try { if (popup) popup.close(); } catch (e) {} show(LAST); }, 2500);
+}
+
+// ── Başlangıç ────────────────────────────────────────────────────────────────
+buildOpts();
+if (linkName) document.getElementById('fName').value = linkName;
+if (linkDx)   document.getElementById('fDx').value   = linkDx;
+document.getElementById('todayLbl').textContent = new Date().toLocaleDateString('tr-TR');
+show(0);
+</script>
+</body>
+</html>
