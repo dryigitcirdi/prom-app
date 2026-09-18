@@ -117,6 +117,26 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 .pos.on .sway{animation:sway 4.4s ease-in-out infinite;transform-origin:60px 50px}
 @keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 
+/* ── 24 saatlik kadran ─────────────────────────────────── */
+.clock-wrap{display:flex;justify-content:center;padding-top:6px}
+.clock{width:100%;max-width:268px;height:auto;overflow:visible}
+.seg{cursor:pointer}
+.seg-bg{fill:#f4f4f5;stroke:#fff;stroke-width:1.5;
+  transition:fill .26s var(--ease),transform .2s var(--ease);transform-origin:115px 115px}
+.seg:active .seg-bg{transform:scale(.975)}
+.seg-h{font-size:14.5px;font-weight:700;fill:var(--ink);text-anchor:middle;
+  letter-spacing:-.02em;pointer-events:none;transition:fill .26s var(--ease)}
+.seg-w{font-size:10.5px;font-weight:600;fill:var(--muted);text-anchor:middle;
+  letter-spacing:.04em;pointer-events:none;transition:fill .26s var(--ease)}
+.seg.on .seg-bg{fill:var(--ink)}
+.seg.on .seg-h{fill:#fff}
+.seg.on .seg-w{fill:rgba(255,255,255,.68)}
+.mk{font-size:10px;font-weight:700;fill:#c4c4cc;text-anchor:middle;letter-spacing:.06em}
+.ctr-a{font-size:15px;font-weight:700;fill:var(--muted);text-anchor:middle;letter-spacing:-.01em;
+  transition:fill .26s var(--ease)}
+.ctr-a.set{fill:var(--ink)}
+.ctr-b{font-size:12px;font-weight:600;fill:#b8b8c0;text-anchor:middle;letter-spacing:.02em}
+
 /* ── Çoklu seçim ───────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:9px}
 .chip{padding:12px 17px;border:1px solid var(--line);border-radius:999px;background:var(--bg);
@@ -251,18 +271,59 @@ const POSITIONS = [
    <path d="M46 78 H78" stroke="${SOFT}" stroke-width="2.2" stroke-linecap="round"/>`)},
 ];
 
+/* ─── 24 saatlik kadran ──────────────────────────────────────────────────
+   Gün üç eşit dilime ayrılır (120°). 00.00 tepede, saat yönünde ilerler.   */
+function polar(cx, cy, r, h){            // h: 0-24 saat → tepeden saat yönü
+  const a = (h / 24) * Math.PI * 2 - Math.PI / 2;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+function donutArc(cx, cy, R, r, h0, h1, gapH){
+  const a0 = h0 + gapH, a1 = h1 - gapH;
+  const [ox0,oy0] = polar(cx,cy,R,a0), [ox1,oy1] = polar(cx,cy,R,a1);
+  const [ix1,iy1] = polar(cx,cy,r,a1), [ix0,iy0] = polar(cx,cy,r,a0);
+  const big = (a1 - a0) > 12 ? 1 : 0;
+  return `M${ox0.toFixed(1)} ${oy0.toFixed(1)} A${R} ${R} 0 ${big} 1 ${ox1.toFixed(1)} ${oy1.toFixed(1)}` +
+         ` L${ix1.toFixed(1)} ${iy1.toFixed(1)} A${r} ${r} 0 ${big} 0 ${ix0.toFixed(1)} ${iy0.toFixed(1)} Z`;
+}
+function clockSVG(){
+  const C = 115, R = 90, r = 56, MID = (R + r) / 2;
+  const segs = SLOTS.map((sl, k) => {
+    const [lx, ly] = polar(C, C, MID, (sl.from + sl.to) / 2);
+    return `<g class="seg" data-v="${sl.v}" data-k="${k}">
+      <path class="seg-bg" d="${donutArc(C,C,R,r,sl.from,sl.to,0.34)}"/>
+      <text class="seg-h" x="${lx.toFixed(1)}" y="${(ly-3).toFixed(1)}">${String(sl.from).padStart(2,'0')}–${String(sl.to%24).padStart(2,'0')}</text>
+      <text class="seg-w" x="${lx.toFixed(1)}" y="${(ly+11).toFixed(1)}">${sl.word}</text>
+    </g>`;
+  }).join('');
+  const marks = [0,6,12,18].map(h => {
+    const [x,y] = polar(C, C, R + 16, h);
+    return `<text class="mk" x="${x.toFixed(1)}" y="${(y+3.5).toFixed(1)}">${String(h).padStart(2,'0')}</text>`;
+  }).join('');
+  return `<svg class="clock" viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg">
+    ${marks}${segs}
+    <circle cx="${C}" cy="${C}" r="${r-7}" fill="#fff"/>
+    <text class="ctr-a" id="ctrA" x="${C}" y="${C-3}">Saat</text>
+    <text class="ctr-b" id="ctrB" x="${C}" y="${C+16}">aralığını seçin</text>
+  </svg>`;
+}
+
 /* ─── Sorular ────────────────────────────────────────────────────────────── */
-const SHIFTS = ['00.00 – 08.00','08.00 – 16.00','16.00 – 00.00','Vardiyalı','Düzensiz'];
+const SLOTS = [
+  { v:'00.00 – 08.00', from:0,  to:8,  word:'Gece'   },
+  { v:'08.00 – 16.00', from:8,  to:16, word:'Gündüz' },
+  { v:'16.00 – 00.00', from:16, to:24, word:'Akşam'  },
+];
 const QS = [
   {k:'ident', n:1,  type:'ident', title:'Önce sizi tanıyalım',
    sub:'Yanıtlarınızın hangi katılımcıya ait olduğunu bilmemiz için.'},
-  {k:'gender', n:2, type:'choice', row:true, title:'Cinsiyetiniz', opts:['Kadın','Erkek','Diğer']},
+  {k:'gender', n:2, type:'choice', row:true, title:'Cinsiyetiniz', opts:['Kadın','Erkek']},
   {k:'age', n:3, type:'num', title:'Yaşınız', ph:'45', req:true},
   {k:'hw', n:'4–5', type:'hw', title:'Boyunuz ve kilonuz',
    sub:'Vücut kitle indeksinizi hesaplamak için kullanılır.'},
   {k:'job', n:6, type:'text', title:'Mesleğiniz', ph:'örn. öğretmen, tornacı, hemşire',
    sub:'Omza binen yükü değerlendirmemiz açısından önemli.'},
-  {k:'shift', n:7, type:'choice', title:'Mesai saatleriniz', opts:SHIFTS},
+  {k:'shift', n:7, type:'clock', title:'Mesai saatleriniz',
+   sub:'Çalıştığınız saat aralığına dokunun.'},
   {k:'dominant', n:8, type:'choice', row:true, title:'Dominant eliniz',
    sub:'Günlük işlerinizde ağırlıklı olarak hangi elinizi kullanıyorsunuz?', opts:['Sağ','Sol']},
   {k:'comorbid', n:9, type:'multi', title:'Ek hastalıklarınız', sub:'Birden fazla seçebilirsiniz.',
@@ -293,8 +354,8 @@ const QS = [
    opts:['Evet','Hayır']},
   {k:'weekendPain', n:21, type:'choice', row:true, title:'Hafta sonları ağrınız oluyor mu?',
    opts:['Evet','Hayır']},
-  {k:'painHours', n:22, type:'multi', title:'Ağrınız günün hangi saatlerinde oluyor?',
-   sub:'Birden fazla seçebilirsiniz.', opts:['00.00 – 08.00','08.00 – 16.00','16.00 – 00.00','Sürekli']},
+  {k:'painHours', n:22, type:'clock', title:'Ağrınız günün hangi saatlerinde oluyor?',
+   sub:'Ağrınızın <b>en çok</b> olduğu saat aralığını seçin.'},
 ];
 
 /* ─── Ekran kurulumu ─────────────────────────────────────────────────────── */
@@ -313,11 +374,7 @@ function head(q){
 function bodyFor(q){
   if (q.type === 'ident') return `
     <div class="body">
-      <div class="flab">Ad Soyad</div>
       <input class="field" id="f_name" placeholder="Adınız ve soyadınız" autocomplete="name">
-      <div style="height:26px"></div>
-      <div class="flab">Tanınız <span style="font-weight:500;text-transform:none;letter-spacing:0">— biliyorsanız</span></div>
-      <input class="field sm" id="f_dx" placeholder="örn. rotator manşet tendinopatisi">
     </div>`;
   if (q.type === 'num') return `
     <div class="body"><input class="field" id="f_age" type="number" inputmode="numeric"
@@ -346,6 +403,8 @@ function bodyFor(q){
         <input class="field sm" id="f_pos" placeholder="kendi ifadenizle yazın">
       </div>
     </div>`;
+  if (q.type === 'clock') return `
+    <div class="body clock-wrap">${clockSVG()}</div>`;
   if (q.type === 'multi') return `
     <div class="body"><div class="chips">${q.opts.map(o =>
       `<button type="button" class="chip" data-v="${esc(o)}">${o}</button>`).join('')}</div></div>`;
@@ -433,7 +492,7 @@ function ok(){
   if (q.type === 'ident') {
     const el = document.getElementById('f_name');
     if (!el.value.trim()) { shake(el); el.focus(); return false; }
-    A.name = el.value.trim(); A.dx = document.getElementById('f_dx').value.trim(); return true;
+    A.name = el.value.trim(); return true;
   }
   if (q.type === 'num') {
     const el = document.getElementById('f_age');
@@ -472,6 +531,18 @@ stage.addEventListener('click', e => {
     const other = document.getElementById('posOther');
     if (A.sleepPos === 'diger') { other.style.display = ''; setTimeout(() => document.getElementById('f_pos').focus(), 120); }
     else { other.style.display = 'none'; setTimeout(() => go(step(1), 1), 280); }
+    return;
+  }
+  const seg = e.target.closest('.seg');
+  if (seg && s.contains(seg)) {
+    A[q.k] = seg.dataset.v;
+    [...seg.parentElement.querySelectorAll('.seg')].forEach(g => g.classList.toggle('on', g === seg));
+    const sl = SLOTS[+seg.dataset.k];
+    const svg = seg.closest('svg');
+    svg.querySelector('#ctrA').textContent = sl.word;
+    svg.querySelector('#ctrB').textContent = sl.v.replace(/\.00/g, '');
+    svg.querySelector('#ctrA').classList.add('set');
+    setTimeout(() => { if (i < LAST) go(step(1), 1); }, 360);
     return;
   }
   const chip = e.target.closest('.chip');
@@ -530,7 +601,7 @@ function submit(){
     nightPain:A.nightPain||'', stiffness:A.stiffness||'',
     priorPain:A.priorPain||'', onset:A.onset||'',
     load:A.load||'', leavePain:A.leavePain||'', weekendPain:A.weekendPain||'',
-    painHours:(A.painHours||[]).join(', '),
+    painHours:A.painHours||'',
   };
 
   if (PREVIEW) { setTimeout(() => go(LAST, 1), 500); return; }   // önizlemede kayıt yapılmaz
@@ -549,9 +620,8 @@ if (qp.get('dx'))   A.dx   = qp.get('dx');
 paint();
 // Ad/tanı linkten geldiyse alanlara yaz
 setTimeout(() => {
-  const n = document.getElementById('f_name'), d = document.getElementById('f_dx');
+  const n = document.getElementById('f_name');
   if (n && A.name) n.value = A.name;
-  if (d && A.dx)   d.value = A.dx;
 }, 0);
 </script>
 </body>
