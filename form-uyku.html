@@ -2,548 +2,554 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="robots" content="noindex,nofollow">
-<title>Uyku Pozisyonu ve Omuz Ağrısı Anketi</title>
+<meta name="theme-color" content="#ffffff">
+<title>Uyku Pozisyonu ve Omuz Ağrısı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --primary:#1e6fff; --primary-light:#e8f0fe; --success:#16a34a; --success-light:#dcfce7;
-  --text:#1a1a2e; --muted:#6b7280; --border:#e5e7eb; --bg:#f8fafc; --card:#ffffff; --danger:#dc2626;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#09090b; --ink-2:#3f3f46; --muted:#8b8b94; --line:#ebebef;
+  --bg:#ffffff; --surface:#fafafa; --lift:0 1px 2px rgba(9,9,11,.04), 0 8px 28px -12px rgba(9,9,11,.10);
+  --ease:cubic-bezier(.22,1,.36,1); --fast:.22s; --mid:.36s;
 }
-body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  background:var(--bg); color:var(--text); min-height:100vh; font-size:16px; line-height:1.5;
-  -webkit-text-size-adjust:100%; }
+html,body{height:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+  font-feature-settings:'cv11','ss01','tnum';
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  background:var(--bg); color:var(--ink); font-size:16px; line-height:1.5;
+  -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+}
+button,input{font:inherit;color:inherit}
 
-.progress-bar-container { position:fixed; top:0; left:0; right:0; height:4px; background:var(--border); z-index:100; }
-.progress-bar-fill { height:100%; background:linear-gradient(90deg,#1e6fff,#06b6d4);
-  transition:width .4s ease; border-radius:0 2px 2px 0; }
+/* ── İlerleme ──────────────────────────────────────────── */
+.rail{position:fixed;top:0;left:0;right:0;height:2px;background:var(--line);z-index:60}
+.rail-fill{height:100%;background:var(--ink);width:0;transition:width .5s var(--ease)}
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 20px;z-index:50;
+  background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(14px);
+  -webkit-backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid transparent;
+  transition:border-color var(--fast)}
+.topbar.solid{border-bottom-color:var(--line)}
+.tb-back{width:34px;height:34px;margin-left:-8px;border:none;background:transparent;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-2);
+  opacity:0;pointer-events:none;transition:opacity var(--fast),background var(--fast)}
+.tb-back.on{opacity:1;pointer-events:auto}
+.tb-back:active{background:var(--surface)}
+.tb-count{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.tb-count b{color:var(--ink)}
 
-.header { background:#fff; padding:16px 20px 12px; border-bottom:1px solid var(--border);
-  position:sticky; top:4px; z-index:90; }
-.header-title { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); }
-.header-sub { font-size:19px; font-weight:700; letter-spacing:-.01em; margin-top:2px; }
-.header-step { font-size:12px; color:var(--muted); margin-top:3px; }
+/* ── Sahne ─────────────────────────────────────────────── */
+.stage{min-height:100dvh;padding:56px 0 0;display:flex;flex-direction:column}
+.screen{flex:1;display:none;flex-direction:column;padding:22px 22px 132px;max-width:600px;
+  width:100%;margin:0 auto}
+.screen.live{display:flex}
+.screen.in-f{animation:inF var(--mid) var(--ease) both}
+.screen.in-b{animation:inB var(--mid) var(--ease) both}
+@keyframes inF{from{opacity:0;transform:translate3d(26px,0,0)}to{opacity:1;transform:none}}
+@keyframes inB{from{opacity:0;transform:translate3d(-26px,0,0)}to{opacity:1;transform:none}}
 
-.wrap { padding:20px 16px 108px; max-width:560px; margin:0 auto; }
-.section { display:none; animation:fade .3s ease; }
-.section.active { display:block; }
-@keyframes fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:14px}
+h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-height:1.14}
+.sub{font-size:15.5px;color:var(--muted);margin-top:11px;line-height:1.55;max-width:44ch}
+.body{margin-top:30px}
 
-.card { background:var(--card); border:1px solid var(--border); border-radius:16px;
-  padding:18px 16px; margin-bottom:14px; }
-.q { margin-bottom:22px; }
-.q:last-child { margin-bottom:4px; }
-.q-num { display:inline-block; min-width:22px; height:22px; line-height:22px; text-align:center;
-  background:var(--primary-light); color:var(--primary); border-radius:6px;
-  font-size:11px; font-weight:800; margin-right:7px; padding:0 5px; }
-.q-text { font-size:15.5px; font-weight:600; line-height:1.4; margin-bottom:10px; }
-.q-hint { font-size:12.5px; color:var(--muted); margin:-6px 0 10px; line-height:1.45; }
+/* ── Seçenekler ────────────────────────────────────────── */
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{position:relative;display:flex;align-items:center;gap:13px;width:100%;padding:17px 18px;
+  border:1px solid var(--line);border-radius:15px;background:var(--bg);text-align:left;
+  font-size:16.5px;font-weight:550;cursor:pointer;
+  transition:transform .14s var(--ease),border-color var(--fast),background var(--fast),box-shadow var(--fast)}
+.opt:active{transform:scale(.982)}
+.opt .dot{width:19px;height:19px;border-radius:50%;border:1.5px solid #d4d4d8;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;transition:all var(--fast)}
+.opt .dot svg{opacity:0;transform:scale(.4);transition:all .2s var(--ease)}
+.opt.on{border-color:var(--ink);background:var(--ink);color:#fff;box-shadow:var(--lift)}
+.opt.on .dot{border-color:#fff;background:#fff}
+.opt.on .dot svg{opacity:1;transform:none}
+.opts.row{flex-direction:row;flex-wrap:wrap}
+.opts.row .opt{flex:1 1 0;min-width:104px;justify-content:center;text-align:center}
+.opts.row .opt .dot{display:none}
 
-input[type=text], input[type=number], textarea, select {
-  width:100%; padding:13px 14px; border:1.5px solid var(--border); border-radius:12px;
-  font-size:16px; font-family:inherit; color:var(--text); background:#fff; -webkit-appearance:none; }
-input:focus, textarea:focus, select:focus { outline:none; border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(30,111,255,.12); }
-textarea { min-height:76px; resize:vertical; line-height:1.5; }
+/* ── Metin / sayı ──────────────────────────────────────── */
+.field{width:100%;padding:16px 2px;border:none;border-bottom:1.5px solid var(--line);
+  font-size:23px;font-weight:600;letter-spacing:-.02em;background:transparent;
+  transition:border-color var(--fast)}
+.field::placeholder{color:#c8c8cf;font-weight:500}
+.field:focus{outline:none;border-bottom-color:var(--ink)}
+.field.sm{font-size:19px;padding:13px 2px}
+.pair{display:flex;gap:22px}
+.pair > div{flex:1}
+.flab{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.readout{margin-top:22px;font-size:14px;color:var(--muted);opacity:0;transform:translateY(5px);
+  transition:all var(--mid) var(--ease)}
+.readout.on{opacity:1;transform:none}
+.readout b{color:var(--ink);font-weight:700}
 
-.opts { display:flex; flex-wrap:wrap; gap:8px; }
-.opt { flex:1 1 0; min-width:92px; padding:13px 10px; border:1.5px solid var(--border);
-  border-radius:12px; background:#fff; font-size:15px; font-weight:600; color:var(--text);
-  cursor:pointer; text-align:center; transition:all .16s; -webkit-tap-highlight-color:transparent; }
-.opt:active { transform:scale(.97); }
-.opt.on { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
-.opts.stack .opt { flex:1 1 100%; text-align:left; padding-left:16px; }
+/* ── Uyku pozisyonu ────────────────────────────────────── */
+.pos-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.pos{position:relative;border:1px solid var(--line);border-radius:18px;background:var(--bg);
+  padding:12px 10px 13px;cursor:pointer;overflow:hidden;
+  transition:transform .18s var(--ease),border-color var(--fast),box-shadow var(--fast)}
+.pos:active{transform:scale(.975)}
+.pos.on{border-color:var(--ink);box-shadow:var(--lift)}
+.pos-art{position:relative;border-radius:12px;background:var(--surface);overflow:hidden;
+  transition:background var(--fast)}
+.pos.on .pos-art{background:#f1f1f4}
+.pos svg{display:block;width:100%;height:auto}
+.pos-name{font-size:14.5px;font-weight:650;letter-spacing:-.01em;text-align:center;margin-top:10px}
+.pos-sub{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.35;margin-top:1px}
+.pos-tick{position:absolute;top:9px;right:9px;width:21px;height:21px;border-radius:50%;
+  background:var(--ink);display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(.5);transition:all .26s var(--ease)}
+.pos.on .pos-tick{opacity:1;transform:none}
+/* nefes alma — sadece seçili kartta, dikkat dağıtmasın */
+.pos.on .breathe{animation:breathe 3.6s ease-in-out infinite;transform-origin:center}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+.pos.on .sway{animation:sway 4.4s ease-in-out infinite;transform-origin:60px 50px}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 
-.chips { display:flex; flex-wrap:wrap; gap:8px; }
-.chip { padding:10px 14px; border:1.5px solid var(--border); border-radius:999px; background:#fff;
-  font-size:14px; font-weight:600; cursor:pointer; transition:all .16s; -webkit-tap-highlight-color:transparent; }
-.chip.on { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+/* ── Çoklu seçim ───────────────────────────────────────── */
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{padding:12px 17px;border:1px solid var(--line);border-radius:999px;background:var(--bg);
+  font-size:15px;font-weight:550;cursor:pointer;
+  transition:transform .14s var(--ease),border-color var(--fast),background var(--fast),color var(--fast)}
+.chip:active{transform:scale(.96)}
+.chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
 
-/* Uyku pozisyonu görsel seçici */
-.pos-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.pos { border:1.5px solid var(--border); border-radius:14px; background:#fff; padding:10px 8px 9px;
-  cursor:pointer; transition:all .18s; -webkit-tap-highlight-color:transparent; }
-.pos:active { transform:scale(.97); }
-.pos.on { border-color:var(--primary); background:var(--primary-light); box-shadow:0 0 0 3px rgba(30,111,255,.10); }
-.pos svg { display:block; width:100%; height:auto; }
-.pos-name { font-size:13.5px; font-weight:700; text-align:center; margin-top:6px; }
-.pos.on .pos-name { color:var(--primary); }
-.pos-sub { font-size:11px; color:var(--muted); text-align:center; line-height:1.3; }
+/* ── Alt aksiyon ───────────────────────────────────────── */
+.dock{position:fixed;bottom:0;left:0;right:0;padding:16px 22px calc(18px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--bg) 62%,rgba(255,255,255,0));z-index:50;
+  display:flex;justify-content:center}
+.dock-in{width:100%;max-width:600px;display:flex;align-items:center;gap:13px}
+.cta{flex:1;padding:17px;border:none;border-radius:15px;background:var(--ink);color:#fff;
+  font-size:16.5px;font-weight:600;letter-spacing:-.01em;cursor:pointer;
+  transition:transform .14s var(--ease),opacity var(--fast)}
+.cta:active{transform:scale(.98)}
+.cta[disabled]{opacity:.28;pointer-events:none}
+.hintkey{font-size:12px;color:var(--muted);white-space:nowrap}
+.dock.hide{opacity:0;pointer-events:none;transform:translateY(8px);transition:all var(--fast)}
 
-.bmi { margin-top:8px; font-size:13px; color:var(--muted); }
-.bmi b { color:var(--text); }
+/* ── Kapak ─────────────────────────────────────────────── */
+.cover{justify-content:center;padding-bottom:150px}
+.cover h1{font-size:clamp(32px,9vw,44px);letter-spacing:-.04em;line-height:1.06}
+.cover .sub{font-size:16.5px;color:var(--ink-2);margin-top:16px;max-width:38ch}
+.facts{display:flex;gap:26px;margin-top:34px;padding-top:24px;border-top:1px solid var(--line)}
+.fact-k{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.fact-v{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-top:3px}
+.consent{margin-top:26px;font-size:13px;color:var(--muted);line-height:1.62;max-width:46ch}
 
-.cond { margin-top:12px; padding-left:12px; border-left:3px solid var(--primary-light); }
+/* ── Bitiş ─────────────────────────────────────────────── */
+.done{align-items:center;justify-content:center;text-align:center}
+.ring{width:66px;height:66px;border-radius:50%;background:var(--ink);display:flex;
+  align-items:center;justify-content:center;margin-bottom:26px;animation:pop .55s var(--ease) both}
+@keyframes pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.done h1{font-size:30px}
+.done .sub{margin-top:13px}
 
-.intro p { font-size:14.5px; color:#374151; line-height:1.62; margin-bottom:12px; }
-.intro .lead { font-size:16px; color:var(--text); }
-.consent { background:var(--primary-light); border-radius:12px; padding:13px 14px;
-  font-size:13.5px; color:#1e40af; line-height:1.55; margin-top:4px; }
-.meta-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-.meta { flex:1 1 0; min-width:110px; background:var(--bg); border:1px solid var(--border);
-  border-radius:12px; padding:10px 12px; }
-.meta-lbl { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
-.meta-val { font-size:15px; font-weight:700; margin-top:1px; }
-
-.nav-bar { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border);
-  padding:12px 16px calc(12px + env(safe-area-inset-bottom)); display:flex; gap:10px; z-index:100; }
-.btn { flex:1; padding:14px; border-radius:12px; font-size:16px; font-weight:600; border:none;
-  cursor:pointer; transition:all .2s; -webkit-tap-highlight-color:transparent; font-family:inherit; }
-.btn:active { transform:scale(.97); }
-.btn-primary { background:var(--primary); color:#fff; }
-.btn-secondary { background:var(--bg); color:var(--text); border:1px solid var(--border); flex:0 0 96px; }
-
-.done { text-align:center; padding:48px 20px; }
-.done-mark { width:74px; height:74px; margin:0 auto 20px; border-radius:50%;
-  background:var(--success-light); display:flex; align-items:center; justify-content:center; font-size:34px; }
-.done h2 { font-size:21px; font-weight:700; }
-.done p { font-size:14.5px; color:var(--muted); margin-top:8px; line-height:1.6; }
-
-.warn { font-size:13px; color:var(--danger); margin-top:8px; display:none; }
-.warn.show { display:block; }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
 
-<div class="progress-bar-container"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
-
-<div class="header">
-  <div class="header-title">Bilimsel Araştırma Anketi</div>
-  <div class="header-sub">Uyku Pozisyonu ve Omuz Ağrısı</div>
-  <div class="header-step" id="stepInfo">Başlangıç</div>
+<div class="rail"><div class="rail-fill" id="rail"></div></div>
+<div class="topbar" id="topbar">
+  <button class="tb-back" id="back" onclick="prev()" aria-label="Geri">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"
+         stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="tb-count" id="count"></div>
 </div>
 
-<div class="wrap">
+<div class="stage" id="stage"></div>
 
-<!-- ═══ 0 · Giriş ve onam ═══ -->
-<div class="section active" id="sec0">
-  <div class="card intro">
-    <p class="lead">Değerli katılımcı,</p>
-    <p>Bu anket, <b>uyku pozisyonları ve mesleğin omuz ağrıları üzerine olan etkisinin</b>
-       araştırılması ve olası ilişkisinin ortaya konulması amacıyla hazırlanmıştır.</p>
-    <p>Vereceğiniz yanıtlar diğer anketlerle birlikte istatistiksel olarak değerlendirilecektir.
-       Bu değerlendirme, omuz ağrılarını tetikleyen faktörlerin daha iyi anlaşılması ve ağrıların
-       nüksetmeden önlenmesi açısından önem taşımaktadır.</p>
-    <div class="consent">
-      Katılım tamamen gönüllüdür. Yanıtlarınız gizli tutulur, yalnızca araştırma için kullanılır ve
-      bireysel bilgileriniz kimseyle paylaşılmaz. Anketi tamamlayarak katılmayı kabul etmiş olursunuz;
-      dilediğiniz anda bırakabilirsiniz.
-    </div>
-    <div class="meta-row">
-      <div class="meta"><div class="meta-lbl">Soru sayısı</div><div class="meta-val">22</div></div>
-      <div class="meta"><div class="meta-lbl">Süre</div><div class="meta-val">~4 dakika</div></div>
-      <div class="meta"><div class="meta-lbl">Tarih</div><div class="meta-val" id="todayLbl">—</div></div>
-    </div>
+<div class="dock" id="dock">
+  <div class="dock-in">
+    <button class="cta" id="cta" onclick="next()">Başla</button>
+    <span class="hintkey" id="keyhint"></span>
   </div>
-</div>
-
-<!-- ═══ 1 · Sizi tanıyalım ═══ -->
-<div class="section" id="sec1">
-  <div class="card">
-    <div class="q">
-      <div class="q-text"><span class="q-num">1</span>Ad Soyad</div>
-      <input type="text" id="fName" placeholder="Ad Soyad" autocomplete="name">
-      <div class="warn" id="wName">Lütfen adınızı yazın.</div>
-    </div>
-    <div class="q">
-      <div class="q-text">Tanı <span style="font-weight:500;color:var(--muted);font-size:13px;">(biliyorsanız)</span></div>
-      <input type="text" id="fDx" placeholder="örn. Rotator manşet tendinopatisi">
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">2</span>Cinsiyet</div>
-      <div class="opts" id="oGender"></div>
-      <div class="warn" id="wGender">Lütfen seçim yapın.</div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">3</span>Yaş</div>
-      <input type="number" id="fAge" inputmode="numeric" min="0" max="120" placeholder="örn. 45">
-      <div class="warn" id="wAge">Lütfen yaşınızı yazın.</div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">4-5</span>Boy ve kilo</div>
-      <div style="display:flex;gap:10px;">
-        <input type="number" id="fHeight" inputmode="numeric" min="80" max="250" placeholder="Boy (cm)" oninput="calcBmi()">
-        <input type="number" id="fWeight" inputmode="decimal" min="20" max="300" step="0.1" placeholder="Kilo (kg)" oninput="calcBmi()">
-      </div>
-      <div class="bmi" id="bmiOut"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">8</span>Dominant eliniz</div>
-      <div class="opts" id="oDom"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ 2 · Çalışma hayatı ═══ -->
-<div class="section" id="sec2">
-  <div class="card">
-    <div class="q">
-      <div class="q-text"><span class="q-num">6</span>Mesleğiniz</div>
-      <input type="text" id="fJob" placeholder="örn. öğretmen, tornacı, hemşire">
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">7</span>Mesai saatleriniz</div>
-      <div class="opts" id="oShift"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">9</span>Ek hastalıklarınız</div>
-      <div class="q-hint">Birden fazla seçebilirsiniz. Yoksa "Yok" işaretleyin.</div>
-      <div class="chips" id="oComorb"></div>
-      <div class="cond" id="comorbOtherWrap" style="display:none;">
-        <input type="text" id="fComorbOther" placeholder="Diğer hastalığınızı yazın">
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ 3 · Uyku düzeni ═══ -->
-<div class="section" id="sec3">
-  <div class="card">
-    <div class="q">
-      <div class="q-text"><span class="q-num">10</span>Genellikle hangi pozisyonda uyumayı tercih edersiniz?</div>
-      <div class="q-hint">Gecenin çoğunu geçirdiğiniz pozisyonu seçin.</div>
-      <div class="pos-grid" id="oPos"></div>
-      <div class="cond" id="posOtherWrap" style="display:none;">
-        <input type="text" id="fPosOther" placeholder="Pozisyonunuzu kendi ifadenizle yazın">
-      </div>
-      <div class="warn" id="wPos">Lütfen bir pozisyon seçin.</div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">11</span>Hangi kolunuzun üzerine yatıyorsunuz?</div>
-      <div class="opts" id="oArm"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">12</span>Yatağınızı partnerinizle paylaşıyor musunuz?</div>
-      <div class="opts" id="oPartner"></div>
-      <div class="cond" id="bedSideWrap" style="display:none;">
-        <div class="q-text" style="font-size:14.5px;">12.1 · Yatağın hangi tarafında yatıyorsunuz?</div>
-        <div class="opts" id="oBedSide"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ 4 · Ağrınız ═══ -->
-<div class="section" id="sec4">
-  <div class="card">
-    <div class="q">
-      <div class="q-text"><span class="q-num">13</span>Ağrınız hangi taraf omuzdadır?</div>
-      <div class="opts" id="oPainSide"></div>
-      <div class="warn" id="wPainSide">Lütfen seçim yapın.</div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">14</span>Ağrınız ne kadar zamandır var?</div>
-      <div class="opts stack" id="oDur"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">15</span>Gece sizi uykudan uyandıran bir omuz ağrınız var mı?</div>
-      <div class="opts" id="oNight"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">16</span>Omuzlarınızda sabah tutukluğu oluyor mu?</div>
-      <div class="opts" id="oStiff"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">17</span>Daha önce omuz ağrısı geçirdiniz mi?</div>
-      <div class="opts" id="oPrior"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">18</span>Ağrınız nasıl başladı?</div>
-      <div class="opts" id="oOnset"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ 5 · Yük ve zamanlama ═══ -->
-<div class="section" id="sec5">
-  <div class="card">
-    <div class="q">
-      <div class="q-text"><span class="q-num">19</span>Mesleğiniz veya sportif faaliyetleriniz nedeniyle omzunuza yük biniyor mu?</div>
-      <div class="opts" id="oLoad"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">20</span>Yıllık izin dönemlerinizde ağrınız oluyor mu?</div>
-      <div class="opts" id="oLeave"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">21</span>Hafta sonları ağrınız oluyor mu?</div>
-      <div class="opts" id="oWeekend"></div>
-    </div>
-    <div class="q">
-      <div class="q-text"><span class="q-num">22</span>Ağrınız günün hangi saatlerinde oluyor?</div>
-      <div class="q-hint">Birden fazla seçebilirsiniz.</div>
-      <div class="chips" id="oPainHours"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ 6 · Teşekkür ═══ -->
-<div class="section" id="sec6">
-  <div class="card done">
-    <div class="done-mark">✓</div>
-    <h2>Teşekkür ederiz</h2>
-    <p>Yanıtlarınız kaydedildi.<br>Zamanınızı ayırıp araştırmamıza katkı verdiğiniz için teşekkürler.</p>
-    <p style="margin-top:14px;font-size:13px;">Bu sayfayı kapatabilirsiniz.</p>
-  </div>
-</div>
-
-</div>
-
-<div class="nav-bar" id="navBar">
-  <button class="btn btn-secondary" id="btnBack" onclick="goBack()" style="display:none">Geri</button>
-  <button class="btn btn-primary" id="btnNext" onclick="goNext()">Başla</button>
 </div>
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
+const qp = new URLSearchParams(location.search);
+const A  = {};                      // yanıtlar
+const PREVIEW = qp.get('preview') === '1';
 
-const params   = new URLSearchParams(window.location.search);
-const linkName = params.get('name') || '';
-const linkId   = params.get('id')   || '';
-const linkDx   = params.get('dx')   || params.get('procedure') || '';
-
-const A = {};   // tüm yanıtlar
-
-// ── Uyku pozisyonu çizimleri (kuş bakışı, baş yatağın üst tarafında) ──────────
-function bed(inner) {
-  return `<svg viewBox="0 0 120 96" xmlns="http://www.w3.org/2000/svg">
-    <rect x="6" y="4" width="108" height="88" rx="10" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
-    <rect x="14" y="10" width="92" height="18" rx="7" fill="#e2e8f0"/>
-    ${inner}</svg>`;
+/* ─── Uyku pozisyonu çizimleri — kuş bakışı, baş yatağın üstünde ─────────── */
+const INK='#18181b', SOFT='#d4d4d8', SKIN='#f2d5bb';
+function art(inner){
+  return `<svg viewBox="0 0 120 104" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="7" width="100" height="90" rx="13" fill="#fff" stroke="#e7e7ec" stroke-width="1.2"/>
+    <rect x="19" y="14" width="82" height="15" rx="6.5" fill="#eeeef2"/>${inner}</svg>`;
 }
-const SKIN = '#fcd9b8', BODY = '#1e6fff', LINE = '#1e40af';
-
 const POSITIONS = [
-  { id:'sirtustu', name:'Sırtüstü', sub:'yüzünüz yukarı', svg: bed(`
-      <ellipse cx="60" cy="26" rx="11" ry="11" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
-      <circle cx="56" cy="24" r="1.4" fill="${LINE}"/><circle cx="64" cy="24" r="1.4" fill="${LINE}"/>
-      <path d="M56 30 Q60 32 64 30" stroke="${LINE}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-      <rect x="48" y="37" width="24" height="34" rx="9" fill="${BODY}"/>
-      <rect x="37" y="39" width="9" height="30" rx="4.5" fill="${BODY}" opacity=".78"/>
-      <rect x="74" y="39" width="9" height="30" rx="4.5" fill="${BODY}" opacity=".78"/>
-      <rect x="50" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>
-      <rect x="61.5" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>`) },
+ {id:'sirtustu',name:'Sırtüstü',sub:'yüzünüz yukarı',art:art(`
+   <g class="breathe">
+     <rect x="49" y="40" width="22" height="33" rx="10" fill="${INK}"/>
+     <rect x="38.5" y="42" width="8.5" height="29" rx="4.2" fill="${INK}" opacity=".5"/>
+     <rect x="73" y="42" width="8.5" height="29" rx="4.2" fill="${INK}" opacity=".5"/>
+   </g>
+   <rect x="51" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
+   <rect x="61" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
+   <circle cx="60" cy="29" r="10.5" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
+   <circle cx="56.4" cy="27.4" r="1.25" fill="${INK}"/><circle cx="63.6" cy="27.4" r="1.25" fill="${INK}"/>
+   <path d="M56.8 32.3 Q60 34.1 63.2 32.3" stroke="${INK}" stroke-width="1.05" fill="none" stroke-linecap="round"/>`)},
 
-  { id:'yuzustu', name:'Yüzüstü', sub:'yüzünüz aşağı', svg: bed(`
-      <ellipse cx="60" cy="26" rx="11" ry="11" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
-      <path d="M52 22 Q60 18 68 22" stroke="${LINE}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-      <rect x="48" y="37" width="24" height="34" rx="9" fill="${BODY}"/>
-      <path d="M48 42 L36 30" stroke="${BODY}" stroke-width="8.5" stroke-linecap="round" opacity=".78"/>
-      <path d="M72 42 L84 30" stroke="${BODY}" stroke-width="8.5" stroke-linecap="round" opacity=".78"/>
-      <rect x="50" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>
-      <rect x="61.5" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".9"/>`) },
+ {id:'yuzustu',name:'Yüzüstü',sub:'yüzünüz aşağı',art:art(`
+   <g class="breathe"><rect x="49" y="40" width="22" height="33" rx="10" fill="${INK}"/></g>
+   <path d="M50 45 L38 33" stroke="${INK}" stroke-width="8" stroke-linecap="round" opacity=".5"/>
+   <path d="M70 45 L82 33" stroke="${INK}" stroke-width="8" stroke-linecap="round" opacity=".5"/>
+   <rect x="51" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
+   <rect x="61" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
+   <circle cx="60" cy="29" r="10.5" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
+   <path d="M52.5 25.5 Q60 20.5 67.5 25.5" stroke="${INK}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`)},
 
-  { id:'sag_yan', name:'Sağ yan', sub:'sağ omzunuz altta', svg: bed(`
-      <ellipse cx="56" cy="26" rx="10.5" ry="10.5" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
-      <circle cx="63" cy="25" r="1.4" fill="${LINE}"/>
-      <path d="M64 29 Q66.5 28.5 66.5 27" stroke="${LINE}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-      <rect x="49" y="37" width="16" height="33" rx="8" fill="${BODY}"/>
-      <path d="M64 44 L77 50" stroke="${BODY}" stroke-width="8" stroke-linecap="round" opacity=".8"/>
-      <path d="M55 69 L57 80 L68 85" stroke="${BODY}" stroke-width="8.5" fill="none"
-            stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`) },
+ {id:'sag_yan',name:'Sağ yan',sub:'sağ omzunuz altta',art:art(`
+   <g class="breathe"><rect x="50" y="40" width="15" height="32" rx="7.5" fill="${INK}"/></g>
+   <path d="M64 47 L77 53" stroke="${INK}" stroke-width="7.5" stroke-linecap="round" opacity=".5"/>
+   <path d="M56 71 L58 82 L69 87" stroke="${INK}" stroke-width="8" fill="none"
+         stroke-linecap="round" stroke-linejoin="round" opacity=".72"/>
+   <circle cx="57" cy="29" r="10" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
+   <circle cx="63.4" cy="28" r="1.25" fill="${INK}"/>
+   <path d="M64.4 31.8 Q66.8 31.3 66.8 29.8" stroke="${INK}" stroke-width="1.05" fill="none" stroke-linecap="round"/>`)},
 
-  { id:'sol_yan', name:'Sol yan', sub:'sol omzunuz altta', svg: bed(`
-      <ellipse cx="64" cy="26" rx="10.5" ry="10.5" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2"/>
-      <circle cx="57" cy="25" r="1.4" fill="${LINE}"/>
-      <path d="M56 29 Q53.5 28.5 53.5 27" stroke="${LINE}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-      <rect x="55" y="37" width="16" height="33" rx="8" fill="${BODY}"/>
-      <path d="M56 44 L43 50" stroke="${BODY}" stroke-width="8" stroke-linecap="round" opacity=".8"/>
-      <path d="M65 69 L63 80 L52 85" stroke="${BODY}" stroke-width="8.5" fill="none"
-            stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`) },
+ {id:'sol_yan',name:'Sol yan',sub:'sol omzunuz altta',art:art(`
+   <g class="breathe"><rect x="55" y="40" width="15" height="32" rx="7.5" fill="${INK}"/></g>
+   <path d="M56 47 L43 53" stroke="${INK}" stroke-width="7.5" stroke-linecap="round" opacity=".5"/>
+   <path d="M64 71 L62 82 L51 87" stroke="${INK}" stroke-width="8" fill="none"
+         stroke-linecap="round" stroke-linejoin="round" opacity=".72"/>
+   <circle cx="63" cy="29" r="10" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
+   <circle cx="56.6" cy="28" r="1.25" fill="${INK}"/>
+   <path d="M55.6 31.8 Q53.2 31.3 53.2 29.8" stroke="${INK}" stroke-width="1.05" fill="none" stroke-linecap="round"/>`)},
 
-  { id:'degisken', name:'Değişken', sub:'sabit bir pozisyonum yok', svg: bed(`
-      <ellipse cx="60" cy="26" rx="10.5" ry="10.5" fill="${SKIN}" stroke="${LINE}" stroke-width="1.2" opacity=".55"/>
-      <rect x="49" y="37" width="22" height="33" rx="9" fill="${BODY}" opacity=".35"/>
-      <rect x="50" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".3"/>
-      <rect x="61.5" y="70" width="8.5" height="18" rx="4" fill="${BODY}" opacity=".3"/>
-      <path d="M26 50 Q34 40 42 50" stroke="${BODY}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <path d="M78 50 Q86 60 94 50" stroke="${BODY}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <text x="60" y="55" text-anchor="middle" font-size="17" font-weight="700" fill="${BODY}" opacity=".8">?</text>`) },
+ {id:'degisken',name:'Değişken',sub:'sabit pozisyonum yok',art:art(`
+   <g class="sway">
+     <rect x="50" y="40" width="20" height="32" rx="9.5" fill="${INK}" opacity=".5"/>
+     <rect x="51.5" y="71" width="7.5" height="18" rx="3.8" fill="${INK}" opacity=".35"/>
+     <rect x="61" y="71" width="7.5" height="18" rx="3.8" fill="${INK}" opacity=".35"/>
+     <circle cx="60" cy="29" r="10" fill="${SKIN}" stroke="${INK}" stroke-width="1.1" opacity=".75"/>
+   </g>
+   <path d="M27 54 Q33 46 39 54" stroke="${SOFT}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+   <path d="M81 54 Q87 62 93 54" stroke="${SOFT}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`)},
 
-  { id:'diger', name:'Diğer', sub:'kendim yazayım', svg: bed(`
-      <text x="60" y="56" text-anchor="middle" font-size="26" fill="#94a3b8">✎</text>`) },
+ {id:'diger',name:'Diğer',sub:'kendim yazayım',art:art(`
+   <path d="M52 62 L66 48 L72 54 L58 68 L50 70 Z" fill="none" stroke="${SOFT}" stroke-width="2.2"
+         stroke-linejoin="round"/>
+   <path d="M46 78 H78" stroke="${SOFT}" stroke-width="2.2" stroke-linecap="round"/>`)},
 ];
 
-// ── Seçenek grupları ─────────────────────────────────────────────────────────
-const GROUPS = {
-  oGender:  { key:'gender',   opts:['Kadın','Erkek','Diğer'] },
-  oDom:     { key:'dominant', opts:['Sağ','Sol'] },
-  oShift:   { key:'shift',    opts:['00–08','08–16','16–00','Vardiyalı','Düzensiz'] },
-  oArm:     { key:'lieOnArm', opts:['Sağ','Sol','Hiçbiri'] },
-  oPartner: { key:'partner',  opts:['Evet','Hayır'] },
-  oBedSide: { key:'bedSide',  opts:['Sağ','Sol'] },
-  oPainSide:{ key:'painSide', opts:['Sağ','Sol','İkisi de'] },
-  oDur:     { key:'duration', opts:['1 aydan az','1–3 ay','3–6 ay','6–12 ay','1–2 yıl','2 yıldan uzun'] },
-  oNight:   { key:'nightPain',opts:['Evet','Hayır'] },
-  oStiff:   { key:'stiffness',opts:['Evet','Hayır'] },
-  oPrior:   { key:'priorPain',opts:['Evet','Hayır'] },
-  oOnset:   { key:'onset',    opts:['Travma sonrası','Kendiliğinden'] },
-  oLoad:    { key:'load',     opts:['Evet','Hayır'] },
-  oLeave:   { key:'leavePain',opts:['Evet','Hayır'] },
-  oWeekend: { key:'weekendPain', opts:['Evet','Hayır'] },
-};
-const MULTI = {
-  oComorb:    { key:'comorbid', opts:['Yok','Diyabet','Tiroid hastalığı','Romatolojik hastalık',
-                                      'Kalp / damar hastalığı','Boyun fıtığı','Diğer'] },
-  oPainHours: { key:'painHours', opts:['00–08','08–16','16–00','Sürekli'] },
-};
+/* ─── Sorular ────────────────────────────────────────────────────────────── */
+const SHIFTS = ['00.00 – 08.00','08.00 – 16.00','16.00 – 00.00','Vardiyalı','Düzensiz'];
+const QS = [
+  {k:'ident', n:1,  type:'ident', title:'Önce sizi tanıyalım',
+   sub:'Yanıtlarınızın hangi katılımcıya ait olduğunu bilmemiz için.'},
+  {k:'gender', n:2, type:'choice', row:true, title:'Cinsiyetiniz', opts:['Kadın','Erkek','Diğer']},
+  {k:'age', n:3, type:'num', title:'Yaşınız', ph:'45', req:true},
+  {k:'hw', n:'4–5', type:'hw', title:'Boyunuz ve kilonuz',
+   sub:'Vücut kitle indeksinizi hesaplamak için kullanılır.'},
+  {k:'job', n:6, type:'text', title:'Mesleğiniz', ph:'örn. öğretmen, tornacı, hemşire',
+   sub:'Omza binen yükü değerlendirmemiz açısından önemli.'},
+  {k:'shift', n:7, type:'choice', title:'Mesai saatleriniz', opts:SHIFTS},
+  {k:'dominant', n:8, type:'choice', row:true, title:'Dominant eliniz',
+   sub:'Günlük işlerinizde ağırlıklı olarak hangi elinizi kullanıyorsunuz?', opts:['Sağ','Sol']},
+  {k:'comorbid', n:9, type:'multi', title:'Ek hastalıklarınız', sub:'Birden fazla seçebilirsiniz.',
+   opts:['Yok','Diyabet','Tiroid hastalığı','Romatolojik hastalık','Kalp / damar hastalığı','Boyun fıtığı','Diğer']},
+  {k:'sleepPos', n:10, type:'pos', title:'Genellikle hangi pozisyonda uyursunuz?',
+   sub:'Gecenin çoğunu geçirdiğiniz pozisyonu seçin.'},
+  {k:'lieOnArm', n:11, type:'choice', row:true, title:'Hangi kolunuzun üzerine yatıyorsunuz?',
+   opts:['Sağ','Sol','Hiçbiri']},
+  {k:'partner', n:12, type:'choice', row:true, title:'Yatağınızı partnerinizle paylaşıyor musunuz?',
+   opts:['Evet','Hayır']},
+  {k:'bedSide', n:'12.1', type:'choice', row:true, title:'Yatağın hangi tarafında yatıyorsunuz?',
+   opts:['Sağ','Sol'], when:() => A.partner === 'Evet'},
+  {k:'painSide', n:13, type:'choice', row:true, title:'Ağrınız hangi omzunuzda?',
+   opts:['Sağ','Sol','İkisi de'], req:true},
+  {k:'duration', n:14, type:'choice', title:'Ağrınız ne kadar zamandır var?',
+   opts:['1 aydan az','1 – 3 ay','3 – 6 ay','6 – 12 ay','1 – 2 yıl','2 yıldan uzun']},
+  {k:'nightPain', n:15, type:'choice', row:true, title:'Gece sizi uykudan uyandıran bir omuz ağrınız var mı?',
+   opts:['Evet','Hayır']},
+  {k:'stiffness', n:16, type:'choice', row:true, title:'Omuzlarınızda sabah tutukluğu oluyor mu?',
+   sub:'Sabah kalktığınızda omzunuzun bir süre gevşemediğini hissediyor musunuz?', opts:['Evet','Hayır']},
+  {k:'priorPain', n:17, type:'choice', row:true, title:'Daha önce omuz ağrısı geçirdiniz mi?',
+   opts:['Evet','Hayır']},
+  {k:'onset', n:18, type:'choice', title:'Ağrınız nasıl başladı?',
+   opts:['Travma sonrası','Kendiliğinden']},
+  {k:'load', n:19, type:'choice', row:true,
+   title:'Mesleğiniz veya sporunuz nedeniyle omzunuza yük biniyor mu?', opts:['Evet','Hayır']},
+  {k:'leavePain', n:20, type:'choice', row:true, title:'Yıllık izin dönemlerinizde ağrınız oluyor mu?',
+   opts:['Evet','Hayır']},
+  {k:'weekendPain', n:21, type:'choice', row:true, title:'Hafta sonları ağrınız oluyor mu?',
+   opts:['Evet','Hayır']},
+  {k:'painHours', n:22, type:'multi', title:'Ağrınız günün hangi saatlerinde oluyor?',
+   sub:'Birden fazla seçebilirsiniz.', opts:['00.00 – 08.00','08.00 – 16.00','16.00 – 00.00','Sürekli']},
+];
 
-function buildOpts() {
-  Object.keys(GROUPS).forEach(id => {
-    const g = GROUPS[id], el = document.getElementById(id);
-    el.innerHTML = g.opts.map(o =>
-      `<button type="button" class="opt" data-v="${o}" onclick="pick('${id}','${g.key}','${o}',this)">${o}</button>`).join('');
-  });
-  Object.keys(MULTI).forEach(id => {
-    const g = MULTI[id], el = document.getElementById(id);
-    el.innerHTML = g.opts.map(o =>
-      `<button type="button" class="chip" data-v="${o}" onclick="pickMulti('${id}','${g.key}','${o}',this)">${o}</button>`).join('');
-  });
-  document.getElementById('oPos').innerHTML = POSITIONS.map(p =>
-    `<button type="button" class="pos" data-v="${p.id}" onclick="pickPos('${p.id}',this)">
-       ${p.svg}<div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div></button>`).join('');
+/* ─── Ekran kurulumu ─────────────────────────────────────────────────────── */
+const stage = document.getElementById('stage');
+const TICK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="3.4"
+  stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+const TICKW = TICK.replace('#09090b', '#ffffff');
+
+function esc(v){ return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+function head(q){
+  return `<div class="eyebrow">Soru ${q.n}</div><h1>${q.title}</h1>` +
+         (q.sub ? `<p class="sub">${q.sub}</p>` : '');
 }
 
-function pick(groupId, key, val, btn) {
-  A[key] = val;
-  [...document.getElementById(groupId).children].forEach(b => b.classList.toggle('on', b === btn));
-  if (key === 'partner') {
-    const on = val === 'Evet';
-    document.getElementById('bedSideWrap').style.display = on ? '' : 'none';
-    if (!on) { delete A.bedSide; [...document.getElementById('oBedSide').children].forEach(b => b.classList.remove('on')); }
+function bodyFor(q){
+  if (q.type === 'ident') return `
+    <div class="body">
+      <div class="flab">Ad Soyad</div>
+      <input class="field" id="f_name" placeholder="Adınız ve soyadınız" autocomplete="name">
+      <div style="height:26px"></div>
+      <div class="flab">Tanınız <span style="font-weight:500;text-transform:none;letter-spacing:0">— biliyorsanız</span></div>
+      <input class="field sm" id="f_dx" placeholder="örn. rotator manşet tendinopatisi">
+    </div>`;
+  if (q.type === 'num') return `
+    <div class="body"><input class="field" id="f_age" type="number" inputmode="numeric"
+      min="0" max="120" placeholder="${q.ph||''}"></div>`;
+  if (q.type === 'text') return `
+    <div class="body"><input class="field" id="f_job" placeholder="${q.ph||''}"></div>`;
+  if (q.type === 'hw') return `
+    <div class="body">
+      <div class="pair">
+        <div><div class="flab">Boy · cm</div>
+          <input class="field" id="f_h" type="number" inputmode="numeric" min="80" max="250" placeholder="170"></div>
+        <div><div class="flab">Kilo · kg</div>
+          <input class="field" id="f_w" type="number" inputmode="decimal" min="20" max="300" step="0.1" placeholder="72"></div>
+      </div>
+      <div class="readout" id="bmi"></div>
+    </div>`;
+  if (q.type === 'pos') return `
+    <div class="body">
+      <div class="pos-grid">${POSITIONS.map(p => `
+        <button type="button" class="pos" data-v="${p.id}">
+          <div class="pos-tick">${TICKW}</div>
+          <div class="pos-art">${p.art}</div>
+          <div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div>
+        </button>`).join('')}</div>
+      <div id="posOther" style="display:none;margin-top:20px">
+        <div class="flab">Pozisyonunuz</div>
+        <input class="field sm" id="f_pos" placeholder="kendi ifadenizle yazın">
+      </div>
+    </div>`;
+  if (q.type === 'multi') return `
+    <div class="body"><div class="chips">${q.opts.map(o =>
+      `<button type="button" class="chip" data-v="${esc(o)}">${o}</button>`).join('')}</div></div>`;
+  return `
+    <div class="body"><div class="opts${q.row ? ' row' : ''}">${q.opts.map(o =>
+      `<button type="button" class="opt" data-v="${esc(o)}"><span class="dot">${TICK}</span>${o}</button>`
+      ).join('')}</div></div>`;
+}
+
+stage.innerHTML = `
+  <section class="screen cover live" data-i="0">
+    <div class="eyebrow">Bilimsel araştırma</div>
+    <h1>Uyku pozisyonunuz omzunuzu<br>nasıl etkiliyor?</h1>
+    <p class="sub">Uyku pozisyonları ve mesleğin omuz ağrıları üzerindeki etkisini araştırıyoruz.
+       Yanıtlarınız, ağrıyı tetikleyen faktörlerin anlaşılmasına doğrudan katkı sağlayacak.</p>
+    <div class="facts">
+      <div><div class="fact-k">Soru</div><div class="fact-v">22</div></div>
+      <div><div class="fact-k">Süre</div><div class="fact-v">~3 dk</div></div>
+      <div><div class="fact-k">Tarih</div><div class="fact-v" id="today">—</div></div>
+    </div>
+    <p class="consent">Katılım gönüllüdür. Yanıtlarınız gizli tutulur, yalnızca araştırma için kullanılır
+       ve bireysel bilgileriniz kimseyle paylaşılmaz. Anketi tamamlayarak katılmayı kabul etmiş olursunuz;
+       dilediğiniz anda bırakabilirsiniz.</p>
+  </section>
+  ${QS.map((q, i) => `<section class="screen" data-i="${i+1}">${head(q)}${bodyFor(q)}</section>`).join('')}
+  <section class="screen done" data-i="${QS.length+1}">
+    <div class="ring"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff"
+      stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <h1>Teşekkür ederiz</h1>
+    <p class="sub" style="text-align:center">Yanıtlarınız kaydedildi.<br>Katkınız için teşekkürler.</p>
+  </section>`;
+
+const screens = [...document.querySelectorAll('.screen')];
+const LAST = screens.length - 1;
+let i = 0, sending = false;
+
+/* ─── Gezinme ────────────────────────────────────────────────────────────── */
+function visible(n){
+  if (n <= 0 || n > QS.length) return true;
+  const q = QS[n-1];
+  return !q.when || q.when();
+}
+function step(dir){
+  let n = i + dir;
+  while (n > 0 && n <= QS.length && !visible(n)) n += dir;
+  return Math.max(0, Math.min(LAST, n));
+}
+function go(n, dir){
+  screens[i].classList.remove('live','in-f','in-b');
+  i = n;
+  const s = screens[i];
+  s.classList.add('live', dir > 0 ? 'in-f' : 'in-b');
+  window.scrollTo(0, 0);
+  paint();
+  const f = s.querySelector('.field');
+  if (f && !('ontouchstart' in window)) setTimeout(() => f.focus(), 260);
+}
+function next(){ if (i === QS.length) { submit(); return; } if (!ok()) return; go(step(1), 1); }
+function prev(){ if (i > 0) go(step(-1), -1); }
+
+function paint(){
+  const done = i === 0 ? 0 : Math.min(i, QS.length);
+  document.getElementById('rail').style.width = (done / QS.length * 100) + '%';
+  document.getElementById('count').innerHTML =
+    (i > 0 && i <= QS.length) ? `<b>${done}</b> / ${QS.length}` : '';
+  document.getElementById('back').classList.toggle('on', i > 0 && i <= QS.length);
+  document.getElementById('topbar').classList.toggle('solid', i > 0);
+  const dock = document.getElementById('dock'), cta = document.getElementById('cta');
+  dock.classList.toggle('hide', i === LAST);
+  cta.textContent = i === 0 ? 'Başla' : i === QS.length ? 'Gönder' : 'Devam';
+  cta.disabled = false;
+  document.getElementById('keyhint').textContent = '';
+}
+
+/* ─── Doğrulama ──────────────────────────────────────────────────────────── */
+function shake(el){
+  el.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},
+              {transform:'translateX(7px)'},{transform:'translateX(0)'}],
+             {duration:280, easing:'ease-out'});
+}
+function ok(){
+  if (i === 0 || i > QS.length) return true;
+  const q = QS[i-1];
+  if (q.type === 'ident') {
+    const el = document.getElementById('f_name');
+    if (!el.value.trim()) { shake(el); el.focus(); return false; }
+    A.name = el.value.trim(); A.dx = document.getElementById('f_dx').value.trim(); return true;
   }
-  hideWarns();
-}
-
-function pickMulti(groupId, key, val, btn) {
-  const list = A[key] = A[key] || [];
-  const box  = document.getElementById(groupId);
-  const i = list.indexOf(val);
-  if (i === -1) list.push(val); else list.splice(i, 1);
-  // "Yok" diğerleriyle birlikte seçilemez
-  if (key === 'comorbid') {
-    if (val === 'Yok' && list.includes('Yok')) A[key] = ['Yok'];
-    else if (list.includes('Yok')) A[key] = list.filter(x => x !== 'Yok');
+  if (q.type === 'num') {
+    const el = document.getElementById('f_age');
+    if (q.req && !el.value) { shake(el); el.focus(); return false; }
+    A.age = el.value; return true;
   }
-  [...box.children].forEach(b => b.classList.toggle('on', A[key].includes(b.dataset.v)));
-  if (key === 'comorbid')
-    document.getElementById('comorbOtherWrap').style.display = A[key].includes('Diğer') ? '' : 'none';
-}
-
-function pickPos(id, btn) {
-  A.sleepPos = id;
-  [...document.getElementById('oPos').children].forEach(b => b.classList.toggle('on', b === btn));
-  document.getElementById('posOtherWrap').style.display = id === 'diger' ? '' : 'none';
-  hideWarns();
-}
-
-function calcBmi() {
-  const h = +document.getElementById('fHeight').value, w = +document.getElementById('fWeight').value;
-  const out = document.getElementById('bmiOut');
-  if (!h || !w || h < 80) { out.textContent = ''; return; }
-  const b = w / Math.pow(h / 100, 2);
-  const s = b < 18.5 ? 'zayıf' : b < 25 ? 'normal' : b < 30 ? 'fazla kilolu' : 'obez';
-  out.innerHTML = `Vücut kitle indeksi: <b>${b.toFixed(1)}</b> · ${s}`;
-}
-
-// ── Bölüm gezinmesi ──────────────────────────────────────────────────────────
-const TITLES = ['Başlangıç','Sizi tanıyalım','Çalışma hayatı','Uyku düzeni','Ağrınız','Ağrınızın seyri','Tamamlandı'];
-const LAST = 6;
-let cur = 0;
-
-function show(n) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('sec' + n).classList.add('active');
-  cur = n;
-  document.getElementById('progressFill').style.width = (n / LAST * 100) + '%';
-  document.getElementById('stepInfo').textContent =
-    n === 0 || n === LAST ? TITLES[n] : `${n}/5 · ${TITLES[n]}`;
-  document.getElementById('btnBack').style.display = (n > 0 && n < LAST) ? '' : 'none';
-  document.getElementById('btnNext').textContent = n === 0 ? 'Başla' : n === 5 ? 'Anketi Gönder' : 'Devam';
-  document.getElementById('navBar').style.display = n === LAST ? 'none' : 'flex';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function hideWarns() { document.querySelectorAll('.warn').forEach(w => w.classList.remove('show')); }
-function warn(id) {
-  const w = document.getElementById(id);
-  w.classList.add('show');
-  w.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  return false;
-}
-
-function validate(n) {
-  if (n === 1) {
-    if (!document.getElementById('fName').value.trim()) return warn('wName');
-    if (!A.gender) return warn('wGender');
-    if (!document.getElementById('fAge').value)  return warn('wAge');
+  if (q.type === 'text') { A.job = document.getElementById('f_job').value.trim(); return true; }
+  if (q.type === 'hw')   { A.height = document.getElementById('f_h').value;
+                           A.weight = document.getElementById('f_w').value; return true; }
+  if (q.type === 'pos') {
+    if (!A.sleepPos) { shake(screens[i].querySelector('.pos-grid')); return false; }
+    if (A.sleepPos === 'diger') A.posOther = (document.getElementById('f_pos')||{}).value || '';
+    return true;
   }
-  if (n === 3 && !A.sleepPos)  return warn('wPos');
-  if (n === 4 && !A.painSide)  return warn('wPainSide');
+  if (q.req && !A[q.k]) { shake(screens[i].querySelector('.body')); return false; }
   return true;
 }
 
-function goNext() {
-  hideWarns();
-  if (cur > 0 && !validate(cur)) return;
-  if (cur === 5) { submitForm(); return; }
-  show(cur + 1);
-}
-function goBack() { if (cur > 0) show(cur - 1); }
+/* ─── Etkileşim ──────────────────────────────────────────────────────────── */
+stage.addEventListener('click', e => {
+  const s = screens[i], q = QS[i-1];
+  if (!q) return;
 
-// ── Gönderim ─────────────────────────────────────────────────────────────────
-function submitForm() {
-  const btn = document.getElementById('btnNext');
-  btn.disabled = true; btn.textContent = 'Gönderiliyor…';
+  const opt = e.target.closest('.opt');
+  if (opt && s.contains(opt)) {
+    A[q.k] = opt.dataset.v;
+    [...opt.parentElement.children].forEach(b => b.classList.toggle('on', b === opt));
+    if (q.k === 'partner' && A.partner !== 'Evet') delete A.bedSide;
+    setTimeout(() => { if (i < LAST) go(step(1), 1); }, 250);   // seçince kendiliğinden ilerle
+    return;
+  }
+  const pos = e.target.closest('.pos');
+  if (pos && s.contains(pos)) {
+    A.sleepPos = pos.dataset.v;
+    [...pos.parentElement.children].forEach(b => b.classList.toggle('on', b === pos));
+    const other = document.getElementById('posOther');
+    if (A.sleepPos === 'diger') { other.style.display = ''; setTimeout(() => document.getElementById('f_pos').focus(), 120); }
+    else { other.style.display = 'none'; setTimeout(() => go(step(1), 1), 280); }
+    return;
+  }
+  const chip = e.target.closest('.chip');
+  if (chip && s.contains(chip)) {
+    const list = A[q.k] = A[q.k] || [];
+    const v = chip.dataset.v, at = list.indexOf(v);
+    if (at === -1) list.push(v); else list.splice(at, 1);
+    if (q.k === 'comorbid') {
+      if (v === 'Yok' && list.includes('Yok')) A[q.k] = ['Yok'];
+      else if (list.includes('Yok')) A[q.k] = list.filter(x => x !== 'Yok');
+    }
+    [...chip.parentElement.children].forEach(b => b.classList.toggle('on', A[q.k].includes(b.dataset.v)));
+  }
+});
+
+stage.addEventListener('input', e => {
+  if (e.target.id === 'f_h' || e.target.id === 'f_w') {
+    const h = +document.getElementById('f_h').value, w = +document.getElementById('f_w').value;
+    const out = document.getElementById('bmi');
+    if (!h || !w || h < 80) { out.classList.remove('on'); return; }
+    const b = w / Math.pow(h/100, 2);
+    const s = b < 18.5 ? 'zayıf' : b < 25 ? 'normal' : b < 30 ? 'fazla kilolu' : 'obez';
+    out.innerHTML = `Vücut kitle indeksiniz <b>${b.toFixed(1)}</b> · ${s}`;
+    out.classList.add('on');
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); next(); }
+  else if (e.key === 'Escape') prev();
+});
+
+/* ─── Gönderim ───────────────────────────────────────────────────────────── */
+function submit(){
+  if (sending) return;
+  sending = true;
+  const cta = document.getElementById('cta');
+  cta.textContent = 'Gönderiliyor…'; cta.disabled = true;
 
   const comorb = (A.comorbid || []).slice();
-  const other  = document.getElementById('fComorbOther').value.trim();
-  if (comorb.includes('Diğer') && other) comorb[comorb.indexOf('Diğer')] = 'Diğer: ' + other;
-
+  const other  = A.comorbOther || '';
   const posObj = POSITIONS.find(p => p.id === A.sleepPos);
-  const posTxt = A.sleepPos === 'diger'
-    ? (document.getElementById('fPosOther').value.trim() || 'Diğer')
-    : (posObj ? posObj.name : '');
+  const posTxt = A.sleepPos === 'diger' ? (A.posOther || 'Diğer') : (posObj ? posObj.name : '');
+  const h = +A.height, w = +A.weight;
 
-  const h = +document.getElementById('fHeight').value, w = +document.getElementById('fWeight').value;
   const payload = {
-    module: 'uyku',
-    timestamp: new Date().toISOString(),
-    name: document.getElementById('fName').value.trim(),
-    patientId: linkId,
-    dx: document.getElementById('fDx').value.trim(),
-    gender: A.gender || '', age: document.getElementById('fAge').value,
-    height: h || '', weight: w || '',
-    bmi: (h && w) ? Math.round(w / Math.pow(h / 100, 2) * 10) / 10 : '',
-    job: document.getElementById('fJob').value.trim(),
-    shift: A.shift || '', dominant: A.dominant || '',
-    comorbid: comorb.join(', '),
-    sleepPos: posTxt, sleepPosCode: A.sleepPos || '',
-    lieOnArm: A.lieOnArm || '', partner: A.partner || '', bedSide: A.bedSide || '',
-    painSide: A.painSide || '', duration: A.duration || '',
-    nightPain: A.nightPain || '', stiffness: A.stiffness || '',
-    priorPain: A.priorPain || '', onset: A.onset || '',
-    load: A.load || '', leavePain: A.leavePain || '', weekendPain: A.weekendPain || '',
-    painHours: (A.painHours || []).join(', '),
+    module:'uyku', timestamp:new Date().toISOString(),
+    name:A.name||'', patientId:qp.get('id')||'', dx:A.dx||'',
+    gender:A.gender||'', age:A.age||'', height:h||'', weight:w||'',
+    bmi:(h&&w)?Math.round(w/Math.pow(h/100,2)*10)/10:'',
+    job:A.job||'', shift:A.shift||'', dominant:A.dominant||'',
+    comorbid:comorb.join(', ') + (other ? ' · ' + other : ''),
+    sleepPos:posTxt, sleepPosCode:A.sleepPos||'',
+    lieOnArm:A.lieOnArm||'', partner:A.partner||'', bedSide:A.bedSide||'',
+    painSide:A.painSide||'', duration:A.duration||'',
+    nightPain:A.nightPain||'', stiffness:A.stiffness||'',
+    priorPain:A.priorPain||'', onset:A.onset||'',
+    load:A.load||'', leavePain:A.leavePain||'', weekendPain:A.weekendPain||'',
+    painHours:(A.painHours||[]).join(', '),
   };
 
-  // Gizli iframe ile gönder: açılır pencere engelleyicilere takılmaz,
-  // hastanın ekranında hiçbir şey açılıp kapanmaz.
-  const url = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  if (PREVIEW) { setTimeout(() => go(LAST, 1), 500); return; }   // önizlemede kayıt yapılmaz
+
   const f = document.createElement('iframe');
   f.style.display = 'none';
-  f.src = url;
+  f.src = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
   document.body.appendChild(f);
-  setTimeout(() => { try { f.remove(); } catch (e) {} show(LAST); }, 2600);
+  setTimeout(() => { try { f.remove(); } catch(e){} go(LAST, 1); }, 2400);
 }
 
-// ── Başlangıç ────────────────────────────────────────────────────────────────
-buildOpts();
-if (linkName) document.getElementById('fName').value = linkName;
-if (linkDx)   document.getElementById('fDx').value   = linkDx;
-document.getElementById('todayLbl').textContent = new Date().toLocaleDateString('tr-TR');
-show(0);
+/* ─── Başlat ─────────────────────────────────────────────────────────────── */
+document.getElementById('today').textContent = new Date().toLocaleDateString('tr-TR');
+if (qp.get('name')) A.name = qp.get('name');
+if (qp.get('dx'))   A.dx   = qp.get('dx');
+paint();
+// Ad/tanı linkten geldiyse alanlara yaz
+setTimeout(() => {
+  const n = document.getElementById('f_name'), d = document.getElementById('f_dx');
+  if (n && A.name) n.value = A.name;
+  if (d && A.dx)   d.value = A.dx;
+}, 0);
 </script>
 </body>
 </html>
