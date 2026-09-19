@@ -1016,9 +1016,11 @@ function renderUyku() {
       <div class="stat-value">${v}</div><div class="stat-sub">${u}</div></div>`).join('');
 
   // Duruş dağılımı — fotoğraf duruşu temel kategoriye indirgenir
-  const BASE = { sirtustu:'Sırtüstü', yuzustu:'Yüzüstü', yan:'Yan', degisken:'Değişken', diger:'Diğer' };
+  const BASE = { sirtustu:'Sırtüstü', yuzustu:'Yüzüstü', yan:'Yan' };
   const say = {}; R.forEach(x => { if (x.pozKod) say[x.pozKod] = (say[x.pozKod]||0)+1; });
-  const sirali = Object.keys(BASE).map(k => [BASE[k], say[k]||0]).filter(x => x[1] || R.length);
+  const sirali = Object.keys(BASE).map(k => [BASE[k], say[k]||0])
+    // beklenmeyen bir kod gelirse yine de görünsün
+    .concat(Object.keys(say).filter(k => !BASE[k]).map(k => [k, say[k]]));
   const enCok = Math.max(1, ...sirali.map(x => x[1]));
   document.getElementById('posDist').innerHTML = R.length
     ? sirali.map(([p,n]) => `<div class="bar-row">

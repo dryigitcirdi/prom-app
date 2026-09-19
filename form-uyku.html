@@ -155,8 +155,6 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
   background:rgba(9,9,11,.52);backdrop-filter:blur(6px);display:flex;align-items:center;
   justify-content:center;transition:background .2s var(--ease)}
 .pos:active .pos-zoom{background:rgba(9,9,11,.8)}
-.pos-plain .pos-art{aspect-ratio:1116/2000;display:flex;align-items:center;justify-content:center}
-.pos-glyph{display:flex}
 
 /* ── Tam ekran görüntüleyici ───────────────────────────── */
 .lb{position:fixed;inset:0;z-index:200;background:#0b0b0e;display:flex;flex-direction:column;
@@ -298,8 +296,6 @@ const POSITIONS = [
   { id:'p6', img:6, base:'sirtustu', name:'Sırtüstü',  sub:'bir kol başın üstünde' },
   { id:'p7', img:7, base:'yan',      name:'Yan',       sub:'üst bacak öne çekili' },
   { id:'p8', img:8, base:'sirtustu', name:'Sırtüstü',  sub:'eller ensede' },
-  { id:'degisken', base:'degisken', name:'Değişken',  sub:'sabit bir pozisyonum yok' },
-  { id:'diger',    base:'diger',    name:'Diğer',     sub:'kendim yazayım' },
 ];
 function posById(id){ return POSITIONS.find(p => p.id === id); }
 
@@ -420,12 +416,7 @@ const TICKW = TICK.replace('#09090b', '#ffffff');
 const ZOOM = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3"
   stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/>
   <path d="M11 8.4v5.2M8.4 11h5.2"/></svg>`;
-const SHUFFLE = `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="1.8"
-  stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/>
-  <path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>`;
-const PENCIL = `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="1.8"
-  stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/>
-  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
+
 
 function esc(v){ return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
@@ -457,21 +448,15 @@ function bodyFor(q){
   if (q.type === 'pos') return `
     <div class="body" style="margin-top:20px">
       <div class="pos-grid">${POSITIONS.map((p, n) => `
-        <button type="button" class="pos${p.img ? '' : ' pos-plain'}" data-v="${p.id}">
+        <button type="button" class="pos" data-v="${p.id}">
           <div class="pos-art">
             <div class="pos-tick">${TICKW}</div>
-            ${p.img
-              ? `<span class="pos-no">${n+1}</span>
-                 <img src="img/uyku/t${p.img}.jpg" alt="${p.name}" loading="lazy" decoding="async">
-                 <span class="pos-zoom">${ZOOM}</span>`
-              : `<span class="pos-glyph">${p.id === 'degisken' ? SHUFFLE : PENCIL}</span>`}
+            <span class="pos-no">${n+1}</span>
+            <img src="img/uyku/t${p.img}.jpg" alt="${p.name}" loading="lazy" decoding="async">
+            <span class="pos-zoom">${ZOOM}</span>
           </div>
           <div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div>
         </button>`).join('')}</div>
-      <div id="posOther" style="display:none;margin-top:20px">
-        <div class="flab">Pozisyonunuz</div>
-        <input class="field sm" id="f_pos" placeholder="kendi ifadenizle yazın">
-      </div>
     </div>`;
   if (q.type === 'clock') return `
     <div class="body clock-wrap">${clockSVG()}</div>`;
@@ -574,7 +559,6 @@ function ok(){
                            A.weight = document.getElementById('f_w').value; return true; }
   if (q.type === 'pos') {
     if (!A.sleepPos) { shake(screens[i].querySelector('.pos-grid')); return false; }
-    if (A.sleepPos === 'diger') A.posOther = (document.getElementById('f_pos')||{}).value || '';
     return true;
   }
   if (q.req && !A[q.k]) { shake(screens[i].querySelector('.body')); return false; }
@@ -583,20 +567,13 @@ function ok(){
 
 /* ─── Pozisyon seçimi ve tam ekran ──────────────────────────────────────── */
 let lbAt = 0;
-const PHOTOS = () => POSITIONS.filter(p => p.img);
+const PHOTOS = () => POSITIONS;
 
 function selectPos(id){
   A.sleepPos = id;
   const grid = screens[i].querySelector('.pos-grid');
   if (grid) [...grid.children].forEach(b => b.classList.toggle('on', b.dataset.v === id));
-  const other = document.getElementById('posOther');
-  if (id === 'diger') {
-    other.style.display = '';
-    setTimeout(() => { const f = document.getElementById('f_pos'); if (f) f.focus(); }, 120);
-  } else {
-    if (other) other.style.display = 'none';
-    setTimeout(() => { if (i < LAST) go(step(1), 1); }, 260);
-  }
+  setTimeout(() => { if (i < LAST) go(step(1), 1); }, 260);
 }
 
 function paintLb(){
@@ -648,8 +625,7 @@ stage.addEventListener('click', e => {
   const pos = e.target.closest('.pos');
   if (pos && s.contains(pos)) {
     const def = posById(pos.dataset.v);
-    if (def && def.img) { openLb(POSITIONS.indexOf(def)); return; }   // fotoğraflı → tam ekran
-    selectPos(pos.dataset.v);
+    if (def) openLb(POSITIONS.indexOf(def));   // her zaman tam ekran aç, sonra onay
     return;
   }
   const seg = e.target.closest('.seg');
@@ -712,9 +688,7 @@ function submit(){
   const comorb = (A.comorbid || []).slice();
   const other  = A.comorbOther || '';
   const posObj = posById(A.sleepPos);
-  const posTxt = A.sleepPos === 'diger'
-    ? (A.posOther || 'Diğer')
-    : (posObj ? (posObj.name + (posObj.sub ? ' · ' + posObj.sub : '')) : '');
+  const posTxt = posObj ? (posObj.name + (posObj.sub ? ' · ' + posObj.sub : '')) : '';
   const h = +A.height, w = +A.weight;
 
   const payload = {
