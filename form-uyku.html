@@ -101,7 +101,9 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 .pos:active{transform:scale(.975)}
 .pos.on{border-color:var(--ink);box-shadow:var(--lift)}
 .pos-art{position:relative;border-radius:12px;background:var(--surface);overflow:hidden;
-  transition:background var(--fast)}
+  transition:background var(--fast);aspect-ratio:1116/2000}
+.pos-art img{opacity:0;transition:opacity .3s var(--ease)}
+.pos-art img.rdy{opacity:1}
 .pos-art svg{margin:-2px 0 -4px}
 .pos.on .pos-art{background:#f1f1f4}
 .pos svg{display:block;width:100%;height:auto}
@@ -452,7 +454,8 @@ function bodyFor(q){
           <div class="pos-art">
             <div class="pos-tick">${TICKW}</div>
             <span class="pos-no">${n+1}</span>
-            <img src="img/uyku/t${p.img}.jpg" alt="${p.name}" loading="lazy" decoding="async">
+            <img src="img/uyku/t${p.img}.jpg" alt="${p.name}" decoding="async"
+                 onload="this.classList.add('rdy')">
             <span class="pos-zoom">${ZOOM}</span>
           </div>
           <div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div>
@@ -515,6 +518,8 @@ function go(n, dir){
   s.classList.add('live', dir > 0 ? 'in-f' : 'in-b');
   window.scrollTo(0, 0);
   paint();
+  if (n === 1) warmGrid();                       // ankete başlarken ızgarayı indir
+  if (QS[n-1] && QS[n-1].type === 'pos') warmFull(0);   // pozisyon ekranında tam boyları
   const f = s.querySelector('.field');
   if (f && !('ontouchstart' in window)) setTimeout(() => f.focus(), 260);
 }
@@ -565,6 +570,19 @@ function ok(){
   return true;
 }
 
+/* ─── Görsel ön yükleme ─────────────────────────────────────────────────
+   Hasta 10. soruya ulaşana kadar (~1 dk) fotoğraflar sessizce inmiş olur,
+   böylece ızgara anında ve net açılır.                                   */
+const warmed = new Set();
+function warm(list){
+  list.forEach(u => { if (warmed.has(u)) return; warmed.add(u); const im = new Image(); im.src = u; });
+}
+function warmGrid(){ warm(POSITIONS.map(p => 'img/uyku/t' + p.img + '.jpg')); }
+function warmFull(k){
+  const n = POSITIONS.length;
+  [0, 1, -1, 2, -2].forEach(d => warm(['img/uyku/p' + POSITIONS[(k + d + n) % n].img + '.jpg']));
+}
+
 /* ─── Pozisyon seçimi ve tam ekran ──────────────────────────────────────── */
 let lbAt = 0;
 const PHOTOS = () => POSITIONS;
@@ -579,11 +597,21 @@ function selectPos(id){
 function paintLb(){
   const p = POSITIONS[lbAt];
   const list = PHOTOS(), n = list.indexOf(p) + 1;
-  document.getElementById('lbImg').src = 'img/uyku/p' + p.img + '.jpg';
-  document.getElementById('lbImg').alt = p.name + ' — ' + p.sub;
+  const el = document.getElementById('lbImg');
+  const big = 'img/uyku/p' + p.img + '.jpg';
+  // Önbellekteki küçük görseli hemen göster, büyüğü inince sessizce değiştir —
+  // dokununca boş ekran beklemesin.
+  el.src = warmed.has(big) ? big : 'img/uyku/t' + p.img + '.jpg';
+  el.alt = p.name + ' — ' + p.sub;
+  if (el.src.indexOf('/p') === -1) {
+    const hi = new Image();
+    hi.onload = () => { if (POSITIONS[lbAt] === p) el.src = big; warmed.add(big); };
+    hi.src = big;
+  }
   document.getElementById('lbName').textContent = p.name;
   document.getElementById('lbSub').textContent = p.sub;
   document.getElementById('lbCount').textContent = n + ' / ' + list.length;
+  warmFull(lbAt);
 }
 function openLb(idx){
   lbAt = idx;
