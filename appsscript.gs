@@ -749,6 +749,7 @@ const UYKU_HEADERS = [
   'Ağrılı Omuz', 'Ağrı Süresi', 'Gece Uyandırma', 'Sabah Tutukluğu',
   'Geçmiş Omuz Ağrısı', 'Başlangıç', 'Omuza Yük',
   'İzinde Ağrı', 'Hafta Sonu Ağrı', 'Ağrı Saatleri',
+  'Pozisyon No',
 ];
 
 function saveUykuRow(data) {
@@ -766,6 +767,7 @@ function saveUykuRow(data) {
     data.painSide || '', data.duration || '', data.nightPain || '', data.stiffness || '',
     data.priorPain || '', data.onset || '', data.load || '',
     data.leavePain || '', data.weekendPain || '', data.painHours || '',
+    data.sleepPosId || '',
   ]);
   const row = sheet.getLastRow();
   colorEvetHayir(sheet, row, 22, data.nightPain);

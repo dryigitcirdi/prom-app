@@ -105,8 +105,9 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 .pos-art svg{margin:-2px 0 -4px}
 .pos.on .pos-art{background:#f1f1f4}
 .pos svg{display:block;width:100%;height:auto}
-.pos-name{font-size:14px;font-weight:650;letter-spacing:-.01em;text-align:center;margin-top:8px}
-.pos-sub{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.35;margin-top:1px}
+.pos-name{font-size:13.5px;font-weight:650;letter-spacing:-.015em;text-align:center;margin-top:8px}
+.pos-sub{font-size:11px;color:var(--muted);text-align:center;line-height:1.3;margin-top:1px;
+  padding:0 2px}
 .pos-tick{position:absolute;top:7px;right:7px;z-index:2;width:21px;height:21px;border-radius:50%;
   background:var(--ink);display:flex;align-items:center;justify-content:center;
   opacity:0;transform:scale(.5);transition:all .26s var(--ease)}
@@ -142,6 +143,49 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
   transition:fill .28s var(--ease)}
 .ctr-a.set{fill:var(--ink)}
 .ctr-b{font-size:11.5px;font-weight:600;fill:#b8b8c0;text-anchor:middle;letter-spacing:.02em}
+
+/* ── Pozisyon ızgarası (fotoğraf) ──────────────────────── */
+.pos-art img{display:block;width:100%;height:auto;aspect-ratio:1116/2000;object-fit:cover;
+  border-radius:10px}
+.pos-no{position:absolute;top:7px;left:7px;z-index:2;min-width:21px;height:21px;padding:0 6px;
+  border-radius:7px;background:rgba(9,9,11,.62);backdrop-filter:blur(6px);color:#fff;
+  font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  font-variant-numeric:tabular-nums}
+.pos-zoom{position:absolute;bottom:7px;right:7px;z-index:2;width:26px;height:26px;border-radius:50%;
+  background:rgba(9,9,11,.52);backdrop-filter:blur(6px);display:flex;align-items:center;
+  justify-content:center;transition:background .2s var(--ease)}
+.pos:active .pos-zoom{background:rgba(9,9,11,.8)}
+.pos-plain .pos-art{aspect-ratio:1116/2000;display:flex;align-items:center;justify-content:center}
+.pos-glyph{display:flex}
+
+/* ── Tam ekran görüntüleyici ───────────────────────────── */
+.lb{position:fixed;inset:0;z-index:200;background:#0b0b0e;display:flex;flex-direction:column;
+  animation:lbIn .28s var(--ease) both}
+@keyframes lbIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.lb-top{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 8px}
+.lb-btn{width:40px;height:40px;border:none;border-radius:12px;background:rgba(255,255,255,.09);
+  color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lb-btn:active{background:rgba(255,255,255,.18)}
+.lb-count{color:rgba(255,255,255,.62);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.lb-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+  padding:0 8px;min-height:0}
+.lb-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px;
+  animation:lbImg .26s var(--ease) both}
+@keyframes lbImg{from{opacity:0}to{opacity:1}}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border:none;
+  border-radius:50%;background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;backdrop-filter:blur(8px)}
+.lb-nav:active{background:rgba(255,255,255,.24)}
+.lb-nav.prev{left:6px} .lb-nav.next{right:6px}
+.lb-foot{padding:16px 20px calc(18px + env(safe-area-inset-bottom));text-align:center}
+.lb-name{color:#fff;font-size:19px;font-weight:700;letter-spacing:-.02em}
+.lb-sub{color:rgba(255,255,255,.55);font-size:13.5px;margin-top:2px}
+.lb-ok{width:100%;margin-top:14px;padding:16px;border:none;border-radius:14px;background:#fff;
+  color:#09090b;font-size:16.5px;font-weight:650;cursor:pointer;transition:transform .14s var(--ease)}
+.lb-ok:active{transform:scale(.98)}
+.lb-alt{width:100%;margin-top:8px;padding:11px;border:none;background:transparent;
+  color:rgba(255,255,255,.55);font-size:13.5px;font-weight:500;cursor:pointer}
 
 /* ── Çoklu seçim ───────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:9px}
@@ -201,6 +245,32 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 
 <div class="stage" id="stage"></div>
 
+<!-- Tam ekran pozisyon görüntüleyici -->
+<div class="lb" id="lb" hidden>
+  <div class="lb-top">
+    <button class="lb-btn" onclick="closeLb()" aria-label="Kapat">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="lb-count" id="lbCount"></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="lb-stage">
+    <button class="lb-nav prev" onclick="stepLb(-1)" aria-label="Önceki">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <img id="lbImg" alt="">
+    <button class="lb-nav next" onclick="stepLb(1)" aria-label="Sonraki">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="lb-foot">
+    <div class="lb-name" id="lbName"></div>
+    <div class="lb-sub" id="lbSub"></div>
+    <button class="lb-ok" onclick="confirmLb()">Bu benim pozisyonum</button>
+    <button class="lb-alt" onclick="closeLb()">Başka bir pozisyona bakayım</button>
+  </div>
+</div>
+
 <div class="dock" id="dock">
   <div class="dock-in">
     <button class="cta" id="cta" onclick="next()">Başla</button>
@@ -214,68 +284,23 @@ const qp = new URLSearchParams(location.search);
 const A  = {};                      // yanıtlar
 const PREVIEW = qp.get('preview') === '1';
 
-/* ─── Uyku pozisyonu çizimleri — kuş bakışı, baş yatağın üstünde ─────────── */
-const INK='#18181b', SOFT='#d4d4d8', SKIN='#f2d5bb';
-function art(inner){
-  return `<svg viewBox="0 0 120 104" xmlns="http://www.w3.org/2000/svg">
-    <rect x="10" y="7" width="100" height="90" rx="13" fill="#fff" stroke="#e7e7ec" stroke-width="1.2"/>
-    <rect x="19" y="14" width="82" height="15" rx="6.5" fill="#eeeef2"/>${inner}</svg>`;
-}
+/* ─── Uyku pozisyonları — fotoğraf tabanlı ───────────────────────────────
+   Fotoğraf DURUŞU yakalar (sırtüstü / yüzüstü / yan). Hangi TARAFA yatıldığı
+   ayrıca 11. soruda sorulur — hasta fotoğraftaki kişiyi kendi bedenine
+   aynalamak zorunda kalmasın, taraf verisi doğrudan alınsın.              */
 const POSITIONS = [
- {id:'sirtustu',name:'Sırtüstü',sub:'yüzünüz yukarı',art:art(`
-   <g class="breathe">
-     <rect x="49" y="40" width="22" height="33" rx="10" fill="${INK}"/>
-     <rect x="38.5" y="42" width="8.5" height="29" rx="4.2" fill="${INK}" opacity=".5"/>
-     <rect x="73" y="42" width="8.5" height="29" rx="4.2" fill="${INK}" opacity=".5"/>
-   </g>
-   <rect x="51" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
-   <rect x="61" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
-   <circle cx="60" cy="29" r="10.5" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
-   <circle cx="56.4" cy="27.4" r="1.25" fill="${INK}"/><circle cx="63.6" cy="27.4" r="1.25" fill="${INK}"/>
-   <path d="M56.8 32.3 Q60 34.1 63.2 32.3" stroke="${INK}" stroke-width="1.05" fill="none" stroke-linecap="round"/>`)},
-
- {id:'yuzustu',name:'Yüzüstü',sub:'yüzünüz aşağı',art:art(`
-   <g class="breathe"><rect x="49" y="40" width="22" height="33" rx="10" fill="${INK}"/></g>
-   <path d="M50 45 L38 33" stroke="${INK}" stroke-width="8" stroke-linecap="round" opacity=".5"/>
-   <path d="M70 45 L82 33" stroke="${INK}" stroke-width="8" stroke-linecap="round" opacity=".5"/>
-   <rect x="51" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
-   <rect x="61" y="72" width="8" height="19" rx="4" fill="${INK}" opacity=".72"/>
-   <circle cx="60" cy="29" r="10.5" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
-   <path d="M52.5 25.5 Q60 20.5 67.5 25.5" stroke="${INK}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`)},
-
- {id:'sag_yan',name:'Sağ yan',sub:'sağ omzunuz altta',art:art(`
-   <g class="breathe"><rect x="50" y="40" width="15" height="32" rx="7.5" fill="${INK}"/></g>
-   <path d="M64 47 L77 53" stroke="${INK}" stroke-width="7.5" stroke-linecap="round" opacity=".5"/>
-   <path d="M56 71 L58 82 L69 87" stroke="${INK}" stroke-width="8" fill="none"
-         stroke-linecap="round" stroke-linejoin="round" opacity=".72"/>
-   <circle cx="57" cy="29" r="10" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
-   <circle cx="63.4" cy="28" r="1.25" fill="${INK}"/>
-   <path d="M64.4 31.8 Q66.8 31.3 66.8 29.8" stroke="${INK}" stroke-width="1.05" fill="none" stroke-linecap="round"/>`)},
-
- {id:'sol_yan',name:'Sol yan',sub:'sol omzunuz altta',art:art(`
-   <g class="breathe"><rect x="55" y="40" width="15" height="32" rx="7.5" fill="${INK}"/></g>
-   <path d="M56 47 L43 53" stroke="${INK}" stroke-width="7.5" stroke-linecap="round" opacity=".5"/>
-   <path d="M64 71 L62 82 L51 87" stroke="${INK}" stroke-width="8" fill="none"
-         stroke-linecap="round" stroke-linejoin="round" opacity=".72"/>
-   <circle cx="63" cy="29" r="10" fill="${SKIN}" stroke="${INK}" stroke-width="1.1"/>
-   <circle cx="56.6" cy="28" r="1.25" fill="${INK}"/>
-   <path d="M55.6 31.8 Q53.2 31.3 53.2 29.8" stroke="${INK}" stroke-width="1.05" fill="none" stroke-linecap="round"/>`)},
-
- {id:'degisken',name:'Değişken',sub:'sabit pozisyonum yok',art:art(`
-   <g class="sway">
-     <rect x="50" y="40" width="20" height="32" rx="9.5" fill="${INK}" opacity=".5"/>
-     <rect x="51.5" y="71" width="7.5" height="18" rx="3.8" fill="${INK}" opacity=".35"/>
-     <rect x="61" y="71" width="7.5" height="18" rx="3.8" fill="${INK}" opacity=".35"/>
-     <circle cx="60" cy="29" r="10" fill="${SKIN}" stroke="${INK}" stroke-width="1.1" opacity=".75"/>
-   </g>
-   <path d="M27 54 Q33 46 39 54" stroke="${SOFT}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-   <path d="M81 54 Q87 62 93 54" stroke="${SOFT}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`)},
-
- {id:'diger',name:'Diğer',sub:'kendim yazayım',art:art(`
-   <path d="M52 62 L66 48 L72 54 L58 68 L50 70 Z" fill="none" stroke="${SOFT}" stroke-width="2.2"
-         stroke-linejoin="round"/>
-   <path d="M46 78 H78" stroke="${SOFT}" stroke-width="2.2" stroke-linecap="round"/>`)},
+  { id:'p1', img:1, base:'sirtustu', name:'Sırtüstü',  sub:'kollar yanda' },
+  { id:'p2', img:2, base:'yuzustu',  name:'Yüzüstü',   sub:'baş yana dönük' },
+  { id:'p3', img:3, base:'yan',      name:'Yan',       sub:'kollar önde uzanmış' },
+  { id:'p4', img:4, base:'yan',      name:'Yan · cenin', sub:'dizler karına çekili' },
+  { id:'p5', img:5, base:'yuzustu',  name:'Yüzüstü',   sub:'bir bacak yukarı çekili' },
+  { id:'p6', img:6, base:'sirtustu', name:'Sırtüstü',  sub:'bir kol başın üstünde' },
+  { id:'p7', img:7, base:'yan',      name:'Yan',       sub:'üst bacak öne çekili' },
+  { id:'p8', img:8, base:'sirtustu', name:'Sırtüstü',  sub:'eller ensede' },
+  { id:'degisken', base:'degisken', name:'Değişken',  sub:'sabit bir pozisyonum yok' },
+  { id:'diger',    base:'diger',    name:'Diğer',     sub:'kendim yazayım' },
 ];
+function posById(id){ return POSITIONS.find(p => p.id === id); }
 
 /* ─── 24 saatlik kadran ──────────────────────────────────────────────────
    Gün üç eşit dilime ayrılır. Kadran 08.00'de başlar: gündüz SAĞ ÜSTTE,
@@ -356,7 +381,8 @@ const QS = [
   {k:'comorbid', n:9, type:'multi', title:'Ek hastalıklarınız', sub:'Birden fazla seçebilirsiniz.',
    opts:['Yok','Diyabet','Tiroid hastalığı','Romatolojik hastalık','Kalp / damar hastalığı','Boyun fıtığı','Diğer']},
   {k:'sleepPos', n:10, type:'pos', title:'Genellikle hangi pozisyonda uyursunuz?',
-   sub:'Gecenin çoğunu geçirdiğiniz pozisyonu seçin.'},
+   sub:'Gecenin çoğunu geçirdiğiniz duruşu seçin. Büyütmek için fotoğrafa dokunun — ' +
+       'hangi tarafınıza yattığınızı bir sonraki soruda soracağız.'},
   {k:'lieOnArm', n:11, type:'choice', row:true, title:'Hangi kolunuzun üzerine yatıyorsunuz?',
    opts:['Sağ','Sol','Hiçbiri']},
   {k:'partner', n:12, type:'choice', row:true, title:'Yatağınızı partnerinizle paylaşıyor musunuz?',
@@ -390,6 +416,15 @@ const stage = document.getElementById('stage');
 const TICK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="3.4"
   stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
 const TICKW = TICK.replace('#09090b', '#ffffff');
+const ZOOM = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3"
+  stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/>
+  <path d="M11 8.4v5.2M8.4 11h5.2"/></svg>`;
+const SHUFFLE = `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="1.8"
+  stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/>
+  <path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>`;
+const PENCIL = `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="1.8"
+  stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/>
+  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
 
 function esc(v){ return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
@@ -419,10 +454,17 @@ function bodyFor(q){
       <div class="readout" id="bmi"></div>
     </div>`;
   if (q.type === 'pos') return `
-    <div class="body" style="margin-top:22px">
-      <div class="pos-grid">${POSITIONS.map(p => `
-        <button type="button" class="pos" data-v="${p.id}">
-          <div class="pos-art"><div class="pos-tick">${TICKW}</div>${p.art}</div>
+    <div class="body" style="margin-top:20px">
+      <div class="pos-grid">${POSITIONS.map((p, n) => `
+        <button type="button" class="pos${p.img ? '' : ' pos-plain'}" data-v="${p.id}">
+          <div class="pos-art">
+            <div class="pos-tick">${TICKW}</div>
+            ${p.img
+              ? `<span class="pos-no">${n+1}</span>
+                 <img src="img/uyku/t${p.img}.jpg" alt="${p.name}" loading="lazy" decoding="async">
+                 <span class="pos-zoom">${ZOOM}</span>`
+              : `<span class="pos-glyph">${p.id === 'degisken' ? SHUFFLE : PENCIL}</span>`}
+          </div>
           <div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div>
         </button>`).join('')}</div>
       <div id="posOther" style="display:none;margin-top:20px">
@@ -538,6 +580,57 @@ function ok(){
   return true;
 }
 
+/* ─── Pozisyon seçimi ve tam ekran ──────────────────────────────────────── */
+let lbAt = 0;
+const PHOTOS = () => POSITIONS.filter(p => p.img);
+
+function selectPos(id){
+  A.sleepPos = id;
+  const grid = screens[i].querySelector('.pos-grid');
+  if (grid) [...grid.children].forEach(b => b.classList.toggle('on', b.dataset.v === id));
+  const other = document.getElementById('posOther');
+  if (id === 'diger') {
+    other.style.display = '';
+    setTimeout(() => { const f = document.getElementById('f_pos'); if (f) f.focus(); }, 120);
+  } else {
+    if (other) other.style.display = 'none';
+    setTimeout(() => { if (i < LAST) go(step(1), 1); }, 260);
+  }
+}
+
+function paintLb(){
+  const p = POSITIONS[lbAt];
+  const list = PHOTOS(), n = list.indexOf(p) + 1;
+  document.getElementById('lbImg').src = 'img/uyku/p' + p.img + '.jpg';
+  document.getElementById('lbImg').alt = p.name + ' — ' + p.sub;
+  document.getElementById('lbName').textContent = p.name;
+  document.getElementById('lbSub').textContent = p.sub;
+  document.getElementById('lbCount').textContent = n + ' / ' + list.length;
+}
+function openLb(idx){
+  lbAt = idx;
+  paintLb();
+  const lb = document.getElementById('lb');
+  lb.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeLb(){
+  document.getElementById('lb').hidden = true;
+  document.body.style.overflow = '';
+}
+function stepLb(d){
+  const list = PHOTOS();
+  let k = list.indexOf(POSITIONS[lbAt]) + d;
+  k = (k + list.length) % list.length;
+  lbAt = POSITIONS.indexOf(list[k]);
+  paintLb();
+}
+function confirmLb(){
+  const id = POSITIONS[lbAt].id;
+  closeLb();
+  selectPos(id);
+}
+
 /* ─── Etkileşim ──────────────────────────────────────────────────────────── */
 stage.addEventListener('click', e => {
   const s = screens[i], q = QS[i-1];
@@ -553,11 +646,9 @@ stage.addEventListener('click', e => {
   }
   const pos = e.target.closest('.pos');
   if (pos && s.contains(pos)) {
-    A.sleepPos = pos.dataset.v;
-    [...pos.parentElement.children].forEach(b => b.classList.toggle('on', b === pos));
-    const other = document.getElementById('posOther');
-    if (A.sleepPos === 'diger') { other.style.display = ''; setTimeout(() => document.getElementById('f_pos').focus(), 120); }
-    else { other.style.display = 'none'; setTimeout(() => go(step(1), 1), 280); }
+    const def = posById(pos.dataset.v);
+    if (def && def.img) { openLb(POSITIONS.indexOf(def)); return; }   // fotoğraflı → tam ekran
+    selectPos(pos.dataset.v);
     return;
   }
   const seg = e.target.closest('.seg');
@@ -598,6 +689,14 @@ stage.addEventListener('input', e => {
 });
 
 document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lb');
+  if (lb && !lb.hidden) {
+    if (e.key === 'Escape')     { closeLb(); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { stepLb(1);  e.preventDefault(); }
+    else if (e.key === 'ArrowLeft')  { stepLb(-1); e.preventDefault(); }
+    else if (e.key === 'Enter')      { confirmLb(); e.preventDefault(); }
+    return;
+  }
   if (e.key === 'Enter') { e.preventDefault(); next(); }
   else if (e.key === 'Escape') prev();
 });
@@ -611,8 +710,10 @@ function submit(){
 
   const comorb = (A.comorbid || []).slice();
   const other  = A.comorbOther || '';
-  const posObj = POSITIONS.find(p => p.id === A.sleepPos);
-  const posTxt = A.sleepPos === 'diger' ? (A.posOther || 'Diğer') : (posObj ? posObj.name : '');
+  const posObj = posById(A.sleepPos);
+  const posTxt = A.sleepPos === 'diger'
+    ? (A.posOther || 'Diğer')
+    : (posObj ? (posObj.name + (posObj.sub ? ' · ' + posObj.sub : '')) : '');
   const h = +A.height, w = +A.weight;
 
   const payload = {
@@ -622,7 +723,8 @@ function submit(){
     bmi:(h&&w)?Math.round(w/Math.pow(h/100,2)*10)/10:'',
     job:A.job||'', shift:A.shift||'', dominant:A.dominant||'',
     comorbid:comorb.join(', ') + (other ? ' · ' + other : ''),
-    sleepPos:posTxt, sleepPosCode:A.sleepPos||'',
+    sleepPos:posTxt, sleepPosCode:(posObj ? posObj.base : '') || '',
+    sleepPosId:A.sleepPos||'',
     lieOnArm:A.lieOnArm||'', partner:A.partner||'', bedSide:A.bedSide||'',
     painSide:A.painSide||'', duration:A.duration||'',
     nightPain:A.nightPain||'', stiffness:A.stiffness||'',
