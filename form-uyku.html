@@ -161,6 +161,7 @@ h1{font-size:clamp(27px,7.4vw,34px);font-weight:700;letter-spacing:-.035em;line-
 /* ── Tam ekran görüntüleyici ───────────────────────────── */
 .lb{position:fixed;inset:0;z-index:200;background:#0b0b0e;display:flex;flex-direction:column;
   animation:lbIn .28s var(--ease) both}
+.lb[hidden]{display:none!important}   /* .lb'nin display'i [hidden]'ı eziyordu */
 @keyframes lbIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 .lb-top{display:flex;align-items:center;justify-content:space-between;
   padding:calc(10px + env(safe-area-inset-top)) 14px 8px}
