@@ -20,6 +20,10 @@
   .err .ring{display:none}
   .code{display:inline-block;margin-top:14px;padding:6px 12px;border-radius:8px;
         background:#f1f5f9;font:600 14px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+  #act{margin-top:18px}
+  .btn{padding:13px 26px;border:none;border-radius:12px;background:#0f172a;color:#fff;
+       font:600 15px inherit;cursor:pointer;font-family:inherit}
+  .btn:active{transform:scale(.98)}
 </style>
 </head>
 <body>
@@ -27,39 +31,73 @@
   <div class="ring"></div>
   <h1 id="t">Anketiniz hazırlanıyor</h1>
   <p id="s">Birkaç saniye sürebilir…</p>
+  <div id="act"></div>
 </div>
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
 const qs  = new URLSearchParams(location.search);
-const k   = (qs.get('k') || location.search.replace(/^\?/, '')).toUpperCase().trim();
+const k   = (qs.get('k') || location.search.replace(/^\?/, '').split('&')[0]).toUpperCase().trim();
+const TRIES = 8;
 
-function fail(msg, showCode) {
+function el(id){ return document.getElementById(id); }
+
+function fail(msg, retry) {
   document.getElementById('box').className = 'box err';
-  document.getElementById('t').textContent = 'Bağlantı açılamadı';
-  document.getElementById('s').innerHTML = msg +
-    (showCode && k ? '<br><span class="code">' + k + '</span>' : '');
+  el('t').textContent = 'Bağlantı açılamadı';
+  el('s').innerHTML = msg + (k ? '<br><span class="code">' + k + '</span>' : '');
+  el('act').innerHTML = retry
+    ? '<button class="btn" onclick="start()">Tekrar dene</button>'
+    : '';
+}
+
+function go(d) {
+  const page = d.module === 'hip'  ? '../form-hip.html'
+             : d.module === 'uyku' ? '../form-uyku.html'
+             : '../form.html';
+  const p = new URLSearchParams({ name: d.name || '', id: d.id || '' });
+  if (d.module === 'uyku') {
+    if (d.procedure) p.set('dx', d.procedure);
+    if (qs.get('src')) p.set('src', qs.get('src'));   // hangi oda/hekim yönlendirdi
+  } else {
+    p.set('surgery', d.surgery || ''); p.set('leg', d.leg || ''); p.set('fu', d.fu || '');
+    if (d.module !== 'hip') p.set('procedure', d.procedure || 'Kalsifik Tendinit');
+  }
+  location.replace(page + '?' + p.toString());
+}
+
+// Apps Script ucu ara sıra HTML hata sayfası dönüyor — ısrarla tekrar dene.
+// Hastaya tek bir aksilikte "açılamadı" gösterme.
+function attempt(n) {
+  if (n > 1) el('s').textContent = 'Bağlanılıyor… (' + n + '/' + TRIES + ')';
+  fetch(API + '?action=link&k=' + encodeURIComponent(k) + '&_=' + Date.now())
+    .then(r => r.text())
+    .then(t => {
+      let d;
+      try { d = JSON.parse(t); } catch (e) { throw new Error('gecersiz'); }
+      if (!d || d.status !== 'ok') {
+        fail('Bu bağlantı bulunamadı. Lütfen doktorunuza bildirin.', false);
+        return;
+      }
+      go(d);
+    })
+    .catch(() => {
+      if (n < TRIES) { setTimeout(() => attempt(n + 1), Math.min(4000, 600 * n)); return; }
+      fail('Sunucuya ulaşılamadı. Birkaç saniye sonra tekrar deneyin.', true);
+    });
+}
+
+function start() {
+  document.getElementById('box').className = 'box';
+  el('t').textContent = 'Anketiniz hazırlanıyor';
+  el('s').textContent = 'Birkaç saniye sürebilir…';
+  el('act').innerHTML = '';
+  attempt(1);
 }
 
 if (!/^[A-Z0-9]{4,8}$/.test(k)) {
-  fail('Bağlantı eksik görünüyor. Lütfen doktorunuzdan yeni bir bağlantı isteyin.');
+  fail('Bağlantı eksik görünüyor. Lütfen doktorunuzdan yeni bir bağlantı isteyin.', false);
 } else {
-  fetch(API + '?action=link&k=' + encodeURIComponent(k))
-    .then(r => r.json())
-    .then(d => {
-      if (!d || d.status !== 'ok') { fail('Bu bağlantı bulunamadı. Lütfen doktorunuza bildirin.', true); return; }
-      const page = d.module === 'hip'  ? '../form-hip.html'
-                 : d.module === 'uyku' ? '../form-uyku.html'
-                 : '../form.html';
-      const p = new URLSearchParams({ name: d.name || '', id: d.id || '' });
-      if (d.module === 'uyku') {
-        if (d.procedure) p.set('dx', d.procedure);
-      } else {
-        p.set('surgery', d.surgery || ''); p.set('leg', d.leg || ''); p.set('fu', d.fu || '');
-        if (d.module !== 'hip') p.set('procedure', d.procedure || 'Kalsifik Tendinit');
-      }
-      location.replace(page + '?' + p.toString());
-    })
-    .catch(() => fail('İnternet bağlantınızı kontrol edip sayfayı yenileyin.', true));
+  start();
 }
 </script>
 </body>

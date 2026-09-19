@@ -722,6 +722,7 @@ function submit(){
   const payload = {
     module:'uyku', timestamp:new Date().toISOString(),
     name:A.name||'', patientId:qp.get('id')||'', dx:A.dx||'',
+    src:qp.get('src')||'',
     gender:A.gender||'', age:A.age||'', height:h||'', weight:w||'',
     bmi:(h&&w)?Math.round(w/Math.pow(h/100,2)*10)/10:'',
     job:A.job||'', shift:A.shift||'', dominant:A.dominant||'',

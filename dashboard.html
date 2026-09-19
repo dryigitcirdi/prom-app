@@ -376,6 +376,25 @@
 .conc-k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .conc-v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
 .conc-s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+.qr-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.qr-card{width:268px;border:1px solid var(--border);border-radius:16px;padding:22px 20px 18px;
+  text-align:center;background:#fff}
+.qr-head{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#94a3b8}
+.qr-title{font-size:19px;font-weight:800;letter-spacing:-.025em;line-height:1.2;margin:6px 0 16px;color:#0f172a}
+.qr-card canvas{display:block;margin:0 auto;border-radius:8px}
+.qr-cta{font-size:11.5px;color:#64748b;margin-top:14px;font-weight:500}
+.qr-src{font-size:11px;color:#94a3b8;margin-top:6px;min-height:14px;font-weight:600}
+.qr-side{flex:1;min-width:220px}
+.qr-lbl{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.qr-url{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);word-break:break-all;
+  background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin:6px 0 10px}
+.qr-note{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:12px}
+@media print{
+  body *{visibility:hidden!important}
+  #qrCard,#qrCard *{visibility:visible!important}
+  #qrCard{position:absolute;left:50%;top:40px;transform:translateX(-50%);border:none;width:320px}
+}
 </style>
 </head>
 <body>
@@ -899,6 +918,38 @@
       </div>
     </div>
 
+    <div class="card" style="margin-bottom:20px;">
+      <div class="section-title">📱 Oda QR Kodu</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+        Birlikte çalıştığınız hekimler için. Hasta kendi telefonuyla okutup anketi doldurur —
+        hekimin panele girmesine, link göndermesine gerek kalmaz.
+        Her hekime kendi kartını verirseniz hangi odadan kaç katılımcı geldiğini de görürsünüz.
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Oda / Hekim adı</label>
+          <input type="text" id="qrSrc" placeholder="örn. Dr. Ayşe Yılmaz — Poliklinik 3" oninput="drawQR()"></div>
+        <div><button class="btn btn-primary" onclick="printQR()">Kartı Yazdır</button></div>
+      </div>
+      <div class="qr-wrap">
+        <div class="qr-card" id="qrCard">
+          <div class="qr-head">Bilimsel Araştırma Anketi</div>
+          <div class="qr-title">Uyku Pozisyonu ve<br>Omuz Ağrısı</div>
+          <canvas id="qrCanvas"></canvas>
+          <div class="qr-cta">Kamerayla okutun · 22 soru · ~3 dakika</div>
+          <div class="qr-src" id="qrSrcOut"></div>
+        </div>
+        <div class="qr-side">
+          <div class="qr-lbl">Bu karttaki adres</div>
+          <div class="qr-url" id="qrUrl"></div>
+          <button class="btn btn-ghost btn-sm" onclick="copyQRUrl()">Adresi kopyala</button>
+          <div class="qr-note">
+            Bu adres doğrudan ankete gider — arada sunucu sorgusu yok, dolayısıyla
+            en hızlı ve en az arıza çıkaran yol. Kişiye özel link üretmeye gerek yok.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="stats-grid" id="uykuStats"></div>
 
     <div class="card" style="margin-bottom:20px;">
@@ -919,6 +970,7 @@
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <script>
 // ─── Yapılandırma ─────────────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
@@ -960,6 +1012,7 @@ function setBranch(name, btn) {
   } else if (name === 'PROM Çalışmaları') {
     document.getElementById('totalBadge').textContent = uykuRows.length + ' katılımcı';
     renderUyku();
+    drawQR();
   } else {
     document.getElementById('totalBadge').textContent = hipPatients.length + ' hasta';
     initHipClock();
@@ -984,7 +1037,7 @@ function hydrateUyku(rows) {
     agriTaraf: txt(r[19]), sure: txt(r[20]), gece: txt(r[21]), tutuk: txt(r[22]),
     gecmis: txt(r[23]), baslangic: txt(r[24]), yuk: txt(r[25]),
     izin: txt(r[26]), haftasonu: txt(r[27]), saat: txt(r[28]),
-    pozNo: txt(r[29]),
+    pozNo: txt(r[29]), kaynak: txt(r[30]),
   }));
 }
 
@@ -1053,7 +1106,7 @@ function renderUyku() {
     <div style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.5;">
       Bu oranlar tanımlayıcıdır, nedensellik göstermez. Anlamlılık için ki-kare testi gerekir —
       veri yeterli sayıya ulaşınca hesaplatabiliriz.
-    </div>`;
+    </div>` + kaynakBlock(R);
 
   // Tablo
   const t = document.getElementById('uykuTable');
@@ -1070,6 +1123,48 @@ function renderUyku() {
       <td>${x.tutuk === 'Evet' ? '<span class="score-pill score-mid">Evet</span>' : (x.tutuk||'—')}</td>
     </tr>`).join('') + '</tbody>';
 }
+
+// Hangi odadan kaç katılımcı geldi
+function kaynakBlock(R) {
+  const say = {};
+  R.forEach(x => { const k = x.kaynak || 'Belirtilmemiş'; say[k] = (say[k]||0)+1; });
+  const list = Object.entries(say).sort((a,b) => b[1]-a[1]);
+  if (!list.length || (list.length === 1 && list[0][0] === 'Belirtilmemiş')) return '';
+  const enCok = Math.max(...list.map(x => x[1]));
+  return `<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+    <div class="conc-k" style="margin-bottom:10px;">Katılımcı kaynağı</div>
+    ${list.map(([k,n]) => `<div class="bar-row">
+      <div class="bar-lbl">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${n/enCok*100}%"></div></div>
+      <div class="bar-val">${n}</div></div>`).join('')}</div>`;
+}
+
+// ── Oda QR kodu ──────────────────────────────────────────────────────────
+// QR doğrudan ankete gider (kısa link sunucu sorgusu gerektiriyor, QR'da
+// o riski almaya gerek yok). src parametresi hangi odadan geldiğini taşır.
+function qrTargetUrl() {
+  const src = document.getElementById('qrSrc').value.trim();
+  return UYKU_FORM_URL + (src ? '?src=' + encodeURIComponent(src) : '');
+}
+
+function drawQR() {
+  const url = qrTargetUrl();
+  document.getElementById('qrUrl').textContent = url;
+  const src = document.getElementById('qrSrc').value.trim();
+  document.getElementById('qrSrcOut').textContent = src || '';
+  if (typeof QRious === 'undefined') {
+    document.getElementById('qrUrl').textContent = url + '  (QR çizilemedi — sayfayı yenileyin)';
+    return;
+  }
+  new QRious({ element: document.getElementById('qrCanvas'), value: url,
+               size: 220, level: 'M', background: '#ffffff', foreground: '#0f172a', padding: 0 });
+}
+
+function copyQRUrl() {
+  navigator.clipboard.writeText(qrTargetUrl()).then(() => alert('Adres kopyalandı!'));
+}
+
+function printQR() { drawQR(); setTimeout(() => window.print(), 120); }
 
 // ── Katılımcı linki ──
 function generateUykuLink() {
