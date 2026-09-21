@@ -520,13 +520,44 @@ function go(n, dir){
   s.classList.add('live', dir > 0 ? 'in-f' : 'in-b');
   window.scrollTo(0, 0);
   paint();
+  setTimeout(() => { moving = false; }, 380);
   if (n === 1) warmGrid();                       // ankete başlarken ızgarayı indir
   if (QS[n-1] && QS[n-1].type === 'pos') warmFull(0);   // pozisyon ekranında tam boyları
   const f = s.querySelector('.field');
   if (f && !('ontouchstart' in window)) setTimeout(() => f.focus(), 260);
 }
-function next(){ if (i === QS.length) { submit(); return; } if (!ok()) return; go(step(1), 1); }
-function prev(){ if (i > 0) go(step(-1), -1); }
+// Her soru zorunlu — yanıtsız ilerleme yok
+function val(id){ const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function answered(n){
+  if (n <= 0 || n > QS.length) return true;
+  const q = QS[n-1];
+  switch (q.type) {
+    case 'ident': return !!val('f_name');
+    case 'num':   return !!val('f_age');
+    case 'text':  return !!val('f_job');
+    case 'hw':    return !!(val('f_h') && val('f_w'));
+    case 'pos':   return !!A.sleepPos;
+    case 'multi': return !!(A[q.k] && A[q.k].length);
+    default:      return !!A[q.k];
+  }
+}
+
+// Otomatik geçiş ile "Devam" aynı anda tetiklenince iki soru birden
+// atlanıyordu — geçiş boyunca kilit koy.
+let moving = false;
+function autoNext(ms){
+  if (moving) return;
+  moving = true;                       // pencere boyunca Devam/Enter devre dışı
+  setTimeout(() => { if (i < LAST) { moving = false; next(); } else moving = false; }, ms);
+}
+function next(){
+  if (moving) return;
+  if (i === QS.length) { if (!ok()) return; submit(); return; }
+  if (!ok()) return;
+  moving = true;
+  go(step(1), 1);
+}
+function prev(){ if (moving) return; if (i > 0) { moving = true; go(step(-1), -1); } }
 
 function paint(){
   const done = i === 0 ? 0 : Math.min(i, QS.length);
@@ -543,7 +574,7 @@ function paint(){
   const dock = document.getElementById('dock'), cta = document.getElementById('cta');
   dock.classList.toggle('hide', i === LAST);
   cta.textContent = i === 0 ? 'Başla' : i === QS.length ? 'Gönder' : 'Devam';
-  cta.disabled = false;
+  cta.disabled = !answered(i);
   document.getElementById('keyhint').textContent = '';
 }
 
@@ -556,24 +587,21 @@ function shake(el){
 function ok(){
   if (i === 0 || i > QS.length) return true;
   const q = QS[i-1];
-  if (q.type === 'ident') {
-    const el = document.getElementById('f_name');
-    if (!el.value.trim()) { shake(el); el.focus(); return false; }
-    A.name = el.value.trim(); return true;
+  if (!answered(i)) {
+    const hedef = q.type === 'ident' ? document.getElementById('f_name')
+                : q.type === 'num'   ? document.getElementById('f_age')
+                : q.type === 'text'  ? document.getElementById('f_job')
+                : q.type === 'hw'    ? (val('f_h') ? document.getElementById('f_w')
+                                                   : document.getElementById('f_h'))
+                : screens[i].querySelector('.pos-grid, .body');
+    if (hedef) { shake(hedef); if (hedef.focus) hedef.focus(); }
+    return false;
   }
-  if (q.type === 'num') {
-    const el = document.getElementById('f_age');
-    if (q.req && !el.value) { shake(el); el.focus(); return false; }
-    A.age = el.value; return true;
-  }
-  if (q.type === 'text') { A.job = document.getElementById('f_job').value.trim(); return true; }
-  if (q.type === 'hw')   { A.height = document.getElementById('f_h').value;
-                           A.weight = document.getElementById('f_w').value; return true; }
-  if (q.type === 'pos') {
-    if (!A.sleepPos) { shake(screens[i].querySelector('.pos-grid')); return false; }
-    return true;
-  }
-  if (q.req && !A[q.k]) { shake(screens[i].querySelector('.body')); return false; }
+  // yanıtları topla
+  if (q.type === 'ident') A.name   = val('f_name');
+  if (q.type === 'num')   A.age    = val('f_age');
+  if (q.type === 'text')  A.job    = val('f_job');
+  if (q.type === 'hw')  { A.height = val('f_h'); A.weight = val('f_w'); }
   return true;
 }
 
@@ -598,7 +626,8 @@ function selectPos(id){
   A.sleepPos = id;
   const grid = screens[i].querySelector('.pos-grid');
   if (grid) [...grid.children].forEach(b => b.classList.toggle('on', b.dataset.v === id));
-  setTimeout(() => { if (i < LAST) go(step(1), 1); }, 260);
+  document.getElementById('cta').disabled = false;
+  autoNext(260);
 }
 
 function paintLb(){
@@ -653,8 +682,9 @@ stage.addEventListener('click', e => {
   if (opt && s.contains(opt)) {
     A[q.k] = opt.dataset.v;
     [...opt.parentElement.children].forEach(b => b.classList.toggle('on', b === opt));
+    document.getElementById('cta').disabled = false;
     if (q.k === 'partner' && A.partner !== 'Evet') delete A.bedSide;
-    setTimeout(() => { if (i < LAST) go(step(1), 1); }, 250);   // seçince kendiliğinden ilerle
+    autoNext(250);                       // seçince kendiliğinden ilerle
     return;
   }
   const pos = e.target.closest('.pos');
@@ -667,12 +697,13 @@ stage.addEventListener('click', e => {
   if (seg && s.contains(seg)) {
     A[q.k] = seg.dataset.v;
     [...seg.parentElement.querySelectorAll('.seg')].forEach(g => g.classList.toggle('on', g === seg));
+    document.getElementById('cta').disabled = false;
     const sl = SLOTS[+seg.dataset.k];
     const svg = seg.closest('svg');
     svg.querySelector('#ctrA').textContent = sl.word;
     svg.querySelector('#ctrB').textContent = sl.v.replace(/\.00/g, '');
     svg.querySelector('#ctrA').classList.add('set');
-    setTimeout(() => { if (i < LAST) go(step(1), 1); }, 360);
+    autoNext(360);
     return;
   }
   const chip = e.target.closest('.chip');
@@ -685,10 +716,12 @@ stage.addEventListener('click', e => {
       else if (list.includes('Yok')) A[q.k] = list.filter(x => x !== 'Yok');
     }
     [...chip.parentElement.children].forEach(b => b.classList.toggle('on', A[q.k].includes(b.dataset.v)));
+    document.getElementById('cta').disabled = !answered(i);
   }
 });
 
 stage.addEventListener('input', e => {
+  document.getElementById('cta').disabled = !answered(i);
   if (e.target.id === 'f_h' || e.target.id === 'f_w') {
     const h = +document.getElementById('f_h').value, w = +document.getElementById('f_w').value;
     const out = document.getElementById('bmi');
