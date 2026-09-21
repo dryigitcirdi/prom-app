@@ -483,9 +483,11 @@ stage.innerHTML = `
       <div><div class="fact-k">Süre</div><div class="fact-v">~3 dk</div></div>
       <div><div class="fact-k">Tarih</div><div class="fact-v" id="today">—</div></div>
     </div>
-    <p class="consent">Katılım gönüllüdür. Yanıtlarınız gizli tutulur, yalnızca araştırma için kullanılır
-       ve bireysel bilgileriniz kimseyle paylaşılmaz. Anketi tamamlayarak katılmayı kabul etmiş olursunuz;
-       dilediğiniz anda bırakabilirsiniz.</p>
+    <p class="consent"><b>Lütfen sonuna kadar tamamlayın.</b> Yarım bırakılan anketler kaydedilmez ve
+       değerlendirmeye alınamaz — her soru, sonucun güvenilirliği için gerekli.</p>
+    <p class="consent" style="margin-top:9px;">Katılım gönüllüdür. Yanıtlarınız gizli tutulur, yalnızca
+       araştırma için kullanılır ve bireysel bilgileriniz kimseyle paylaşılmaz. Anketi tamamlayarak
+       katılmayı kabul etmiş olursunuz.</p>
   </section>
   ${QS.map((q, i) =>
     `<section class="screen" data-i="${i+1}"><div class="mid">${head(q)}${bodyFor(q)}</div></section>`).join('')}
@@ -529,8 +531,13 @@ function prev(){ if (i > 0) go(step(-1), -1); }
 function paint(){
   const done = i === 0 ? 0 : Math.min(i, QS.length);
   document.getElementById('rail').style.width = (done / QS.length * 100) + '%';
+  const kalan = QS.length - done;
   document.getElementById('count').innerHTML =
-    (i > 0 && i <= QS.length) ? `<b>${done}</b> / ${QS.length}` : '';
+    (i > 0 && i <= QS.length)
+      ? (kalan === 0 ? '<b>son soru</b>'
+        : kalan <= 5 ? `<b>${kalan}</b> soru kaldı`
+        : `<b>${done}</b> / ${QS.length}`)
+      : '';
   document.getElementById('back').classList.toggle('on', i > 0 && i <= QS.length);
   document.getElementById('topbar').classList.toggle('solid', i > 0);
   const dock = document.getElementById('dock'), cta = document.getElementById('cta');
