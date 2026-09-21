@@ -787,3 +787,4 @@ function colorBmi(sheet, row, col, v) {
   const c = b < 18.5 ? '#fef9c3' : b < 25 ? '#dcfce7' : b < 30 ? '#fef9c3' : '#fee2e2';
   sheet.getRange(row, col).setBackground(c);
 }
+
