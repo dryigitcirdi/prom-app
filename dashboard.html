@@ -1028,7 +1028,7 @@ let uykuRows = [];   // {ad, cinsiyet, yas, vki, meslek, poz, pozKod, kol, agriT
 
 function hydrateUyku(rows) {
   if (!rows || rows.length < 2) { uykuRows = []; return; }
-  uykuRows = rows.slice(1).map(r => ({
+  uykuRows = rows.slice(1).filter(r => txt(r[3]) || txt(r[1])).map(r => ({
     tarih: isoDay(r[1]), id: txt(r[2]), ad: txt(r[3]), tani: txt(r[4]),
     cinsiyet: txt(r[5]), yas: num(r[6]), boy: num(r[7]), kilo: num(r[8]), vki: num(r[9]),
     meslek: txt(r[10]), mesai: txt(r[11]), dominant: txt(r[12]), ek: txt(r[13]),
@@ -1290,7 +1290,9 @@ function loadData(attempt) {
       document.getElementById('lockScreen').classList.add('hidden');
       document.getElementById('pinErr').textContent = '';
       // Omuz kaydı olmasa bile tümör/kalça yüklemesi çalışmalı — erken return YOK
-      allRows = (!d.rows || d.rows.length < 2) ? [] : d.rows.slice(1).map(r => ({
+      allRows = (!d.rows || d.rows.length < 2) ? [] : d.rows.slice(1)
+        .filter(r => txt(r[4]) || txt(r[3]))   // boş satır hayalet kayıt olmasın
+        .map(r => ({
         date:       r[1]  || '',
         name:       r[4]  || '',
         pid:        r[3]  !== undefined && r[3] !== '' ? String(r[3]) : '',
