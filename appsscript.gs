@@ -392,6 +392,7 @@ function saveGuarded_(data) {
 }
 
 function saveToSheet(data) {
+  if (data && data.module === 'acl')  { saveAclRow(data);  return; }
   if (data && data.module === 'uyku') { saveUykuRow(data); return; }
   if (isTumor(data)) { saveTumorData(data); return; }
   if (isHipOp(data)) { saveHipOpRow(data); return; }
@@ -618,11 +619,12 @@ function getSheetData() {
   const tumorRows = dumpSheet(TUMOR_SHEET, TUMOR_HEADERS);
   const tumorEventRows = dumpSheet(TUMOR_EVENTS, TUMOR_EVENT_HEADERS);
   const uykuRows = dumpSheet(UYKU_SHEET, UYKU_HEADERS);
+  const aclRows = dumpSheet(ACL_SHEET, ACL_HEADERS);
 
   return ContentService
     .createTextOutput(JSON.stringify({ rows: rows, hipRows: hipRows, hipOpRows: hipOpRows,
                                        tumorRows: tumorRows, tumorEventRows: tumorEventRows,
-                                       uykuRows: uykuRows }))
+                                       uykuRows: uykuRows, aclRows: aclRows }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -788,3 +790,64 @@ function colorBmi(sheet, row, col, v) {
   sheet.getRange(row, col).setBackground(c);
 }
 
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ACL AMELİYAT ÖNCESİ — kayıt sistemi uyumlu veri seti
+// Sütun düzeni Norveç (NKLR), Kaiser Permanente ve İsveç kayıtlarıyla
+// karşılaştırılabilir olacak şekilde seçildi.
+// ═══════════════════════════════════════════════════════════════════════════
+const ACL_SHEET = 'PROM_ACL_PreOp';
+const ACL_HEADERS = [
+  'Zaman Damgası', 'Tarih', 'Hasta ID', 'Ad Soyad', 'Kaynak',
+  'Yaş', 'Cinsiyet', 'Boy (cm)', 'Kilo (kg)', 'VKİ', 'Dominant Bacak', 'Sigara',
+  'Yaralanma Tarihi', 'Geçen Gün', 'Taraf',
+  'Spor', 'Düzey', 'Zemin', 'Ortam',
+  'Haftada Kez', 'Seans (dk)', 'Yılda Ay', 'Kaç Yıldır', 'Haftalık Saat', 'Toplam Saat',
+  'Mekanizma', 'Durum',
+  'Pop Sesi', 'Devam Edebildi', 'İlk 24s Şişlik',
+  'Önceki ACL (aynı)', 'Önceki ACL (karşı)', 'Önceki Diz Yaralanması', 'Ailede ACL',
+  'Yoğunluk Artışı', 'Önleyici Program',
+  'Tegner (öncesi)', 'Tegner (şimdi)',
+  'KOOS Belirti', 'KOOS Ağrı', 'KOOS GYA', 'KOOS Spor', 'KOOS YK', 'Marx',
+  'KOOS ham', 'Marx ham',
+];
+
+function saveAclRow(data) {
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+  const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
+  const ts = data.timestamp ? new Date(data.timestamp) : new Date();
+  sheet.appendRow([
+    ts, Utilities.formatDate(ts, 'Europe/Istanbul', 'yyyy-MM-dd'),
+    data.patientId || '', data.name || '', data.src || '',
+    n(data.age), data.gender || '', n(data.height), n(data.weight), n(data.bmi),
+    data.dominant || '', data.smoke || '',
+    data.injDate || '', n(data.daysSinceInjury), data.side || '',
+    data.sport || '', data.level || '', data.surface || '', data.setting || '',
+    n(data.freqWeek), n(data.sessionMin), n(data.monthsYear), n(data.yearsPlaying),
+    n(data.hoursWeek), n(data.hoursTotal),
+    data.mechanism || '', data.situation || '',
+    data.pop || '', data.continued || '', data.swelling || '',
+    data.priorAclSame || '', data.priorAclOther || '', data.priorKnee || '', data.familyAcl || '',
+    data.rampUp || '', data.preventionProg || '',
+    n(data.tegnerPre), n(data.tegnerNow),
+    n(data.koosS), n(data.koosP), n(data.koosA), n(data.koosSP), n(data.koosQ), n(data.marx),
+    data.koosRaw || '', data.marxRaw || '',
+  ]);
+  const row = sheet.getLastRow();
+  colorGecenGun(sheet, row, 14, data.daysSinceInjury);
+  [39, 40, 41, 42, 43].forEach(function (c) { colorKoos(sheet, row, c); });
+}
+
+// Yaralanma-ameliyat arası süre: 6 ay üstü menisküs riski belirgin artıyor
+function colorGecenGun(sheet, row, col, v) {
+  const g = Number(v);
+  if (!g && g !== 0) { sheet.getRange(row, col).setBackground(null); return; }
+  sheet.getRange(row, col).setBackground(g <= 90 ? '#dcfce7' : g <= 180 ? '#fef9c3' : '#fee2e2');
+}
+
+function colorKoos(sheet, row, col) {
+  const v = Number(sheet.getRange(row, col).getValue());
+  if (!v && v !== 0) return;
+  sheet.getRange(row, col).setBackground(v >= 75 ? '#dcfce7' : v >= 50 ? '#fef9c3' : '#fee2e2');
+}
