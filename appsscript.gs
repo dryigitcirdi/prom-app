@@ -894,6 +894,8 @@ function newVakaNo_() {
 }
 
 function saveAclRow(data) {
+  // Protokol no eşleştirme anahtarı; büyük/küçük harf farkı iki ayrı hasta yaratmasın
+  data.patientId = String(data.patientId || '').trim().toUpperCase();
   const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
   const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
   const ts = data.timestamp ? new Date(data.timestamp) : new Date();
@@ -961,6 +963,7 @@ function aclDocValues_(d) {
 }
 
 function saveAclDoctorRow(data) {
+  data.patientId = String(data.patientId || '').trim().toUpperCase();
   const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
   const vals = aclDocValues_(data);
   let row = 0;
@@ -996,6 +999,7 @@ function saveAclDoctorRow(data) {
 // yaralanma tarihini yanlış hatırlayabiliyor. Hekim bu alanları düzeltebilsin.
 // VKİ, geçen gün ve maruziyet saatleri girdilerden yeniden hesaplanır.
 function saveAclPatientEdit(data) {
+  if ('patientId' in data) data.patientId = String(data.patientId || '').trim().toUpperCase();
   const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
   const last = sheet.getLastRow();
   if (last < 2) throw new Error('kayıt yok');
