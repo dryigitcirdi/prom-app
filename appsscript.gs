@@ -917,23 +917,36 @@ function saveAclRow(data) {
     data.koosRaw || '', data.marxRaw || '',
   ];
 
-  // Hekim bu hastayı anketsiz açmış olabilir. Protokol no artık zorunlu olduğu
-  // için eşleştirebiliyoruz: aynı protokollü ve hasta bölümü boş bir satır varsa
-  // yeni satır açmak yerine onu doldur — hekim verisi ve Vaka No korunur.
+  // Bir protokol no = bir ACL vakası. Aynı protokolle yeniden gelen anket
+  // yeni satır açmaz, o satırın hasta bölümünü yeniden yazar — hekim verisi ve
+  // Vaka No korunur. Hekimin anketsiz açtığı satır da böylece kendiliğinden dolar.
+  // Karşı diz ayrı bir vakadır: taraf tutmuyorsa eşleştirme yapılmaz.
   const prot = String(data.patientId || '').trim().toUpperCase();
-  let row = 0;
+  const taraf = String(data.side || '').trim().toLowerCase();
+  let row = 0, yeniden = false;
   const last = sheet.getLastRow();
   if (prot && last >= 2) {
-    const ids  = sheet.getRange(2, 3, last - 1, 1).getValues();
-    const koos = sheet.getRange(2, 39, last - 1, 1).getValues();
-    for (let i = 0; i < ids.length; i++) {
-      if (String(ids[i][0] || '').trim().toUpperCase() === prot && koos[i][0] === '') {
-        row = i + 2; break;
-      }
+    const v = sheet.getRange(2, 1, last - 1, ACL_HEADERS.length).getValues();
+    for (let i = 0; i < v.length; i++) {
+      if (String(v[i][2] || '').trim().toUpperCase() !== prot) continue;
+      const rt = String(v[i][14] || '').trim().toLowerCase();
+      if (rt && taraf && rt !== taraf) continue;      // karşı diz → ayrı vaka
+      row = i + 2;
+      yeniden = v[i][38] !== '' && v[i][38] !== null; // KOOS doluysa anket tekrar dolduruluyor
+      break;
     }
   }
   if (row) {
     sheet.getRange(row, 1, 1, hasta.length).setValues([hasta]);
+    if (yeniden) {
+      // Hangi satırın üzerine yazıldığı kayda geçsin
+      const iz = sheet.getRange(row, ACL_AUDIT_COL, 1, 3).getValues()[0];
+      sheet.getRange(row, ACL_AUDIT_COL, 1, 3).setValues([[
+        iz[0] || 'hasta',
+        new Date(),
+        ('Anket yeniden dolduruldu' + (iz[2] ? ' · ' + iz[2] : '')).slice(0, 2000),
+      ]]);
+    }
   } else {
     sheet.appendRow(hasta.concat([newVakaNo_()]).concat(new Array(ACL_DOC_LEN).fill('')));
     row = sheet.getLastRow();
