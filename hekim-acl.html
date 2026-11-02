@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>ACL Hekim Girişi</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/app/acl-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ACL Hekim">
+<meta name="theme-color" content="#0b1220">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0b1220; --bg2:#111a2b; --card:#151f33; --card2:#1b2740;
+  --line:#243149; --text:#eef2f8; --muted:#8c9bb5; --accent:#3b82f6;
+  --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+  --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
+}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text)}
+body{font:400 16px/1.5 -apple-system,BlinkMacSystemFont,'SF Pro Text','Inter','Segoe UI',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+button,input,textarea,select{font:inherit;color:inherit}
+
+/* ── kilit ── */
+#lock{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;
+  align-items:center;justify-content:center;padding:28px}
+.lockbox{width:100%;max-width:330px;text-align:center}
+.mark{width:66px;height:66px;margin:0 auto 22px;border-radius:19px;
+  background:linear-gradient(160deg,#0f172a,#1e293b);display:grid;place-items:center;
+  box-shadow:0 10px 34px rgba(0,0,0,.5)}
+.mark svg{width:38px;height:38px}
+.lockbox h1{font-size:25px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
+.lockbox p{color:var(--muted);font-size:14px;margin:0 0 22px;line-height:1.5}
+#pin{width:100%;text-align:center;font-size:27px;letter-spacing:.42em;padding:15px;
+  border-radius:15px;border:1px solid var(--line);background:var(--card);outline:none}
+#pin:focus{border-color:var(--accent)}
+.err{color:var(--bad);font-size:13px;min-height:19px;margin-top:10px}
+
+/* ── üst bar ── */
+header{position:sticky;top:0;z-index:40;padding:calc(var(--safe-t) + 12px) 16px 12px;
+  background:rgba(11,18,32,.82);backdrop-filter:saturate(1.7) blur(18px);
+  border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:12px}
+.htitle{font-size:19px;font-weight:800;letter-spacing:-.025em;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsub{font-size:12px;color:var(--muted);margin-top:2px}
+.iconbtn{width:38px;height:38px;flex:0 0 38px;border-radius:11px;border:1px solid var(--line);
+  background:var(--card);display:grid;place-items:center;font-size:17px;cursor:pointer}
+.iconbtn:active{background:var(--card2)}
+
+main{padding:16px 16px calc(var(--safe-b) + 28px);max-width:620px;margin:0 auto}
+
+/* ── arama ── */
+.search{width:100%;padding:13px 15px;border-radius:14px;border:1px solid var(--line);
+  background:var(--card);outline:none;font-size:15px;margin-bottom:14px}
+.search:focus{border-color:var(--accent)}
+
+/* ── vaka kartı ── */
+.case{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);
+  border-radius:17px;padding:15px 16px;margin-bottom:11px;cursor:pointer;transition:transform .14s,background .14s}
+.case:active{transform:scale(.985);background:var(--card2)}
+.case-top{display:flex;align-items:center;gap:10px}
+.case-name{font-size:17px;font-weight:700;letter-spacing:-.02em;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+  padding:4px 9px;border-radius:999px;white-space:nowrap}
+.p-wait{background:rgba(245,158,11,.16);color:#fbbf24}
+.p-done{background:rgba(34,197,94,.16);color:#4ade80}
+.p-new{background:rgba(59,130,246,.16);color:#60a5fa}
+.case-meta{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.45}
+.case-meta b{color:#c6d2e6;font-weight:600}
+
+.empty{text-align:center;color:var(--muted);padding:54px 20px;font-size:14px;line-height:1.6}
+.empty .big{font-size:38px;margin-bottom:12px}
+
+/* ── hasta özeti ── */
+.summary{border:1px solid var(--line);background:linear-gradient(160deg,var(--card),var(--bg2));
+  border-radius:17px;padding:15px 16px;margin-bottom:18px}
+.sum-head{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:11px}
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:11px}
+.sum-k{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.sum-v{font-size:14.5px;font-weight:600;margin-top:2px;line-height:1.35}
+.sum-warn{margin-top:12px;font-size:12.5px;color:#fbbf24;line-height:1.5}
+
+/* ── bölüm ── */
+.sec{margin-bottom:26px}
+.sec-h{display:flex;align-items:center;gap:9px;margin:0 0 14px;font-size:12px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sec-h::after{content:'';flex:1;height:1px;background:var(--line)}
+.f{margin-bottom:17px}
+.f-t{font-size:14px;font-weight:600;margin-bottom:9px;letter-spacing:-.01em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+  font-size:14px;font-weight:500;cursor:pointer;transition:all .13s;line-height:1.2}
+.chip:active{transform:scale(.96)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
+.inp{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--card);outline:none;font-size:15px}
+.inp:focus{border-color:var(--accent)}
+textarea.inp{min-height:76px;resize:vertical}
+.unit{display:flex;align-items:center;gap:10px}
+.unit .inp{flex:1}
+.unit span{color:var(--muted);font-size:14px;font-weight:600}
+
+/* ── kaydet çubuğu ── */
+.savebar{position:sticky;bottom:0;margin:22px -16px calc(var(--safe-b) * -1);
+  padding:13px 16px calc(var(--safe-b) + 13px);
+  background:rgba(11,18,32,.9);backdrop-filter:blur(18px);border-top:1px solid var(--line);
+  display:flex;gap:10px;align-items:center}
+.done-t{flex:1;display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);cursor:pointer}
+.sw{width:46px;height:28px;flex:0 0 46px;border-radius:999px;background:var(--line);position:relative;transition:background .18s}
+.sw::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+  background:#fff;transition:transform .18s}
+.sw.on{background:var(--ok)}
+.sw.on::after{transform:translateX(18px)}
+.save{padding:13px 22px;border-radius:13px;border:none;background:var(--accent);color:#fff;
+  font-size:15px;font-weight:700;cursor:pointer;letter-spacing:-.01em}
+.save:active{transform:scale(.97)}
+.save[disabled]{opacity:.5}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--safe-b) + 92px);
+  background:#16233a;border:1px solid var(--line);padding:12px 19px;border-radius:13px;
+  font-size:14px;font-weight:600;z-index:70;box-shadow:0 10px 34px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:opacity .22s,transform .22s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
+.toast.bad{border-color:var(--bad);color:#fca5a5}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lockbox">
+    <div class="mark"><svg viewBox="0 0 40 40" fill="none">
+      <path d="M11 31 L29 9" stroke="#fff" stroke-width="5.2" stroke-linecap="round"/>
+      <path d="M29 30 L12 10" stroke="#3b82f6" stroke-width="5.2" stroke-linecap="round"/>
+    </svg></div>
+    <h1>ACL Hekim Girişi</h1>
+    <p>Hastanın doldurduğu değerlendirmeyi klinik verilerle tamamlayın.</p>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
+    <div class="err" id="pinErr"></div>
+  </div>
+</div>
+
+<header hidden id="hd">
+  <div class="hrow">
+    <button class="iconbtn" id="backBtn" hidden onclick="showList()">‹</button>
+    <div style="flex:1;min-width:0">
+      <div class="htitle" id="hTitle">Vakalar</div>
+      <div class="hsub" id="hSub"></div>
+    </div>
+    <button class="iconbtn" id="reloadBtn" onclick="loadCases(true)">↻</button>
+  </div>
+</header>
+
+<main id="listView" hidden>
+  <input class="search" id="q" placeholder="Hasta ara…" oninput="renderList()">
+  <div id="cases"></div>
+</main>
+
+<main id="formView" hidden>
+  <div id="summary"></div>
+  <div id="fields"></div>
+  <div class="savebar">
+    <div class="done-t" onclick="toggleDone()">
+      <div class="sw" id="sw"></div><span id="doneLbl">Tamamlandı</span>
+    </div>
+    <button class="save" id="saveBtn" onclick="save()">Kaydet</button>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
+const PIN_KEY = 'prom_pin';
+const DOC_KEY = 'acl_hekim_adi';
+let cases = [], cur = null, A = {}, done = false;
+
+const el = id => document.getElementById(id);
+function toast(msg, bad) {
+  const t = el('toast');
+  t.textContent = msg; t.className = 'toast show' + (bad ? ' bad' : '');
+  clearTimeout(t._t); t._t = setTimeout(() => t.className = 'toast', 2600);
+}
+
+// ─── Apps Script ucu ara sıra HTML hata sayfası döner — ısrarla tekrar dene ───
+async function api(params, tries) {
+  const q = new URLSearchParams(Object.assign({ pin: localStorage.getItem(PIN_KEY) || '' }, params));
+  let son;
+  for (let i = 0; i < (tries || 5); i++) {
+    try {
+      const r = await fetch(API + '?' + q.toString());
+      const j = await r.json();
+      if (j && j.status === 'unauthorized') throw new Error('PIN');
+      return j;
+    } catch (e) {
+      son = e;
+      if (e.message === 'PIN') throw e;
+      await new Promise(s => setTimeout(s, 700 + i * 500));
+    }
+  }
+  throw son;
+}
+
+// ─── kilit ───
+el('pin').addEventListener('keydown', e => { if (e.key === 'Enter') tryPin(); });
+el('pin').addEventListener('input', e => { if (e.target.value.length >= 4) tryPin(); });
+
+async function tryPin() {
+  const v = el('pin').value.trim();
+  if (v.length < 4) return;
+  el('pinErr').textContent = 'Kontrol ediliyor…';
+  localStorage.setItem(PIN_KEY, v);
+  try {
+    await api({ action: 'aclCases' }, 2);
+    el('lock').hidden = true;
+    el('hd').hidden = false;
+    showList();
+    loadCases();
+  } catch (e) {
+    localStorage.removeItem(PIN_KEY);
+    el('pin').value = '';
+    el('pinErr').textContent = e.message === 'PIN' ? 'Kod hatalı.' : 'Bağlanılamadı, tekrar deneyin.';
+  }
+}
+
+(function boot() {
+  if (localStorage.getItem(PIN_KEY)) {
+    el('pin').value = localStorage.getItem(PIN_KEY);
+    tryPin();
+  } else { setTimeout(() => el('pin').focus(), 300); }
+})();
+
+// ─── vaka listesi ───
+async function loadCases(elle) {
+  el('hSub').textContent = 'yükleniyor…';
+  try {
+    const j = await api({ action: 'aclCases' });
+    cases = j.cases || [];
+    renderList();
+    if (elle) toast(cases.length + ' vaka güncellendi');
+  } catch (e) {
+    el('hSub').textContent = 'bağlanılamadı';
+    toast('Bağlanılamadı', true);
+  }
+}
+
+function pillOf(c) {
+  if (c.tamam)      return '<span class="pill p-done">Tamamlandı</span>';
+  if (c.hastaDoldu) return '<span class="pill p-wait">Hekim bekliyor</span>';
+  return '<span class="pill p-new">Hasta bekliyor</span>';
+}
+
+function renderList() {
+  const q = (el('q').value || '').toLowerCase().trim();
+  const L = cases.filter(c => !q || (c.ad + ' ' + c.id + ' ' + c.spor).toLowerCase().includes(q));
+  const bekleyen = cases.filter(c => c.hastaDoldu && !c.tamam).length;
+  el('hSub').textContent = cases.length + ' vaka' + (bekleyen ? ' · ' + bekleyen + ' hekim bekliyor' : '');
+  el('cases').innerHTML = L.length ? L.map(c => `
+    <button class="case" onclick="openCase('${c.vaka}')">
+      <div class="case-top">
+        <div class="case-name">${esc(c.ad) || 'İsimsiz'}</div>${pillOf(c)}
+      </div>
+      <div class="case-meta">
+        ${[c.yas && c.yas + ' yaş', c.taraf && esc(c.taraf) + ' diz', esc(c.spor)].filter(Boolean).join(' · ') || '—'}
+        ${c.gun !== null && c.gun !== undefined ? `<br>Yaralanma <b>${c.yaralanma}</b> · ${c.gun} gün önce` : ''}
+        ${c.amelTarih ? `<br>Ameliyat <b>${c.amelTarih}</b>` : ''}
+      </div>
+    </button>`).join('')
+    : `<div class="empty"><div class="big">🗂</div>
+         ${q ? 'Eşleşen vaka yok.' : 'Henüz vaka yok.<br>Hasta pre-op anketi doldurduğunda burada görünür.'}</div>`;
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function showList() {
+  el('listView').hidden = false; el('formView').hidden = true;
+  el('backBtn').hidden = true; el('reloadBtn').hidden = false;
+  el('hTitle').textContent = 'Vakalar';
+  cur = null;
+  renderList();
+  window.scrollTo(0, 0);
+}
+
+// ─── form tanımı ───
+const VAR = v => v === 'Var' || v === 'Yırtık var';
+const FORM = [
+  { sec: 'Muayene', f: [
+    { k:'extDeficit', t:'Ekstansiyon defisiti', opts:['Yok','<5°','5–10°','>10°'] },
+    { k:'flexion',    t:'Fleksiyon', type:'num', unit:'°', ph:'örn. 125' },
+    { k:'effusion',   t:'Efüzyon', opts:['Yok','Hafif','Orta','Belirgin'] },
+    { k:'lachman',    t:'Lachman', opts:['Negatif','1+','2+','3+'] },
+    { k:'pivot',      t:'Pivot shift', opts:['0','1+ glide','2+ clunk','3+ gross'] },
+    { k:'atrophy',    t:'Uyluk atrofisi (çevre farkı)', type:'num', unit:'cm', ph:'örn. 2' },
+    { k:'mcl',        t:'MCL', opts:['Sağlam','Grade 1','Grade 2','Grade 3'] },
+    { k:'pcl',        t:'PCL / Posterolateral köşe', opts:['Sağlam','PCL şüphesi','PLK şüphesi','Her ikisi'] },
+    { k:'examNote',   t:'Muayene notu', type:'text' },
+  ]},
+  { sec: 'MR', f: [
+    { k:'mmTear', t:'Medial menisküs', opts:['Yırtık yok','Yırtık var','Değerlendirilemedi'] },
+    { k:'mmSite', t:'MM yeri', opts:['Ön boynuz','Gövde','Arka boynuz','Ramp','Kök'], when:a => VAR(a.mmTear) },
+    { k:'mmType', t:'MM tipi', opts:['Longitudinal','Kova sapı','Radyal','Horizontal','Kompleks','Dejeneratif'], when:a => VAR(a.mmTear) },
+    { k:'lmTear', t:'Lateral menisküs', opts:['Yırtık yok','Yırtık var','Değerlendirilemedi'] },
+    { k:'lmSite', t:'LM yeri', opts:['Ön boynuz','Gövde','Arka boynuz','Kök'], when:a => VAR(a.lmTear) },
+    { k:'lmType', t:'LM tipi', opts:['Longitudinal','Kova sapı','Radyal','Horizontal','Kompleks','Dejeneratif'], when:a => VAR(a.lmTear) },
+    { k:'cartSite', t:'Kıkırdak lezyonu', opts:['Yok','Medial femoral kondil','Lateral femoral kondil','Medial tibia','Lateral tibia','Patella','Troklea'] },
+    { k:'cartIcrs', t:'ICRS derecesi', opts:['1','2','3a','3b','3c','3d','4'], when:a => a.cartSite && a.cartSite !== 'Yok' },
+    { k:'contusion', t:'Kemik kontüzyonu', opts:['Yok','Lateral femoral kondil + posterolateral tibia','Yalnız femoral','Yalnız tibial','Diğer'] },
+    { k:'segond', t:'Segond kırığı', opts:['Yok','Var'] },
+    { k:'otherLig', t:'Diğer bağ tutulumu', opts:['Yok','MCL','PCL','PLK','ALL'], multi:true },
+    { k:'mrNote', t:'MR notu', type:'text' },
+  ]},
+  { sec: 'Ameliyat', f: [
+    { k:'surgDate', t:'Ameliyat tarihi', type:'date' },
+    { k:'graft', t:'Greft', opts:['Hamstring (ST/G)','BTB','Kuadriseps tendonu','Allogreft','Diğer'] },
+    { k:'graftDia', t:'Greft çapı', type:'num', unit:'mm', ph:'örn. 9' },
+    { k:'mmProc', t:'Medial menisküs girişimi', opts:['Yok','Tamir','Parsiyel menisektomi','Kök tamiri'] },
+    { k:'lmProc', t:'Lateral menisküs girişimi', opts:['Yok','Tamir','Parsiyel menisektomi','Kök tamiri'] },
+    { k:'ramp', t:'Ramp tamiri', opts:['Hayır','Evet'] },
+    { k:'lateralProc', t:'Ek lateral prosedür', opts:['Yok','LET','ALL rekonstrüksiyonu'] },
+    { k:'cartProc', t:'Kıkırdak girişimi', opts:['Yok','Debridman','Mikrokırık','Diğer'] },
+    { k:'opNote', t:'İntra-op not', type:'text' },
+    { k:'complication', t:'Komplikasyon', type:'text', ph:'yoksa boş bırakın' },
+  ]},
+];
+
+// Sayfadaki sütun adı → form anahtarı (kayıtlı veriyi geri yüklemek için)
+const COL = {
+  doctor:'Hekim', extDeficit:'Ekstansiyon Defisiti', flexion:'Fleksiyon (°)', effusion:'Efüzyon',
+  lachman:'Lachman', pivot:'Pivot Shift', atrophy:'Uyluk Atrofisi (cm)', mcl:'MCL', pcl:'PCL / PLK',
+  examNote:'Muayene Not', mmTear:'MM Yırtık', mmSite:'MM Yeri', mmType:'MM Tipi',
+  lmTear:'LM Yırtık', lmSite:'LM Yeri', lmType:'LM Tipi', cartSite:'Kıkırdak Bölge',
+  cartIcrs:'Kıkırdak ICRS', contusion:'Kemik Kontüzyonu', segond:'Segond', otherLig:'MR Diğer Bağ',
+  mrNote:'MR Not', surgDate:'Ameliyat Tarihi', graft:'Greft', graftDia:'Greft Çapı (mm)',
+  mmProc:'MM Girişim', lmProc:'LM Girişim', ramp:'Ramp Tamiri', lateralProc:'Ek Lateral Prosedür',
+  cartProc:'Kıkırdak Girişimi', opNote:'İntra-op Not', complication:'Komplikasyon',
+};
+
+// ─── vaka aç ───
+async function openCase(vaka) {
+  const c = cases.find(x => x.vaka === vaka);
+  cur = { vaka: vaka, ad: c ? c.ad : '' };
+  A = {}; done = false;
+  el('listView').hidden = true; el('formView').hidden = false;
+  el('backBtn').hidden = false; el('reloadBtn').hidden = true;
+  el('hTitle').textContent = (c && c.ad) || 'Vaka';
+  el('hSub').textContent = 'yükleniyor…';
+  el('summary').innerHTML = '';
+  el('fields').innerHTML = '';
+  window.scrollTo(0, 0);
+
+  let d = null;
+  try { d = (await api({ action: 'aclCase', vaka: vaka })).vaka; }
+  catch (e) { toast('Vaka açılamadı', true); }
+
+  if (d) {
+    Object.keys(COL).forEach(k => { const v = d[COL[k]]; if (v !== '' && v != null) A[k] = String(v); });
+    done = d['Hekim Tamamlandı'] === 'Evet';
+    renderSummary(d);
+  }
+  if (!A.doctor) A.doctor = localStorage.getItem(DOC_KEY) || '';
+  el('hSub').textContent = done ? 'tamamlandı' : 'hekim bölümü';
+  syncDone();
+  renderFields();
+}
+
+function renderSummary(d) {
+  const g = d['Geçen Gün'];
+  const row = (k, v) => v ? `<div><div class="sum-k">${k}</div><div class="sum-v">${esc(v)}</div></div>` : '';
+  const koos = ['KOOS Belirti','KOOS Ağrı','KOOS GYA','KOOS Spor','KOOS YK']
+    .map(k => d[k]).filter(v => v !== '' && v != null);
+  el('summary').innerHTML = `
+    <div class="summary">
+      <div class="sum-head">Hastanın doldurduğu pre-op değerlendirme</div>
+      <div class="sum-grid">
+        ${row('Yaş / Cinsiyet', [d['Yaş'], d['Cinsiyet']].filter(Boolean).join(' · '))}
+        ${row('Taraf', d['Taraf'])}
+        ${row('Yaralanma', d['Yaralanma Tarihi'] + (g !== '' && g != null ? ' · ' + g + ' gün' : ''))}
+        ${row('Mekanizma', d['Mekanizma'])}
+        ${row('Hareket', d['Durum'])}
+        ${row('Spor / zemin', [d['Spor'], d['Zemin']].filter(Boolean).join(' · '))}
+        ${row('Tegner', (d['Tegner (öncesi)'] !== '' ? d['Tegner (öncesi)'] : '—') + ' → ' + (d['Tegner (şimdi)'] !== '' ? d['Tegner (şimdi)'] : '—'))}
+        ${row('KOOS Spor / Marx', (d['KOOS Spor'] !== '' ? d['KOOS Spor'] : '—') + ' · ' + (d['Marx'] !== '' ? d['Marx'] : '—'))}
+      </div>
+      ${!koos.length ? '<div class="sum-warn">⚠︎ Hasta anketi henüz doldurulmamış — bu satırı siz açıyorsunuz.</div>' : ''}
+    </div>`;
+}
+
+function renderFields() {
+  const hekim = `<div class="sec"><div class="sec-h">Kayıt</div>
+    <div class="f"><div class="f-t">Dolduran hekim</div>
+      <input class="inp" id="f_doctor" placeholder="Adınız" value="${esc(A.doctor || '')}"
+             oninput="A.doctor=this.value;localStorage.setItem(DOC_KEY,this.value)"></div></div>`;
+
+  const secs = FORM.map(s => {
+    const body = s.f.filter(f => !f.when || f.when(A)).map(f => {
+      if (f.type === 'num') return `<div class="f"><div class="f-t">${f.t}</div>
+        <div class="unit"><input class="inp" type="number" inputmode="decimal" placeholder="${f.ph || ''}"
+          value="${esc(A[f.k] || '')}" oninput="setV('${f.k}',this.value)"><span>${f.unit || ''}</span></div></div>`;
+      if (f.type === 'date') return `<div class="f"><div class="f-t">${f.t}</div>
+        <input class="inp" type="date" value="${esc(A[f.k] || '')}" onchange="setV('${f.k}',this.value)"></div>`;
+      if (f.type === 'text') return `<div class="f"><div class="f-t">${f.t}</div>
+        <textarea class="inp" placeholder="${f.ph || ''}" oninput="setV('${f.k}',this.value)">${esc(A[f.k] || '')}</textarea></div>`;
+      const sec = (A[f.k] || '').split(', ').filter(Boolean);
+      return `<div class="f"><div class="f-t">${f.t}</div><div class="chips">` +
+        f.opts.map(o => `<button class="chip${sec.includes(o) ? ' on' : ''}"
+          onclick="pick('${f.k}','${o.replace(/'/g, "\\'")}',${f.multi ? 'true' : 'false'})">${o}</button>`).join('') +
+        `</div></div>`;
+    }).join('');
+    return `<div class="sec"><div class="sec-h">${s.sec}</div>${body}</div>`;
+  }).join('');
+
+  el('fields').innerHTML = hekim + secs;
+}
+
+function setV(k, v) { if (v === '' ) delete A[k]; else A[k] = v; }
+
+function pick(k, o, multi) {
+  if (multi) {
+    let s = (A[k] || '').split(', ').filter(Boolean);
+    if (o === 'Yok') s = s.includes('Yok') ? [] : ['Yok'];
+    else { s = s.filter(x => x !== 'Yok'); s = s.includes(o) ? s.filter(x => x !== o) : s.concat([o]); }
+    if (s.length) A[k] = s.join(', '); else delete A[k];
+  } else {
+    if (A[k] === o) delete A[k]; else A[k] = o;
+  }
+  renderFields();   // koşullu alanlar (MM yeri/tipi gibi) anında açılıp kapansın
+}
+
+function toggleDone() { done = !done; syncDone(); }
+function syncDone() {
+  el('sw').className = 'sw' + (done ? ' on' : '');
+  el('doneLbl').textContent = done ? 'Tamamlandı' : 'Yarım bırak';
+  el('doneLbl').style.color = done ? 'var(--ok)' : 'var(--muted)';
+}
+
+// ─── kaydet ───
+async function save() {
+  if (!cur) return;
+  const b = el('saveBtn');
+  b.disabled = true; b.textContent = 'Kaydediliyor…';
+  const payload = Object.assign({}, A, { vaka: cur.vaka, name: cur.ad, done: done });
+  try {
+    const j = await api({ action: 'aclDoc', data: JSON.stringify(payload) });
+    if (!j || j.status !== 'ok') throw new Error(j && j.message || 'kayıt olmadı');
+    const c = cases.find(x => x.vaka === cur.vaka);
+    if (c) { c.tamam = done; c.hekim = A.doctor || ''; c.amelTarih = A.surgDate || c.amelTarih; }
+    toast(done ? 'Kaydedildi · tamamlandı' : 'Kaydedildi · yarım bırakıldı');
+    b.disabled = false; b.textContent = 'Kaydet';
+    if (done) setTimeout(showList, 700);
+  } catch (e) {
+    toast('Kaydedilemedi — tekrar deneyin', true);
+    b.disabled = false; b.textContent = 'Kaydet';
+  }
+}
+</script>
+</body>
+</html>

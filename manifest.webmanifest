@@ -1,0 +1,15 @@
+{
+  "name": "ACL Hekim Girişi",
+  "short_name": "ACL Hekim",
+  "description": "Ameliyat sonrası ACL vakasının klinik verilerini sıcağı sıcağına kaydet",
+  "start_url": "hekim-acl.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "icons": [
+    { "src": "img/app/acl-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/app/acl-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

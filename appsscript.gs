@@ -362,6 +362,32 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify({ rows: rows }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+  if (e.parameter.action === 'aclDoc') {
+    if (!pinOk_(e)) return unauthorized_();
+    const lock = LockService.getScriptLock();
+    let alindi = false;
+    try { alindi = lock.tryLock(25000); } catch (err) { alindi = false; }
+    try {
+      const vaka = saveAclDoctorRow(JSON.parse(e.parameter.data || '{}'));
+      return ContentService.createTextOutput(JSON.stringify({ status: 'ok', vaka: vaka }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } finally {
+      if (alindi) { try { lock.releaseLock(); } catch (e2) {} }
+    }
+  }
+  if (e.parameter.action === 'aclCases') {
+    if (!pinOk_(e)) return unauthorized_();
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', cases: aclCaseList() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  if (e.parameter.action === 'aclCase') {
+    if (!pinOk_(e)) return unauthorized_();
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', vaka: aclCaseDetail(e.parameter.vaka) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   if (e.parameter.action === 'newlink') {
     if (!pinOk_(e)) return unauthorized_();
     const code = makeShortLink(e.parameter);
@@ -392,6 +418,7 @@ function saveGuarded_(data) {
 }
 
 function saveToSheet(data) {
+  if (data && data.module === 'acl-hekim') { saveAclDoctorRow(data); return; }
   if (data && data.module === 'acl')  { saveAclRow(data);  return; }
   if (data && data.module === 'uyku') { saveUykuRow(data); return; }
   if (isTumor(data)) { saveTumorData(data); return; }
@@ -811,7 +838,26 @@ const ACL_HEADERS = [
   'Tegner (öncesi)', 'Tegner (şimdi)',
   'KOOS Belirti', 'KOOS Ağrı', 'KOOS GYA', 'KOOS Spor', 'KOOS YK', 'Marx',
   'KOOS ham', 'Marx ham',
+  // ─── Hekim bölümü — hasta satırına sonradan yazılır ───
+  'Vaka No', 'Hekim', 'Hekim Kayıt Zamanı',
+  'Ekstansiyon Defisiti', 'Fleksiyon (°)', 'Efüzyon', 'Lachman', 'Pivot Shift',
+  'Uyluk Atrofisi (cm)', 'MCL', 'PCL / PLK', 'Muayene Not',
+  'MM Yırtık', 'MM Yeri', 'MM Tipi', 'LM Yırtık', 'LM Yeri', 'LM Tipi',
+  'Kıkırdak Bölge', 'Kıkırdak ICRS', 'Kemik Kontüzyonu', 'Segond',
+  'MR Diğer Bağ', 'MR Not',
+  'Ameliyat Tarihi', 'Greft', 'Greft Çapı (mm)',
+  'MM Girişim', 'LM Girişim', 'Ramp Tamiri', 'Ek Lateral Prosedür', 'Kıkırdak Girişimi',
+  'İntra-op Not', 'Komplikasyon', 'Hekim Tamamlandı',
 ];
+
+// Vaka No hasta satırı yazılırken üretilir; hekim girişi bu anahtarla aynı satırı bulur.
+const ACL_VAKA_COL = 47;            // 'Vaka No' sütunu (1 tabanlı)
+const ACL_DOC_COL  = 48;            // hekim alanları buradan başlar
+const ACL_DOC_LEN  = 34;            // 'Hekim' … 'Hekim Tamamlandı'
+
+function newVakaNo_() {
+  return 'ACL-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
+}
 
 function saveAclRow(data) {
   const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
@@ -833,10 +879,115 @@ function saveAclRow(data) {
     n(data.tegnerPre), n(data.tegnerNow),
     n(data.koosS), n(data.koosP), n(data.koosA), n(data.koosSP), n(data.koosQ), n(data.marx),
     data.koosRaw || '', data.marxRaw || '',
-  ]);
+    newVakaNo_(),
+  ].concat(new Array(ACL_DOC_LEN).fill('')));
   const row = sheet.getLastRow();
   colorGecenGun(sheet, row, 14, data.daysSinceInjury);
   [39, 40, 41, 42, 43].forEach(function (c) { colorKoos(sheet, row, c); });
+}
+
+// ─── Hekim girişi ────────────────────────────────────────────────────────────
+// Hasta pre-op anketi doldurduğunda satır zaten açılmıştır. Hekim ameliyattan
+// sonra müsait olduğunda aynı satırı Vaka No ile bulup kendi bölümünü yazar.
+// Hasta hiç doldurmadıysa (vaka=='' ) hekim yeni bir satır açabilir.
+function aclDocValues_(d) {
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+  return [
+    d.doctor || '', new Date(),
+    d.extDeficit || '', n(d.flexion), d.effusion || '', d.lachman || '', d.pivot || '',
+    n(d.atrophy), d.mcl || '', d.pcl || '', d.examNote || '',
+    d.mmTear || '', d.mmSite || '', d.mmType || '',
+    d.lmTear || '', d.lmSite || '', d.lmType || '',
+    d.cartSite || '', d.cartIcrs || '', d.contusion || '', d.segond || '',
+    d.otherLig || '', d.mrNote || '',
+    d.surgDate || '', d.graft || '', n(d.graftDia),
+    d.mmProc || '', d.lmProc || '', d.ramp || '', d.lateralProc || '', d.cartProc || '',
+    d.opNote || '', d.complication || '', d.done ? 'Evet' : 'Hayır',
+  ];
+}
+
+function saveAclDoctorRow(data) {
+  const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
+  const vals = aclDocValues_(data);
+  let row = 0;
+  const last = sheet.getLastRow();
+  if (data.vaka && last >= 2) {
+    const keys = sheet.getRange(2, ACL_VAKA_COL, last - 1, 1).getValues();
+    for (let i = 0; i < keys.length; i++) {
+      if (String(keys[i][0] || '').trim() === String(data.vaka).trim()) { row = i + 2; break; }
+    }
+  }
+  if (!row) {
+    // Hasta anketi yok — hekim vakayı kendisi açıyor. Kimlik alanları doldurulur,
+    // hasta sonradan doldurursa panelden bu satıra bağlanır.
+    const ts = new Date();
+    const bos = new Array(ACL_HEADERS.length).fill('');
+    bos[0] = ts;
+    bos[1] = Utilities.formatDate(ts, 'Europe/Istanbul', 'yyyy-MM-dd');
+    bos[2] = data.patientId || '';
+    bos[3] = data.name || '';
+    bos[4] = data.doctor || '';
+    bos[14] = data.side || '';
+    bos[ACL_VAKA_COL - 1] = data.vaka || newVakaNo_();
+    sheet.appendRow(bos);
+    row = sheet.getLastRow();
+  }
+  sheet.getRange(row, ACL_DOC_COL, 1, ACL_DOC_LEN).setValues([vals]);
+  sheet.getRange(row, ACL_DOC_COL + ACL_DOC_LEN - 1)
+       .setBackground(data.done ? '#dcfce7' : '#fef9c3');
+  return String(sheet.getRange(row, ACL_VAKA_COL).getValue() || '');
+}
+
+// Telefonda hızlı açılsın diye tam getData yerine hafif vaka listesi.
+// Vaka No'su olmayan eski satırlara bu sırada anahtar yazılır.
+function aclCaseList() {
+  const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
+  const last = sheet.getLastRow();
+  if (last < 2) return [];
+  const d = sheet.getRange(2, 1, last - 1, ACL_HEADERS.length).getValues();
+  const out = [];
+  for (let i = 0; i < d.length; i++) {
+    const r = d[i];
+    if (!String(r[2] || '').trim() && !String(r[3] || '').trim()) continue;
+    let vaka = String(r[ACL_VAKA_COL - 1] || '').trim();
+    if (!vaka) { vaka = newVakaNo_(); sheet.getRange(i + 2, ACL_VAKA_COL).setValue(vaka); }
+    out.push({
+      vaka: vaka,
+      ad: String(r[3] || ''), id: String(r[2] || ''),
+      tarih: r[1] instanceof Date ? Utilities.formatDate(r[1], 'Europe/Istanbul', 'yyyy-MM-dd') : String(r[1] || ''),
+      yaralanma: r[12] instanceof Date ? Utilities.formatDate(r[12], 'Europe/Istanbul', 'yyyy-MM-dd') : String(r[12] || ''),
+      gun: r[13] === '' ? null : Number(r[13]),
+      taraf: String(r[14] || ''), spor: String(r[15] || ''),
+      yas: r[5] === '' ? null : Number(r[5]),
+      hastaDoldu: String(r[3] || '').trim() !== '' && r[38] !== '',
+      hekim: String(r[ACL_DOC_COL - 1] || ''),
+      amelTarih: r[ACL_DOC_COL + 22] instanceof Date
+        ? Utilities.formatDate(r[ACL_DOC_COL + 22], 'Europe/Istanbul', 'yyyy-MM-dd')
+        : String(r[ACL_DOC_COL + 22] || ''),
+      tamam: String(r[ACL_DOC_COL + ACL_DOC_LEN - 2] || '') === 'Evet',
+    });
+  }
+  return out.reverse();   // en yeni başa
+}
+
+function aclCaseDetail(vaka) {
+  const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
+  const last = sheet.getLastRow();
+  if (last < 2) return null;
+  const keys = sheet.getRange(2, ACL_VAKA_COL, last - 1, 1).getValues();
+  for (let i = 0; i < keys.length; i++) {
+    if (String(keys[i][0] || '').trim() === String(vaka).trim()) {
+      const r = sheet.getRange(i + 2, 1, 1, ACL_HEADERS.length).getValues()[0];
+      const o = {};
+      for (let c = 0; c < ACL_HEADERS.length; c++) {
+        const v = r[c];
+        o[ACL_HEADERS[c]] = v instanceof Date
+          ? Utilities.formatDate(v, 'Europe/Istanbul', 'yyyy-MM-dd') : v;
+      }
+      return o;
+    }
+  }
+  return null;
 }
 
 // Yaralanma-ameliyat arası süre: 6 ay üstü menisküs riski belirgin artıyor
