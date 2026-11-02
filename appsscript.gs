@@ -337,7 +337,9 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  if (e.parameter.data) {
+  // Hasta formları yalnızca ?data= ile gelir. Hekim uygulaması ?action=aclDoc&data=…
+  // kullanır ve JSON yanıt bekler — bu yüzden action varsa aşağıdaki dala düşsün.
+  if (e.parameter.data && !e.parameter.action) {
     try {
       const data = JSON.parse(e.parameter.data);
       saveGuarded_(data);
