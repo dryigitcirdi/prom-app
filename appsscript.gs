@@ -380,6 +380,22 @@ function doGet(e) {
       if (alindi) { try { lock.releaseLock(); } catch (e2) {} }
     }
   }
+  if (e.parameter.action === 'aclEdit') {
+    if (!pinOk_(e)) return unauthorized_();
+    const lock = LockService.getScriptLock();
+    let alindi = false;
+    try { alindi = lock.tryLock(25000); } catch (err) { alindi = false; }
+    try {
+      const degisen = saveAclPatientEdit(JSON.parse(e.parameter.data || '{}'));
+      return ContentService.createTextOutput(JSON.stringify({ status: 'ok', changed: degisen }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } finally {
+      if (alindi) { try { lock.releaseLock(); } catch (e2) {} }
+    }
+  }
   if (e.parameter.action === 'aclCases') {
     if (!pinOk_(e)) return unauthorized_();
     return ContentService.createTextOutput(JSON.stringify({ status: 'ok', cases: aclCaseList() }))
@@ -850,12 +866,28 @@ const ACL_HEADERS = [
   'Ameliyat Tarihi', 'Greft', 'Greft Çapı (mm)',
   'MM Girişim', 'LM Girişim', 'Ramp Tamiri', 'Ek Lateral Prosedür', 'Kıkırdak Girişimi',
   'İntra-op Not', 'Komplikasyon', 'Hekim Tamamlandı',
+  // ─── Düzenleme izi ───
+  'Veri Düzenleyen', 'Düzenleme Zamanı', 'Düzenlenen Alanlar',
 ];
 
 // Vaka No hasta satırı yazılırken üretilir; hekim girişi bu anahtarla aynı satırı bulur.
 const ACL_VAKA_COL = 47;            // 'Vaka No' sütunu (1 tabanlı)
 const ACL_DOC_COL  = 48;            // hekim alanları buradan başlar
 const ACL_DOC_LEN  = 34;            // 'Hekim' … 'Hekim Tamamlandı'
+
+// Hastanın kendi doldurduğu bölümden SONRADAN düzeltilebilecek alanlar.
+// KOOS / Marx / Tegner bilerek yok: onlar hastanın beyanı, hekim değiştiremez.
+const ACL_EDIT_COLS = {
+  patientId: 3, name: 4, age: 6, gender: 7, height: 8, weight: 9,
+  dominant: 11, smoke: 12, injDate: 13, side: 15,
+  sport: 16, level: 17, surface: 18, setting: 19,
+  freqWeek: 20, sessionMin: 21, monthsYear: 22, yearsPlaying: 23,
+  mechanism: 26, situation: 27, pop: 28, continued: 29, swelling: 30,
+  priorAclSame: 31, priorAclOther: 32, priorKnee: 33, familyAcl: 34,
+  rampUp: 35, preventionProg: 36,
+};
+const ACL_EDIT_NUM = ['age', 'height', 'weight', 'freqWeek', 'sessionMin', 'monthsYear', 'yearsPlaying'];
+const ACL_AUDIT_COL = 82;           // 'Veri Düzenleyen' … 'Düzenlenen Alanlar'
 
 function newVakaNo_() {
   return 'ACL-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
@@ -938,6 +970,64 @@ function saveAclDoctorRow(data) {
   sheet.getRange(row, ACL_DOC_COL + ACL_DOC_LEN - 1)
        .setBackground(data.done ? '#dcfce7' : '#fef9c3');
   return String(sheet.getRange(row, ACL_VAKA_COL).getValue() || '');
+}
+
+// QR ile gelen hastanın adı eksik/yanlış olabiliyor, hasta no hiç olmuyor,
+// yaralanma tarihini yanlış hatırlayabiliyor. Hekim bu alanları düzeltebilsin.
+// VKİ, geçen gün ve maruziyet saatleri girdilerden yeniden hesaplanır.
+function saveAclPatientEdit(data) {
+  const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
+  const last = sheet.getLastRow();
+  if (last < 2) throw new Error('kayıt yok');
+  let row = 0;
+  const keys = sheet.getRange(2, ACL_VAKA_COL, last - 1, 1).getValues();
+  for (let i = 0; i < keys.length; i++) {
+    if (String(keys[i][0] || '').trim() === String(data.vaka || '').trim()) { row = i + 2; break; }
+  }
+  if (!row) throw new Error('vaka bulunamadı');
+
+  const degisen = [];
+  Object.keys(ACL_EDIT_COLS).forEach(function (k) {
+    if (!(k in data)) return;                       // gönderilmeyen alana dokunma
+    const col = ACL_EDIT_COLS[k];
+    let v = data[k];
+    if (ACL_EDIT_NUM.indexOf(k) >= 0) v = (v === '' || v === null) ? '' : Number(v);
+    const eski = sheet.getRange(row, col).getValue();
+    if (String(eski) !== String(v)) {
+      sheet.getRange(row, col).setValue(v);
+      degisen.push(ACL_HEADERS[col - 1]);
+    }
+  });
+
+  const r = sheet.getRange(row, 1, 1, ACL_HEADERS.length).getValues()[0];
+  const sayi = c => { const x = Number(r[c - 1]); return isNaN(x) ? 0 : x; };
+
+  // VKİ
+  const boy = sayi(8), kilo = sayi(9);
+  if (boy > 0 && kilo > 0) sheet.getRange(row, 10).setValue(Math.round(kilo / Math.pow(boy / 100, 2) * 10) / 10);
+
+  // Geçen gün: yaralanmadan anketin doldurulduğu güne
+  const yar = r[12], anket = r[1];
+  if (yar && anket) {
+    const d1 = new Date(yar), d2 = new Date(anket);
+    if (!isNaN(d1) && !isNaN(d2)) {
+      const g = Math.round((d2 - d1) / 86400000);
+      sheet.getRange(row, 14).setValue(g);
+      colorGecenGun(sheet, row, 14, g);
+    }
+  }
+
+  // Maruziyet: haftada kez × seans dk ÷ 60 ; toplam = haftalık × 4,33 × ay × yıl
+  const kez = sayi(20), dk = sayi(21), ay = sayi(22), yil = sayi(23);
+  if (kez > 0 && dk > 0) {
+    const haftalik = Math.round(kez * dk / 60 * 10) / 10;
+    sheet.getRange(row, 24).setValue(haftalik);
+    if (ay > 0 && yil > 0) sheet.getRange(row, 25).setValue(Math.round(haftalik * 4.33 * ay * yil));
+  }
+
+  sheet.getRange(row, ACL_AUDIT_COL, 1, 3)
+       .setValues([[data.editor || '', new Date(), degisen.join(', ')]]);
+  return degisen;
 }
 
 // Telefonda hızlı açılsın diye tam getData yerine hafif vaka listesi.

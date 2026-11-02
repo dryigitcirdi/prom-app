@@ -73,6 +73,17 @@ main{padding:16px 16px calc(var(--safe-b) + 28px);max-width:620px;margin:0 auto}
 .case-meta{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.45}
 .case-meta b{color:#c6d2e6;font-weight:600}
 
+.newbtn{width:100%;padding:12px;border-radius:13px;border:1px dashed var(--line);
+  background:transparent;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px}
+.newbtn:active{background:var(--card)}
+#newBox{border:1px solid var(--line);background:var(--card);border-radius:17px;padding:16px;margin-bottom:16px}
+.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+.sum-edit{margin-left:auto;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card2);color:#9fb3d1;cursor:pointer}
+.sum-edit:active{background:var(--line)}
+.sum-head{display:flex;align-items:center;gap:8px}
+.ro{margin-top:14px;padding-top:13px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);line-height:1.55}
 .empty{text-align:center;color:var(--muted);padding:54px 20px;font-size:14px;line-height:1.6}
 .empty .big{font-size:38px;margin-bottom:12px}
 
@@ -159,6 +170,16 @@ textarea.inp{min-height:76px;resize:vertical}
 
 <main id="listView" hidden>
   <input class="search" id="q" placeholder="Hasta ara…" oninput="renderList()">
+  <button class="newbtn" onclick="toggleNew()">+ Hasta anketsiz vaka aç</button>
+  <div id="newBox" hidden>
+    <div class="f"><div class="f-t">Ad Soyad</div>
+      <input class="inp" id="nName" placeholder="Hasta adı"></div>
+    <div class="f"><div class="f-t">Taraf</div><div class="chips" id="nSide">
+      <button class="chip" onclick="nPick('Sağ',this)">Sağ</button>
+      <button class="chip" onclick="nPick('Sol',this)">Sol</button></div></div>
+    <button class="save" style="width:100%" onclick="createCase()">Vakayı aç</button>
+    <div class="hint">Hasta pre-op anketini sonradan doldurursa panelden bu vakaya bağlanır.</div>
+  </div>
   <div id="cases"></div>
 </main>
 
@@ -180,6 +201,8 @@ const API = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_I
 const PIN_KEY = 'prom_pin';
 const DOC_KEY = 'acl_hekim_adi';
 let cases = [], cur = null, A = {}, done = false;
+// detay: satırın 84 alanı · H: hasta düzeltme kutusu · editing: düzenleme kipi
+let detay = null, H = {}, editing = false;
 
 const el = id => document.getElementById(id);
 function toast(msg, bad) {
@@ -331,6 +354,68 @@ const FORM = [
   ]},
 ];
 
+// ─── Hastanın kendi doldurduğu bölüm — sonradan düzeltilebilir ───
+// QR'dan gelen hastanın hasta no'su yok, adını kendi yazıyor, tarihi yanlış
+// hatırlayabiliyor. KOOS / Marx / Tegner bilerek dışarıda: onlar hastanın beyanı.
+const SPORLAR = ['Futbol / Halı saha','Basketbol','Voleybol','Hentbol','Kayak / Snowboard',
+  'Tenis','Güreş / Dövüş sporu','Koşu / Atletizm','Fitness / Ağırlık','Dans',
+  'Spor dışı (günlük yaşam, düşme, trafik)','Diğer'];
+const EH = ['Evet','Hayır'];
+const HASTA = [
+  { s:'Kimlik', f:[
+    { k:'name', t:'Ad Soyad', type:'txt' },
+    { k:'patientId', t:'Hasta / protokol no', type:'txt', ph:'QR ile gelen kayıtlarda boştur' },
+  ]},
+  { s:'Demografi', f:[
+    { k:'age', t:'Yaş', type:'num' },
+    { k:'gender', t:'Cinsiyet', opts:['Kadın','Erkek'] },
+    { k:'height', t:'Boy', type:'num', unit:'cm' },
+    { k:'weight', t:'Kilo', type:'num', unit:'kg' },
+    { k:'dominant', t:'Dominant bacak', opts:['Sağ','Sol'] },
+    { k:'smoke', t:'Sigara', opts:['Hayır','Evet','Bıraktım'] },
+  ]},
+  { s:'Yaralanma', f:[
+    { k:'injDate', t:'Yaralanma tarihi', type:'date' },
+    { k:'side', t:'Taraf', opts:['Sağ','Sol'] },
+    { k:'mechanism', t:'Mekanizma', opts:['Temassız','İndirekt temas','Direkt temas'] },
+    { k:'situation', t:'Hareket / durum', opts:['Yön değiştirme / kesme','Sıçrama sonrası iniş',
+      'Ani durma / yavaşlama','Dize doğrudan darbe','Kayak / ekipman kaynaklı','Düşme','Diğer'] },
+    { k:'pop', t:'"Çat" sesi / hissi', opts:EH },
+    { k:'continued', t:'Oyuna devam edebildi', opts:EH },
+    { k:'swelling', t:'İlk 24 saatte şişlik', opts:EH },
+  ]},
+  { s:'Spor ve maruziyet', f:[
+    { k:'sport', t:'Spor', opts:SPORLAR },
+    { k:'level', t:'Katılım düzeyi', opts:['Profesyonel','Yarı profesyonel / amatör lig',
+      'Rekreasyonel düzenli','Weekend warrior'] },
+    { k:'surface', t:'Zemin', opts:['Halı saha (suni çim)','Doğal çim','Parke / salon',
+      'Toprak / beton','Kar / buz','Diğer'] },
+    { k:'setting', t:'Ortam', opts:['Maç','Antrenman','Serbest oyun'] },
+    { k:'freqWeek', t:'Haftada kaç kez', type:'num' },
+    { k:'sessionMin', t:'Seans süresi', type:'num', unit:'dk' },
+    { k:'monthsYear', t:'Yılda kaç ay', type:'num' },
+    { k:'yearsPlaying', t:'Kaç yıldır', type:'num' },
+  ]},
+  { s:'Geçmiş ve risk', f:[
+    { k:'priorAclSame', t:'Aynı dizde önceki ACL', opts:EH },
+    { k:'priorAclOther', t:'Karşı dizde önceki ACL', opts:EH },
+    { k:'priorKnee', t:'Başka diz yaralanması / ameliyatı', opts:EH },
+    { k:'familyAcl', t:'Ailede ACL yaralanması', opts:EH },
+    { k:'rampUp', t:'Son 3 ayda yoğunluk artışı', opts:EH },
+    { k:'preventionProg', t:'Önleyici / ısınma programı', opts:EH },
+  ]},
+];
+const HCOL = {
+  name:'Ad Soyad', patientId:'Hasta ID', age:'Yaş', gender:'Cinsiyet', height:'Boy (cm)',
+  weight:'Kilo (kg)', dominant:'Dominant Bacak', smoke:'Sigara', injDate:'Yaralanma Tarihi',
+  side:'Taraf', mechanism:'Mekanizma', situation:'Durum', pop:'Pop Sesi',
+  continued:'Devam Edebildi', swelling:'İlk 24s Şişlik', sport:'Spor', level:'Düzey',
+  surface:'Zemin', setting:'Ortam', freqWeek:'Haftada Kez', sessionMin:'Seans (dk)',
+  monthsYear:'Yılda Ay', yearsPlaying:'Kaç Yıldır', priorAclSame:'Önceki ACL (aynı)',
+  priorAclOther:'Önceki ACL (karşı)', priorKnee:'Önceki Diz Yaralanması', familyAcl:'Ailede ACL',
+  rampUp:'Yoğunluk Artışı', preventionProg:'Önleyici Program',
+};
+
 // Sayfadaki sütun adı → form anahtarı (kayıtlı veriyi geri yüklemek için)
 const COL = {
   doctor:'Hekim', extDeficit:'Ekstansiyon Defisiti', flexion:'Fleksiyon (°)', effusion:'Efüzyon',
@@ -347,7 +432,7 @@ const COL = {
 async function openCase(vaka) {
   const c = cases.find(x => x.vaka === vaka);
   cur = { vaka: vaka, ad: c ? c.ad : '' };
-  A = {}; done = false;
+  A = {}; H = {}; editing = false; detay = null; done = false;
   el('listView').hidden = true; el('formView').hidden = false;
   el('backBtn').hidden = false; el('reloadBtn').hidden = true;
   el('hTitle').textContent = (c && c.ad) || 'Vaka';
@@ -360,6 +445,7 @@ async function openCase(vaka) {
   try { d = (await api({ action: 'aclCase', vaka: vaka })).vaka; }
   catch (e) { toast('Vaka açılamadı', true); }
 
+  detay = d;
   if (d) {
     Object.keys(COL).forEach(k => { const v = d[COL[k]]; if (v !== '' && v != null) A[k] = String(v); });
     done = d['Hekim Tamamlandı'] === 'Evet';
@@ -371,15 +457,25 @@ async function openCase(vaka) {
   renderFields();
 }
 
+function kip(duzenle) {
+  el('fields').style.display = duzenle ? 'none' : '';
+  document.querySelector('.savebar').style.display = duzenle ? 'none' : '';
+}
+
 function renderSummary(d) {
+  if (editing) return renderHastaEdit();
+  kip(false);
   const g = d['Geçen Gün'];
   const row = (k, v) => v ? `<div><div class="sum-k">${k}</div><div class="sum-v">${esc(v)}</div></div>` : '';
   const koos = ['KOOS Belirti','KOOS Ağrı','KOOS GYA','KOOS Spor','KOOS YK']
     .map(k => d[k]).filter(v => v !== '' && v != null);
+  const duz = d['Veri Düzenleyen'], dzt = d['Düzenleme Zamanı'];
   el('summary').innerHTML = `
     <div class="summary">
-      <div class="sum-head">Hastanın doldurduğu pre-op değerlendirme</div>
+      <div class="sum-head">Hastanın doldurduğu pre-op değerlendirme
+        <button class="sum-edit" onclick="startEdit()">Düzenle</button></div>
       <div class="sum-grid">
+        ${row('Ad / Hasta no', [d['Ad Soyad'], d['Hasta ID']].filter(Boolean).join(' · '))}
         ${row('Yaş / Cinsiyet', [d['Yaş'], d['Cinsiyet']].filter(Boolean).join(' · '))}
         ${row('Taraf', d['Taraf'])}
         ${row('Yaralanma', d['Yaralanma Tarihi'] + (g !== '' && g != null ? ' · ' + g + ' gün' : ''))}
@@ -389,8 +485,112 @@ function renderSummary(d) {
         ${row('Tegner', (d['Tegner (öncesi)'] !== '' ? d['Tegner (öncesi)'] : '—') + ' → ' + (d['Tegner (şimdi)'] !== '' ? d['Tegner (şimdi)'] : '—'))}
         ${row('KOOS Spor / Marx', (d['KOOS Spor'] !== '' ? d['KOOS Spor'] : '—') + ' · ' + (d['Marx'] !== '' ? d['Marx'] : '—'))}
       </div>
-      ${!koos.length ? '<div class="sum-warn">⚠︎ Hasta anketi henüz doldurulmamış — bu satırı siz açıyorsunuz.</div>' : ''}
+      ${!koos.length ? '<div class="sum-warn">⚠︎ Hasta anketi henüz doldurulmamış. Kimlik ve yaralanma bilgilerini “Düzenle” ile siz girebilirsiniz; KOOS / Marx / Tegner yalnızca hastanın kendisinden gelir.</div>' : ''}
+      ${duz ? `<div class="ro">✎ ${esc(duz)} düzenledi · ${esc(String(dzt).slice(0, 10))}${d['Düzenlenen Alanlar'] ? '<br>' + esc(d['Düzenlenen Alanlar']) : ''}</div>` : ''}
     </div>`;
+}
+
+// ─── hasta bölümünü düzelt ───────────────────────────────────────────────────
+// QR ile gelen kayıtta hasta no yok, adını hastanın kendisi yazıyor, tarihi
+// yanlış hatırlayabiliyor. Bunlar düzeltilebilir; KOOS / Marx / Tegner ise
+// hastanın beyanı olduğu için dokunulmaz.
+function startEdit() {
+  H = {};
+  Object.keys(HCOL).forEach(k => {
+    const v = detay ? detay[HCOL[k]] : '';
+    if (v !== '' && v != null) H[k] = String(v);
+  });
+  editing = true;
+  renderHastaEdit();
+}
+
+function cancelEdit() { editing = false; H = {}; renderSummary(detay || {}); window.scrollTo(0, 0); }
+
+function renderHastaEdit() {
+  kip(true);
+  el('summary').innerHTML = `
+    <div class="summary">
+      <div class="sum-head">Hasta bilgilerini düzelt
+        <button class="sum-edit" onclick="cancelEdit()">Vazgeç</button></div>
+      <div class="hint">VKİ, geçen gün ve maruziyet saatleri kaydedilirken yeniden hesaplanır.
+        KOOS, Marx ve Tegner hastanın kendi beyanı olduğu için burada yok.</div>
+    </div>
+    <div class="sec"><div class="sec-h">Düzelten</div>
+      <div class="f"><div class="f-t">Adınız</div>
+        <input class="inp" placeholder="Adınız" value="${esc(A.doctor || '')}"
+               oninput="A.doctor=this.value;localStorage.setItem(DOC_KEY,this.value)"></div></div>
+    ${HASTA.map(s => `<div class="sec"><div class="sec-h">${s.s}</div>` +
+      s.f.map(f => fldHtml(f, H, 'setH', 'pickH')).join('') + `</div>`).join('')}
+    <button class="save" style="width:100%;margin-bottom:8px" onclick="saveHasta()">Hasta bilgilerini kaydet</button>
+    <div class="hint" style="margin-bottom:22px">Kim neyi değiştirdi, satırın sonunda kayda geçer.</div>`;
+}
+
+async function saveHasta() {
+  if (!cur) return;
+  if (!A.doctor) { toast('Önce adınızı yazın', true); return; }
+  const payload = Object.assign({}, H, { vaka: cur.vaka, editor: A.doctor });
+  try {
+    const j = await api({ action: 'aclEdit', data: JSON.stringify(payload) });
+    if (!j || j.status !== 'ok') throw new Error(j && j.message || 'olmadı');
+    toast(j.changed && j.changed.length ? j.changed.length + ' alan güncellendi' : 'Değişiklik yok');
+    editing = false;
+    await openCase(cur.vaka);
+    loadCases();
+  } catch (e) { toast('Kaydedilemedi — tekrar deneyin', true); }
+}
+
+// ─── hasta anketi olmayan vaka ───────────────────────────────────────────────
+let nSide = '';
+function toggleNew() { const b = el('newBox'); b.hidden = !b.hidden; if (!b.hidden) el('nName').focus(); }
+function nPick(v, btn) {
+  nSide = nSide === v ? '' : v;
+  [...el('nSide').children].forEach(c => c.classList.toggle('on', c === btn && nSide === v));
+}
+async function createCase() {
+  const ad = el('nName').value.trim();
+  if (!ad) { toast('Hasta adı gerekli', true); return; }
+  const doctor = localStorage.getItem(DOC_KEY) || '';
+  // Vaka No'yu istemci üretir: ağ tekrarında aynı satır güncellenir, yenisi açılmaz
+  const vaka = 'ACL-' + Array.from({ length: 8 },
+    () => '0123456789ABCDEF'[Math.floor(Math.random() * 16)]).join('');
+  try {
+    const j = await api({ action: 'aclDoc',
+      data: JSON.stringify({ vaka, name: ad, side: nSide, doctor, done: false }) });
+    if (!j || j.status !== 'ok') throw new Error('olmadı');
+    el('nName').value = ''; nSide = ''; el('newBox').hidden = true;
+    await loadCases();
+    toast('Vaka açıldı');
+    openCase(vaka);
+  } catch (e) { toast('Vaka açılamadı', true); }
+}
+
+// Tek alan çizici — hekim bölümü (A) ve hasta düzenleme kutusu (H) aynı bileşenleri kullanır
+function fldHtml(f, V, sfn, pfn) {
+  const v = V[f.k] == null ? '' : String(V[f.k]);
+  if (f.type === 'num') return `<div class="f"><div class="f-t">${f.t}</div>
+    <div class="unit"><input class="inp" type="number" inputmode="decimal" placeholder="${f.ph || ''}"
+      value="${esc(v)}" oninput="${sfn}('${f.k}',this.value)"><span>${f.unit || ''}</span></div></div>`;
+  if (f.type === 'date') return `<div class="f"><div class="f-t">${f.t}</div>
+    <input class="inp" type="date" value="${esc(v)}" onchange="${sfn}('${f.k}',this.value)"></div>`;
+  if (f.type === 'txt') return `<div class="f"><div class="f-t">${f.t}</div>
+    <input class="inp" placeholder="${f.ph || ''}" value="${esc(v)}" oninput="${sfn}('${f.k}',this.value)"></div>`;
+  if (f.type === 'text') return `<div class="f"><div class="f-t">${f.t}</div>
+    <textarea class="inp" placeholder="${f.ph || ''}" oninput="${sfn}('${f.k}',this.value)">${esc(v)}</textarea></div>`;
+  const sec = v.split(', ').filter(Boolean);
+  return `<div class="f"><div class="f-t">${f.t}</div><div class="chips">` +
+    f.opts.map(o => `<button class="chip${sec.includes(o) ? ' on' : ''}"
+      onclick="${pfn}('${f.k}','${o.replace(/'/g, "\\'")}',${f.multi ? 'true' : 'false'})">${o}</button>`).join('') +
+    `</div></div>`;
+}
+
+function setIn(V, k, v) { if (v === '') delete V[k]; else V[k] = v; }
+function pickIn(V, k, o, multi) {
+  if (multi) {
+    let s = (V[k] || '').split(', ').filter(Boolean);
+    if (o === 'Yok') s = s.includes('Yok') ? [] : ['Yok'];
+    else { s = s.filter(x => x !== 'Yok'); s = s.includes(o) ? s.filter(x => x !== o) : s.concat([o]); }
+    if (s.length) V[k] = s.join(', '); else delete V[k];
+  } else if (V[k] === o) { delete V[k]; } else { V[k] = o; }
 }
 
 function renderFields() {
@@ -398,41 +598,19 @@ function renderFields() {
     <div class="f"><div class="f-t">Dolduran hekim</div>
       <input class="inp" id="f_doctor" placeholder="Adınız" value="${esc(A.doctor || '')}"
              oninput="A.doctor=this.value;localStorage.setItem(DOC_KEY,this.value)"></div></div>`;
-
-  const secs = FORM.map(s => {
-    const body = s.f.filter(f => !f.when || f.when(A)).map(f => {
-      if (f.type === 'num') return `<div class="f"><div class="f-t">${f.t}</div>
-        <div class="unit"><input class="inp" type="number" inputmode="decimal" placeholder="${f.ph || ''}"
-          value="${esc(A[f.k] || '')}" oninput="setV('${f.k}',this.value)"><span>${f.unit || ''}</span></div></div>`;
-      if (f.type === 'date') return `<div class="f"><div class="f-t">${f.t}</div>
-        <input class="inp" type="date" value="${esc(A[f.k] || '')}" onchange="setV('${f.k}',this.value)"></div>`;
-      if (f.type === 'text') return `<div class="f"><div class="f-t">${f.t}</div>
-        <textarea class="inp" placeholder="${f.ph || ''}" oninput="setV('${f.k}',this.value)">${esc(A[f.k] || '')}</textarea></div>`;
-      const sec = (A[f.k] || '').split(', ').filter(Boolean);
-      return `<div class="f"><div class="f-t">${f.t}</div><div class="chips">` +
-        f.opts.map(o => `<button class="chip${sec.includes(o) ? ' on' : ''}"
-          onclick="pick('${f.k}','${o.replace(/'/g, "\\'")}',${f.multi ? 'true' : 'false'})">${o}</button>`).join('') +
-        `</div></div>`;
-    }).join('');
-    return `<div class="sec"><div class="sec-h">${s.sec}</div>${body}</div>`;
-  }).join('');
-
-  el('fields').innerHTML = hekim + secs;
+  el('fields').innerHTML = hekim + FORM.map(s =>
+    `<div class="sec"><div class="sec-h">${s.sec}</div>` +
+    s.f.filter(f => !f.when || f.when(A)).map(f => fldHtml(f, A, 'setV', 'pick')).join('') +
+    `</div>`).join('');
 }
 
-function setV(k, v) { if (v === '' ) delete A[k]; else A[k] = v; }
-
+function setV(k, v) { setIn(A, k, v); }
 function pick(k, o, multi) {
-  if (multi) {
-    let s = (A[k] || '').split(', ').filter(Boolean);
-    if (o === 'Yok') s = s.includes('Yok') ? [] : ['Yok'];
-    else { s = s.filter(x => x !== 'Yok'); s = s.includes(o) ? s.filter(x => x !== o) : s.concat([o]); }
-    if (s.length) A[k] = s.join(', '); else delete A[k];
-  } else {
-    if (A[k] === o) delete A[k]; else A[k] = o;
-  }
+  pickIn(A, k, o, multi);
   renderFields();   // koşullu alanlar (MM yeri/tipi gibi) anında açılıp kapansın
 }
+function setH(k, v) { setIn(H, k, v); }
+function pickH(k, o, multi) { pickIn(H, k, o, multi); renderHastaEdit(); }
 
 function toggleDone() { done = !done; syncDone(); }
 function syncDone() {
