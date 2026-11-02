@@ -289,6 +289,8 @@ const DURUM = ['Yön değiştirme / kesme','Sıçrama sonrası iniş','Ani durma
 
 /* ═══ Sorular ═══════════════════════════════════════════════════════════ */
 const QS = [
+  {k:'protokol',type:'protokol', title:'Protokol numaranız',
+   sub:'Hastane kaydınızdaki protokol / dosya numarası. Yanıtlarınızın doğru dosyayla eşleşmesi için gerekli — aynı isimde birden çok hasta olabiliyor.'},
   {k:'ident',   type:'ident', title:'Önce sizi tanıyalım'},
   {k:'age',     type:'num',   title:'Yaşınız', ph:'28', id:'f_age'},
   {k:'gender',  type:'choice',row:true, title:'Cinsiyetiniz', opts:['Kadın','Erkek']},
@@ -373,6 +375,11 @@ function likert(name, opts, rows, start){
 
 function bodyFor(q){
   switch(q.type){
+    case 'protokol': return `<div class="body"><input class="field" id="f_prot"
+      inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false"
+      placeholder="Protokol / dosya no"></div>
+      <p class="sub" style="margin-top:14px;font-size:13.5px">Bilmiyorsanız size anketi veren
+       hekime veya sekreterliğe sorabilirsiniz.</p>`;
     case 'ident': return `<div class="body"><input class="field" id="f_name"
       placeholder="Adınız ve soyadınız" autocomplete="name"></div>`;
     case 'num': return `<div class="body"><input class="field" id="${q.id}" type="number"
@@ -483,6 +490,7 @@ function answered(n){
   if (n<=0 || n>QS.length) return true;
   const q = QS[n-1];
   switch(q.type){
+    case 'protokol': return val('f_prot').trim().length >= 4;
     case 'ident':    return !!val('f_name');
     case 'num':      return !!val(q.id);
     case 'date':     return !!val('f_date');
@@ -513,6 +521,7 @@ function ok(){
     shake(t); if(t && t.focus) t.focus();
     return false;
   }
+  if (q.type==='protokol') A.protokol = val('f_prot').trim().toUpperCase();
   if (q.type==='ident')    A.name = val('f_name');
   if (q.type==='num')      A.age  = val(q.id);
   if (q.type==='date')     A.injDate = val('f_date');
@@ -646,7 +655,7 @@ function submit(){
 
   const payload = {
     module:'acl', timestamp:new Date().toISOString(),
-    name:A.name||'', patientId:qp.get('id')||'', src:qp.get('src')||'',
+    name:A.name||'', patientId:A.protokol||qp.get('id')||'', src:qp.get('src')||'',
     age:A.age||'', gender:A.gender||'', height:h||'', weight:w||'',
     bmi:(h&&w)?Math.round(w/Math.pow(h/100,2)*10)/10:'',
     dominant:A.dominant||'', smoke:A.smoke||'',
@@ -676,6 +685,8 @@ function submit(){
 
 /* ═══ Başlat ════════════════════════════════════════════════════════════ */
 document.getElementById('today').textContent = new Date().toLocaleDateString('tr-TR');
+if (qp.get('id')) { A.protokol = qp.get('id');
+  setTimeout(()=>{ const p=document.getElementById('f_prot'); if(p) p.value=A.protokol; },0); }
 if (qp.get('name')) { A.name = qp.get('name');
   setTimeout(()=>{ const n=document.getElementById('f_name'); if(n) n.value=A.name; },0); }
 paint();

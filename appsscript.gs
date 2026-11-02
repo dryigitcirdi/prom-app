@@ -897,7 +897,7 @@ function saveAclRow(data) {
   const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
   const sheet = ensureSheet(ACL_SHEET, ACL_HEADERS, [[4, 150], [5, 150], [16, 150], [17, 180], [45, 240]]);
   const ts = data.timestamp ? new Date(data.timestamp) : new Date();
-  sheet.appendRow([
+  const hasta = [
     ts, Utilities.formatDate(ts, 'Europe/Istanbul', 'yyyy-MM-dd'),
     data.patientId || '', data.name || '', data.src || '',
     n(data.age), data.gender || '', n(data.height), n(data.weight), n(data.bmi),
@@ -913,9 +913,29 @@ function saveAclRow(data) {
     n(data.tegnerPre), n(data.tegnerNow),
     n(data.koosS), n(data.koosP), n(data.koosA), n(data.koosSP), n(data.koosQ), n(data.marx),
     data.koosRaw || '', data.marxRaw || '',
-    newVakaNo_(),
-  ].concat(new Array(ACL_DOC_LEN).fill('')));
-  const row = sheet.getLastRow();
+  ];
+
+  // Hekim bu hastayı anketsiz açmış olabilir. Protokol no artık zorunlu olduğu
+  // için eşleştirebiliyoruz: aynı protokollü ve hasta bölümü boş bir satır varsa
+  // yeni satır açmak yerine onu doldur — hekim verisi ve Vaka No korunur.
+  const prot = String(data.patientId || '').trim().toUpperCase();
+  let row = 0;
+  const last = sheet.getLastRow();
+  if (prot && last >= 2) {
+    const ids  = sheet.getRange(2, 3, last - 1, 1).getValues();
+    const koos = sheet.getRange(2, 39, last - 1, 1).getValues();
+    for (let i = 0; i < ids.length; i++) {
+      if (String(ids[i][0] || '').trim().toUpperCase() === prot && koos[i][0] === '') {
+        row = i + 2; break;
+      }
+    }
+  }
+  if (row) {
+    sheet.getRange(row, 1, 1, hasta.length).setValues([hasta]);
+  } else {
+    sheet.appendRow(hasta.concat([newVakaNo_()]).concat(new Array(ACL_DOC_LEN).fill('')));
+    row = sheet.getLastRow();
+  }
   colorGecenGun(sheet, row, 14, data.daysSinceInjury);
   [39, 40, 41, 42, 43].forEach(function (c) { colorKoos(sheet, row, c); });
 }

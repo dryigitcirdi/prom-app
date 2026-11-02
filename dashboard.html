@@ -660,7 +660,8 @@
       <div class="form-row">
         <div class="form-group"><label>Ad Soyad <span style="font-weight:400;color:var(--muted);">(boş bırakılabilir)</span></label>
           <input type="text" id="laName" placeholder="Hasta adı"></div>
-        <div class="form-group"><label>Hasta No</label><input type="text" id="laId" placeholder="otomatik"></div>
+        <div class="form-group"><label>Protokol No</label>
+          <input type="text" id="laId" placeholder="boş bırakırsanız hasta kendi girer"></div>
         <div><button class="btn btn-primary" onclick="generateAclLink()">Link Oluştur</button></div>
       </div>
       <div class="link-result" id="laResult">
@@ -672,8 +673,8 @@
         <div style="font-size:12px;color:var(--muted);margin-top:6px;" id="laMeta"></div>
       </div>
       <div style="font-size:12px;color:var(--muted);margin-top:10px;">
-        Hasta yatışta kendi telefonundan doldurur (~8 dakika). Ad girmeden de link üretebilirsiniz —
-        hasta kendi adını ankette yazar.
+        Hasta yatışta kendi telefonundan doldurur (~8 dakika). Ad ve protokol no girmeden de link
+        üretebilirsiniz — anketin ilk sorusu protokol no ve zorunlu, hasta kendisi yazar.
       </div>
     </div>
 
@@ -694,7 +695,7 @@
           <div class="qr-head">Yatış Öncesi Değerlendirme</div>
           <div class="qr-title">Ön Çapraz Bağ<br>Ameliyat Öncesi Anket</div>
           <canvas id="aclQrCanvas"></canvas>
-          <div class="qr-cta">Kamerayla okutun · ~8 dakika</div>
+          <div class="qr-cta">Kamerayla okutun · ~8 dakika<br>Protokol numaranız gerekli</div>
           <div class="qr-src" id="aclQrSrcOut"></div>
         </div>
         <div class="qr-side">
@@ -4253,14 +4254,16 @@ function copyAclQRUrl() {
 
 function generateAclLink() {
   const name = document.getElementById('laName').value.trim();
-  const id   = document.getElementById('laId').value.trim() || ('A' + Date.now().toString(36).toUpperCase());
+  // Protokol no boşsa üretmiyoruz: anketin ilk sorusu zaten protokol no ve zorunlu.
+  const id   = document.getElementById('laId').value.trim();
   const full = ACL_FORM_URL + '?' + new URLSearchParams({ name, id }).toString();
 
   const box = document.getElementById('laText');
   document.getElementById('laResult').style.display = 'block';
   box.textContent = 'Kısa link oluşturuluyor…';
   document.getElementById('laMeta').textContent =
-    `${name || 'İsimsiz hasta'} · Hasta no: ${id} · ACL yatış öncesi değerlendirme`;
+    `${name || 'İsimsiz hasta'} · ${id ? 'Protokol: ' + id : 'protokol no\'yu hasta girecek'}`
+    + ' · ACL yatış öncesi değerlendirme';
 
   const q = new URLSearchParams({ action: 'newlink', module: 'acl', name, pid: id,
                                   procedure: ACL_DIAG, fu: 'preop',

@@ -172,13 +172,16 @@ textarea.inp{min-height:76px;resize:vertical}
   <input class="search" id="q" placeholder="Hasta ara…" oninput="renderList()">
   <button class="newbtn" onclick="toggleNew()">+ Hasta anketsiz vaka aç</button>
   <div id="newBox" hidden>
+    <div class="f"><div class="f-t">Protokol no</div>
+      <input class="inp" id="nProt" placeholder="hastane dosya / protokol numarası"></div>
     <div class="f"><div class="f-t">Ad Soyad</div>
       <input class="inp" id="nName" placeholder="Hasta adı"></div>
     <div class="f"><div class="f-t">Taraf</div><div class="chips" id="nSide">
       <button class="chip" onclick="nPick('Sağ',this)">Sağ</button>
       <button class="chip" onclick="nPick('Sol',this)">Sol</button></div></div>
     <button class="save" style="width:100%" onclick="createCase()">Vakayı aç</button>
-    <div class="hint">Hasta pre-op anketini sonradan doldurursa panelden bu vakaya bağlanır.</div>
+    <div class="hint">Protokol no zorunlu — yalnız isimle eşleştirme karışıklık yaratıyor.
+      Hasta pre-op anketini sonradan doldurursa panelden bu vakaya bağlanır.</div>
   </div>
   <div id="cases"></div>
 </main>
@@ -364,7 +367,7 @@ const EH = ['Evet','Hayır'];
 const HASTA = [
   { s:'Kimlik', f:[
     { k:'name', t:'Ad Soyad', type:'txt' },
-    { k:'patientId', t:'Hasta / protokol no', type:'txt', ph:'QR ile gelen kayıtlarda boştur' },
+    { k:'patientId', t:'Protokol no', type:'txt', ph:'hastane dosya / protokol numarası' },
   ]},
   { s:'Demografi', f:[
     { k:'age', t:'Yaş', type:'num' },
@@ -541,13 +544,15 @@ async function saveHasta() {
 
 // ─── hasta anketi olmayan vaka ───────────────────────────────────────────────
 let nSide = '';
-function toggleNew() { const b = el('newBox'); b.hidden = !b.hidden; if (!b.hidden) el('nName').focus(); }
+function toggleNew() { const b = el('newBox'); b.hidden = !b.hidden; if (!b.hidden) el('nProt').focus(); }
 function nPick(v, btn) {
   nSide = nSide === v ? '' : v;
   [...el('nSide').children].forEach(c => c.classList.toggle('on', c === btn && nSide === v));
 }
 async function createCase() {
-  const ad = el('nName').value.trim();
+  const prot = el('nProt').value.trim().toUpperCase();
+  const ad   = el('nName').value.trim();
+  if (prot.length < 4) { toast('Protokol no gerekli', true); return; }
   if (!ad) { toast('Hasta adı gerekli', true); return; }
   const doctor = localStorage.getItem(DOC_KEY) || '';
   // Vaka No'yu istemci üretir: ağ tekrarında aynı satır güncellenir, yenisi açılmaz
@@ -555,9 +560,9 @@ async function createCase() {
     () => '0123456789ABCDEF'[Math.floor(Math.random() * 16)]).join('');
   try {
     const j = await api({ action: 'aclDoc',
-      data: JSON.stringify({ vaka, name: ad, side: nSide, doctor, done: false }) });
+      data: JSON.stringify({ vaka, name: ad, patientId: prot, side: nSide, doctor, done: false }) });
     if (!j || j.status !== 'ok') throw new Error('olmadı');
-    el('nName').value = ''; nSide = ''; el('newBox').hidden = true;
+    el('nName').value = ''; el('nProt').value = ''; nSide = ''; el('newBox').hidden = true;
     await loadCases();
     toast('Vaka açıldı');
     openCase(vaka);
