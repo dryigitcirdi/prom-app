@@ -436,6 +436,7 @@ function saveGuarded_(data) {
 }
 
 function saveToSheet(data) {
+  if (data && data.module === 'rc')   { saveRcRow(data);   return; }
   if (data && data.module === 'acl-hekim') { saveAclDoctorRow(data); return; }
   if (data && data.module === 'acl')  { saveAclRow(data);  return; }
   if (data && data.module === 'uyku') { saveUykuRow(data); return; }
@@ -665,11 +666,12 @@ function getSheetData() {
   const tumorEventRows = dumpSheet(TUMOR_EVENTS, TUMOR_EVENT_HEADERS);
   const uykuRows = dumpSheet(UYKU_SHEET, UYKU_HEADERS);
   const aclRows = dumpSheet(ACL_SHEET, ACL_HEADERS);
+  const rcRows  = dumpSheet(RC_SHEET,  RC_HEADERS);
 
   return ContentService
     .createTextOutput(JSON.stringify({ rows: rows, hipRows: hipRows, hipOpRows: hipOpRows,
                                        tumorRows: tumorRows, tumorEventRows: tumorEventRows,
-                                       uykuRows: uykuRows, aclRows: aclRows }))
+                                       uykuRows: uykuRows, aclRows: aclRows, rcRows: rcRows }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -1117,6 +1119,93 @@ function aclCaseDetail(vaka) {
     }
   }
   return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ROTATOR MANŞET — AMELİYAT ÖNCESİ DEĞERLENDİRME
+// Ölçekler: ASES (0-100) + WORC (0-100), ikisi de yüksek = iyi.
+// ACL ile aynı mimari: bir protokol no = bir vaka, satır Vaka No ile anahtarlanır.
+// ═══════════════════════════════════════════════════════════════════════════
+const RC_SHEET = 'PROM_RC_PreOp';
+const RC_HEADERS = [
+  'Zaman Damgası', 'Tarih', 'Hasta ID', 'Ad Soyad', 'Kaynak',
+  'Yaş', 'Cinsiyet', 'Boy (cm)', 'Kilo (kg)', 'VKİ',
+  'Dominant El', 'Taraf', 'Dominant Omuz mu', 'Sigara', 'Ek Hastalık',
+  'Şikâyet Süresi (ay)', 'Başlangıç', 'Travma Tarihi', 'Travmadan Geçen Gün',
+  'İş Kazası / Meslek Hastalığı', 'İş Yükü', 'Baş Üstü Spor',
+  'Gece Ağrısı', 'Üzerine Yatamıyor', 'İstirahat Ağrısı', 'Haftada Kaç Gece',
+  'Fizik Tedavi', 'Enjeksiyon Sayısı', 'Son Enjeksiyon',
+  'Önceki Ameliyat (aynı omuz)', 'Karşı Omuz', 'Boyun Sorunu',
+  'ASES Ağrı (0-10)', 'ASES',
+  'WORC Belirti', 'WORC Spor', 'WORC İş', 'WORC Yaşam', 'WORC Duygu', 'WORC',
+  'Beklenti', 'Beklenen Düzelme (%)',
+  'ASES ham', 'WORC ham', 'Vaka No',
+];
+const RC_VAKA_COL = 45;
+
+function saveRcRow(data) {
+  data.patientId = String(data.patientId || '').trim().toUpperCase();
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+  const sheet = ensureSheet(RC_SHEET, RC_HEADERS, [[4, 150], [5, 150], [15, 190], [17, 190], [43, 240], [44, 300]]);
+  const ts = data.timestamp ? new Date(data.timestamp) : new Date();
+  const hasta = [
+    ts, Utilities.formatDate(ts, 'Europe/Istanbul', 'yyyy-MM-dd'),
+    data.patientId || '', data.name || '', data.src || '',
+    n(data.age), data.gender || '', n(data.height), n(data.weight), n(data.bmi),
+    data.dominant || '', data.side || '', data.dominantSide || '',
+    data.smoke || '', data.comorbid || '',
+    n(data.durationMonths), data.onset || '',
+    data.traumaDate || '', n(data.daysSinceTrauma),
+    data.workComp || '', data.workLoad || '', data.overheadSport || '',
+    data.nightPain || '', data.sideLie || '', data.restPain || '', n(data.nightsPerWeek),
+    data.physio || '', data.injections || '', data.injectionTiming || '',
+    data.prevSurgSame || '', data.prevOther || '', data.neckProb || '',
+    n(data.asesPain), n(data.ases),
+    n(data.worcS), n(data.worcSp), n(data.worcW), n(data.worcL), n(data.worcE), n(data.worc),
+    data.expectGoal || '', n(data.expectPct),
+    data.asesRaw || '', data.worcRaw || '',
+  ];
+
+  // Bir protokol no + bir taraf = bir vaka. Aynı omuz için gelen ikinci anket
+  // yeni satır açmaz, satırı yeniden yazar. Karşı omuz ayrı vakadır.
+  const prot = data.patientId, taraf = String(data.side || '').trim().toLowerCase();
+  let row = 0;
+  const last = sheet.getLastRow();
+  if (prot && last >= 2) {
+    const v = sheet.getRange(2, 1, last - 1, RC_HEADERS.length).getValues();
+    for (let i = 0; i < v.length; i++) {
+      if (String(v[i][2] || '').trim().toUpperCase() !== prot) continue;
+      const rt = String(v[i][11] || '').trim().toLowerCase();
+      if (rt && taraf && rt !== taraf) continue;
+      row = i + 2; break;
+    }
+  }
+  if (row) {
+    sheet.getRange(row, 1, 1, hasta.length).setValues([hasta]);
+  } else {
+    sheet.appendRow(hasta.concat(['RC-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase()]));
+    row = sheet.getLastRow();
+  }
+
+  colorSure(sheet, row, 16, data.durationMonths);
+  colorEnj(sheet, row, 28, data.injections, data.injectionTiming);
+  [34, 35, 36, 37, 38, 39, 40].forEach(function (c) { colorKoos(sheet, row, c); });
+}
+
+// Şikâyet süresi uzadıkça onarım ve iyileşme şansı düşüyor
+function colorSure(sheet, row, col, ay) {
+  const a = Number(ay);
+  if (!a && a !== 0) { sheet.getRange(row, col).setBackground(null); return; }
+  sheet.getRange(row, col).setBackground(a <= 6 ? '#dcfce7' : a <= 12 ? '#fef9c3' : '#fee2e2');
+}
+
+// Çok sayıda veya son 6 ay içindeki kortikosteroid enjeksiyonu retear riskini artırıyor
+function colorEnj(sheet, row, col, sayi, zaman) {
+  const s = String(sayi || ''), z = String(zaman || '');
+  if (!s || s === 'Hiç olmadım') { sheet.getRange(row, col).setBackground(null); return; }
+  const cok = s === '2 kez' || s === '3 ve üzeri';
+  const yakin = z === 'Son 3 ay içinde' || z === '3–6 ay önce';
+  sheet.getRange(row, col).setBackground(cok && yakin ? '#fee2e2' : (cok || yakin) ? '#fef9c3' : null);
 }
 
 // Yaralanma-ameliyat arası süre: 6 ay üstü menisküs riski belirgin artıyor

@@ -54,9 +54,10 @@ function go(d) {
   const page = d.module === 'hip'  ? '../form-hip.html'
              : d.module === 'uyku' ? '../form-uyku.html'
              : d.module === 'acl'  ? '../form-acl.html'
+             : d.module === 'rc'   ? '../form-rc.html'
              : '../form.html';
   const p = new URLSearchParams({ name: d.name || '', id: d.id || '' });
-  if (d.module === 'uyku' || d.module === 'acl') {
+  if (d.module === 'uyku' || d.module === 'acl' || d.module === 'rc') {
     if (d.procedure) p.set('dx', d.procedure);
     if (qs.get('src')) p.set('src', qs.get('src'));   // hangi oda/hekim yönlendirdi
   } else {
