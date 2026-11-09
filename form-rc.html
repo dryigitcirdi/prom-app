@@ -522,7 +522,8 @@ const QS = [
   {k:'gender',  type:'choice', row:true, title:'Cinsiyetiniz', opts:['Kadın','Erkek']},
   {k:'hw',      type:'hw',     title:'Boyunuz ve kilonuz'},
   {k:'dominant',type:'choice', row:true, title:'Hangi elinizi kullanıyorsunuz?', opts:['Sağ','Sol']},
-  {k:'side',    type:'choice', row:true, title:'Hangi omzunuz için geldiniz?', opts:['Sağ','Sol']},
+  {k:'side',    type:'choice', row:true, title:'Hangi omzunuz için geldiniz?', opts:['Sağ','Sol'],
+   when:()=>!qp.get('side')},
   {k:'smoke',   type:'choice', row:true, title:'Sigara kullanıyor musunuz?',
    sub:'Tendon iyileşmesini etkilediği için soruyoruz.', opts:['Hayır','Evet','Bıraktım']},
   {k:'smokeDet',type:'pair',   title:'Sigara ayrıntısı',
@@ -1153,6 +1154,7 @@ function ikinciBolum(){
 
 /* ═══ Başlat ════════════════════════════════════════════════════════════ */
 document.getElementById('today').textContent = new Date().toLocaleDateString('tr-TR');
+if (qp.get('side')) A.side = qp.get('side');
 if (qp.get('id')) { A.protokol = qp.get('id');
   setTimeout(()=>{ const p=document.getElementById('f_prot'); if(p) p.value=A.protokol; },0); }
 if (qp.get('name')) { A.name = qp.get('name');

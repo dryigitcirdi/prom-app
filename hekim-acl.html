@@ -605,8 +605,11 @@ function renderSummary(d) {
    üretilir. Hasta kendi telefonuyla okutur, yanıtlar protokol no üzerinden
    aynı satıra düşer. Link kısaltma sunucusuna uğramaz — en az arıza.     */
 function anketUrl(d) {
+  // Taraf linkte gider: hekim zaten seçti, hastaya tekrar sorulmaz ve
+  // farklı yanıtlayıp ikinci satır açması engellenir.
   const p = new URLSearchParams({
-    id: d['Hasta ID'] || '', name: d['Ad Soyad'] || '', src: A.doctor || d['Hekim'] || '',
+    id: d['Hasta ID'] || '', name: d['Ad Soyad'] || '',
+    side: d['Taraf'] || '', src: A.doctor || d['Hekim'] || '',
   });
   return B().anket + '?' + p.toString();
 }
