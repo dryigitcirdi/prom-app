@@ -1187,13 +1187,12 @@ const RC_HEADERS = [
   'Jobe (Supraspinatus)', 'Subskapularis Testi', 'Dış Rotasyon Lag',
   'Sıkışma Testleri', 'Ağrılı Ark', 'Psödoparalizi', 'Muayene Not',
   'Yırtık Tipi', 'Tutulan Tendonlar', 'Yırtık Boyutu (mm)', 'Retraksiyon (Patte)',
-  'Goutallier', 'Tangent (Atrofi)', 'Akromiohumeral Mesafe (mm)',
-  'Kritik Omuz Açısı (°)', 'Akromion Tipi', 'Biseps', 'AC Eklem', 'MR Not',
+  'Goutallier', 'Akromion Tipi', 'Biseps', 'AC Eklem', 'MR Not',
   'Ameliyat Tarihi', 'Teknik', 'Ankraj Sayısı', 'Ek İşlem', 'Tamir Derecesi',
   'İntra-op Not', 'Komplikasyon', 'Hekim Tamamlandı',
 ];
 const RC_DOC_COL = 68;   // 'Hekim' … 'Hekim Tamamlandı'
-const RC_DOC_LEN = 30;
+const RC_DOC_LEN = 27;
 const RC_VAKA_COL = 44;
 
 function saveRcRow(data) {
@@ -1274,8 +1273,7 @@ function rcDocValues_(d) {
     d.jobe || '', d.subscap || '', d.erLag || '', d.impingement || '',
     d.painfulArc || '', d.pseudo || '', d.examNote || '',
     d.tearType || '', d.tendons || '', n(d.tearSize), d.patte || '',
-    d.goutallier || '', d.tangent || '', n(d.aha), n(d.csa),
-    d.acromion || '', d.biceps || '', d.acJoint || '', d.mrNote || '',
+    d.goutallier || '', d.acromion || '', d.biceps || '', d.acJoint || '', d.mrNote || '',
     d.surgDate || '', d.technique || '', n(d.anchors), d.extraProc || '',
     d.repairGrade || '', d.opNote || '', d.complication || '',
     d.done ? 'Evet' : 'Hayır',
@@ -1334,9 +1332,9 @@ function rcCaseList() {
       hekim: String(r[RC_DOC_COL - 1] || ''),
       hastaDoldu: r[32] !== '' && r[32] !== null,     // sütun 33 = ASES skoru
       ases: r[32] === '' || r[32] === null ? null : Number(r[32]),
-      amelTarih: r[RC_DOC_COL + 21] instanceof Date
-        ? Utilities.formatDate(r[RC_DOC_COL + 21], 'Europe/Istanbul', 'yyyy-MM-dd')
-        : String(r[RC_DOC_COL + 21] || ''),
+      amelTarih: r[RC_DOC_COL + 18] instanceof Date
+        ? Utilities.formatDate(r[RC_DOC_COL + 18], 'Europe/Istanbul', 'yyyy-MM-dd')
+        : String(r[RC_DOC_COL + 18] || ''),
       tamam: String(r[RC_DOC_COL + RC_DOC_LEN - 2] || '') === 'Evet',
     });
   }
