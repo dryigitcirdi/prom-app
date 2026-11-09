@@ -483,8 +483,16 @@ const IS_YUKU = [
   ['Orta','Düzenli kol kaldırma, taşıma var'],
   ['Ağır','Sürekli baş üstü çalışıyorum'],
 ];
-const BASUSTU_SPOR = ['Hayır','Voleybol / basketbol','Tenis / badminton','Yüzme',
-  'Fitness / ağırlık','Diğer baş üstü spor'];
+const SPORLAR = ['Voleybol','Basketbol','Hentbol','Tenis / badminton','Yüzme','Kürek / kano',
+  'Fitness / ağırlık','Golf','Futbol','Koşu / yürüyüş','Bisiklet','Diğer'];
+// Düzey tanımları ACL anketiyle birebir aynı — iki kohort karşılaştırılabilsin
+const SPOR_DUZEY = [
+  ['Profesyonel','Spordan gelir elde ediyorum'],
+  ['Yarı profesyonel / amatör lig','Lisanslıyım, düzenli antrenman yapıyorum'],
+  ['Rekreasyonel düzenli','Haftada en az bir kez, lisansım yok'],
+  ['Weekend warrior','Düzensiz, ayda birkaç kez'],
+];
+const BAS_USTU = ['Sürekli','Ara sıra','Hayır'];
 const ENJEKSIYON = ['Hiç olmadım','1 kez','2 kez','3 ve üzeri'];
 // Çok sayıda ve son 6 ay içindeki enjeksiyon retear riskini belirgin artırıyor
 const ENJ_ZAMAN = ['Son 3 ay içinde','3–6 ay önce','6–12 ay önce','1 yıldan uzun süre önce'];
