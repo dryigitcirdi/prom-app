@@ -1332,8 +1332,8 @@ function rcCaseList() {
       taraf: String(r[11] || ''), yas: r[5] === '' ? null : Number(r[5]),
       tani: String(r[RC_DOC_COL + 1] || ''),
       hekim: String(r[RC_DOC_COL - 1] || ''),
-      hastaDoldu: r[32] !== '' && r[32] !== null,     // ASES Ağrı dolu mu
-      ases: r[32] === '' ? null : Number(r[33]),
+      hastaDoldu: r[32] !== '' && r[32] !== null,     // sütun 33 = ASES skoru
+      ases: r[32] === '' || r[32] === null ? null : Number(r[32]),
       amelTarih: r[RC_DOC_COL + 21] instanceof Date
         ? Utilities.formatDate(r[RC_DOC_COL + 21], 'Europe/Istanbul', 'yyyy-MM-dd')
         : String(r[RC_DOC_COL + 21] || ''),
