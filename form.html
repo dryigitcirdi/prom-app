@@ -1260,6 +1260,17 @@ function fxPick(kutu, cok) {
       const dondu = fx.rts === 'Evet' || fx.rts === 'Kısmen';
       document.getElementById('fxBack').style.display = dondu ? '' : 'none';
       document.getElementById('fxWhy').style.display  = fx.rts === 'Hayır' ? '' : 'none';
+      // Gizlenen dalın yanıtları kayda geçmesin — dönmediyse "eski seviyem" saçma olur
+      if (!dondu) {
+        fx.rtsSame = fx.rtsLevel = fx.rtsMonths = '';
+        ['fxSame','fxLevel'].forEach(k =>
+          [...document.getElementById(k).children].forEach(x => x.classList.remove('active')));
+        document.getElementById('fxMonths').value = '';
+      }
+      if (fx.rts !== 'Hayır') {
+        fx.rtsReason = '';
+        [...document.getElementById('fxReason').children].forEach(x => x.classList.remove('active'));
+      }
     }
   });
 }
