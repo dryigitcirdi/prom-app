@@ -161,6 +161,97 @@ h1{font-size:clamp(25px,6.6vw,32px);font-weight:700;letter-spacing:-.035em;line-
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important}
 }
+/* ── Uyku pozisyonu ────────────────────────────────────── */
+.pos-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pos{position:relative;border:1px solid var(--line);border-radius:18px;background:var(--bg);
+  padding:9px 8px 11px;cursor:pointer;
+  transition:transform .18s var(--ease),border-color var(--fast),box-shadow var(--fast)}
+.pos:active{transform:scale(.975)}
+.pos.on{border-color:var(--ink);box-shadow:var(--lift)}
+.pos-art{position:relative;border-radius:12px;background:var(--surface);overflow:hidden;
+  transition:background var(--fast);aspect-ratio:1116/2000}
+.pos-art img{opacity:0;transition:opacity .3s var(--ease)}
+.pos-art img.rdy{opacity:1}
+.pos-art svg{margin:-2px 0 -4px}
+.pos.on .pos-art{background:#f1f1f4}
+.pos svg{display:block;width:100%;height:auto}
+.pos-name{font-size:13.5px;font-weight:650;letter-spacing:-.015em;text-align:center;margin-top:8px}
+.pos-sub{font-size:11px;color:var(--muted);text-align:center;line-height:1.3;margin-top:1px;
+  padding:0 2px}
+.pos-tick{position:absolute;top:7px;right:7px;z-index:2;width:21px;height:21px;border-radius:50%;
+  background:var(--ink);display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(.5);transition:all .26s var(--ease)}
+.pos.on .pos-tick{opacity:1;transform:none}
+/* nefes alma — sadece seçili kartta, dikkat dağıtmasın */
+.pos.on .breathe{animation:breathe 3.6s ease-in-out infinite;transform-origin:center}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+.pos.on .sway{animation:sway 4.4s ease-in-out infinite;transform-origin:60px 50px}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.clock-wrap{display:flex;justify-content:center;padding-top:4px}
+.clock{width:100%;max-width:300px;height:auto;overflow:visible}
+.seg{cursor:pointer}
+.seg-bg{stroke:#fff;stroke-width:2;
+  transition:fill .28s var(--ease),transform .2s var(--ease);transform-origin:125px 125px}
+.seg:active .seg-bg{transform:scale(.975)}
+/* Gündüz sıcak, akşam alacakaranlık, gece serin — tonlar hafif tutuldu */
+.tone-gunduz .seg-bg{fill:#fdf3dd}  .tone-gunduz .ico{color:#d97706}
+.tone-aksam  .seg-bg{fill:#fbe8de}  .tone-aksam  .ico{color:#e07a4c}
+.tone-gece   .seg-bg{fill:#e9edf4}  .tone-gece   .ico{color:#64748b}
+.ico{pointer-events:none;transition:color .28s var(--ease)}
+.seg-h{font-size:13.5px;font-weight:700;fill:var(--ink);text-anchor:middle;
+  letter-spacing:-.02em;pointer-events:none;transition:fill .28s var(--ease)}
+.seg-w{font-size:10px;font-weight:600;fill:var(--muted);text-anchor:middle;
+  letter-spacing:.05em;pointer-events:none;transition:fill .28s var(--ease)}
+.seg.on .seg-bg{fill:var(--ink)}
+.seg.on .ico{color:#fff}
+.seg.on .seg-h{fill:#fff}
+.seg.on .seg-w{fill:rgba(255,255,255,.7)}
+.mk{font-size:9.5px;font-weight:700;fill:#b9b9c2;text-anchor:middle;letter-spacing:.04em}
+.ctr-a{font-size:15px;font-weight:700;fill:var(--muted);text-anchor:middle;letter-spacing:-.01em;
+  transition:fill .28s var(--ease)}
+.ctr-a.set{fill:var(--ink)}
+.ctr-b{font-size:11.5px;font-weight:600;fill:#b8b8c0;text-anchor:middle;letter-spacing:.02em}
+/* ── Pozisyon ızgarası (fotoğraf) ──────────────────────── */
+.pos-art img{display:block;width:100%;height:auto;aspect-ratio:1116/2000;object-fit:cover;
+  border-radius:10px}
+.pos-no{position:absolute;top:7px;left:7px;z-index:2;min-width:21px;height:21px;padding:0 6px;
+  border-radius:7px;background:rgba(9,9,11,.62);backdrop-filter:blur(6px);color:#fff;
+  font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  font-variant-numeric:tabular-nums}
+.pos-zoom{position:absolute;bottom:7px;right:7px;z-index:2;width:26px;height:26px;border-radius:50%;
+  background:rgba(9,9,11,.52);backdrop-filter:blur(6px);display:flex;align-items:center;
+  justify-content:center;transition:background .2s var(--ease)}
+.pos:active .pos-zoom{background:rgba(9,9,11,.8)}
+/* ── Tam ekran görüntüleyici ───────────────────────────── */
+.lb{position:fixed;inset:0;z-index:200;background:#0b0b0e;display:flex;flex-direction:column;
+  animation:lbIn .28s var(--ease) both}
+.lb[hidden]{display:none!important}   /* .lb'nin display'i [hidden]'ı eziyordu */
+@keyframes lbIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.lb-top{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 8px}
+.lb-btn{width:40px;height:40px;border:none;border-radius:12px;background:rgba(255,255,255,.09);
+  color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lb-btn:active{background:rgba(255,255,255,.18)}
+.lb-count{color:rgba(255,255,255,.62);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.lb-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+  padding:0 8px;min-height:0}
+.lb-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px;
+  animation:lbImg .26s var(--ease) both}
+@keyframes lbImg{from{opacity:0}to{opacity:1}}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border:none;
+  border-radius:50%;background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;backdrop-filter:blur(8px)}
+.lb-nav:active{background:rgba(255,255,255,.24)}
+.lb-nav.prev{left:6px} .lb-nav.next{right:6px}
+.lb-foot{padding:16px 20px calc(18px + env(safe-area-inset-bottom));text-align:center}
+.lb-name{color:#fff;font-size:19px;font-weight:700;letter-spacing:-.02em}
+.lb-sub{color:rgba(255,255,255,.55);font-size:13.5px;margin-top:2px}
+.lb-ok{width:100%;margin-top:14px;padding:16px;border:none;border-radius:14px;background:#fff;
+  color:#09090b;font-size:16.5px;font-weight:650;cursor:pointer;transition:transform .14s var(--ease)}
+.lb-ok:active{transform:scale(.98)}
+.lb-alt{width:100%;margin-top:8px;padding:11px;border:none;background:transparent;
+  color:rgba(255,255,255,.55);font-size:13.5px;font-weight:500;cursor:pointer}
+
 /* 0-10 ağrı ölçeği */
 .vas{display:flex;gap:5px}
 .vas-b{flex:1;min-width:0;padding:15px 0;border:1px solid var(--line);border-radius:11px;
@@ -203,6 +294,32 @@ h1{font-size:clamp(25px,6.6vw,32px);font-weight:700;letter-spacing:-.035em;line-
          stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
   </button>
   <div class="tb-count" id="count"></div>
+</div>
+
+<!-- Tam ekran pozisyon görüntüleyici -->
+<div class="lb" id="lb" hidden>
+  <div class="lb-top">
+    <button class="lb-btn" onclick="closeLb()" aria-label="Kapat">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="lb-count" id="lbCount"></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="lb-stage">
+    <button class="lb-nav prev" onclick="stepLb(-1)" aria-label="Önceki">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <img id="lbImg" alt="">
+    <button class="lb-nav next" onclick="stepLb(1)" aria-label="Sonraki">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="lb-foot">
+    <div class="lb-name" id="lbName"></div>
+    <div class="lb-sub" id="lbSub"></div>
+    <button class="lb-ok" onclick="confirmLb()">Bu benim pozisyonum</button>
+    <button class="lb-alt" onclick="closeLb()">Başka bir pozisyona bakayım</button>
+  </div>
 </div>
 
 <div class="stage" id="stage"></div>
@@ -275,6 +392,83 @@ const WORC = [
   ]},
 ];
 
+/* ═══ Uyku duruşu ve ağrı saati — uyku çalışmasındaki maddelerle aynı ═══ */
+const POSITIONS = [
+  { id:'p1', img:1, base:'sirtustu', name:'Sırtüstü',  sub:'kollar yanda' },
+  { id:'p2', img:2, base:'yuzustu',  name:'Yüzüstü',   sub:'baş yana dönük' },
+  { id:'p3', img:3, base:'yan',      name:'Yan',       sub:'kollar önde uzanmış' },
+  { id:'p4', img:4, base:'yan',      name:'Yan · cenin', sub:'dizler karına çekili' },
+  { id:'p5', img:5, base:'yuzustu',  name:'Yüzüstü',   sub:'bir bacak yukarı çekili' },
+  { id:'p6', img:6, base:'sirtustu', name:'Sırtüstü',  sub:'bir kol başın üstünde' },
+  { id:'p7', img:7, base:'yan',      name:'Yan',       sub:'üst bacak öne çekili' },
+  { id:'p8', img:8, base:'sirtustu', name:'Sırtüstü',  sub:'eller ensede' },
+];
+function posById(id){ return POSITIONS.find(p => p.id === id); }
+const ZOOM = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff"
+  stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg>`;
+const SLOTS = [
+  { v:'00.00 – 08.00', from:0,  to:8,  word:'Gece',   tone:'gece'   },
+  { v:'08.00 – 16.00', from:8,  to:16, word:'Gündüz', tone:'gunduz' },
+  { v:'16.00 – 00.00', from:16, to:24, word:'Akşam',  tone:'aksam'  },
+];
+/* ─── 24 saatlik kadran ──────────────────────────────────────────────────
+   Gün üç eşit dilime ayrılır. Kadran 08.00'de başlar: gündüz SAĞ ÜSTTE,
+   akşam altta, gece sol üstte. Her dilimde güneş / batan güneş / ay simgesi
+   var — hasta "gece nerede, gündüz nerede" diye düşünmesin.                */
+const DIAL_START = 8;
+function polar(cx, cy, r, h){
+  const a = ((h - DIAL_START) / 24) * Math.PI * 2 - Math.PI / 2;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+function donutArc(cx, cy, R, r, h0, h1, gapH){
+  const a0 = h0 + gapH, a1 = h1 - gapH;
+  const [ox0,oy0] = polar(cx,cy,R,a0), [ox1,oy1] = polar(cx,cy,R,a1);
+  const [ix1,iy1] = polar(cx,cy,r,a1), [ix0,iy0] = polar(cx,cy,r,a0);
+  const big = (a1 - a0) > 12 ? 1 : 0;
+  return `M${ox0.toFixed(1)} ${oy0.toFixed(1)} A${R} ${R} 0 ${big} 1 ${ox1.toFixed(1)} ${oy1.toFixed(1)}` +
+         ` L${ix1.toFixed(1)} ${iy1.toFixed(1)} A${r} ${r} 0 ${big} 0 ${ix0.toFixed(1)} ${iy0.toFixed(1)} Z`;
+}
+
+/* Simgeler — currentColor kullanır, seçilince beyaza döner */
+const ICONS = {
+  gunduz: `<circle r="4.4" fill="currentColor"/>
+    <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M0-9.2V-7"/><path d="M0 7V9.2"/><path d="M-9.2 0H-7"/><path d="M7 0H9.2"/>
+      <path d="M-6.5-6.5l1.6 1.6"/><path d="M4.9 4.9l1.6 1.6"/>
+      <path d="M-6.5 6.5l1.6-1.6"/><path d="M4.9-4.9l1.6-1.6"/></g>`,
+  aksam: `<path d="M-6.4 3.2a6.4 6.4 0 0 1 12.8 0Z" fill="currentColor"/>
+    <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <path d="M-9.4 6.2H9.4"/><path d="M-6.6 9.4H-2.4"/><path d="M2.4 9.4H6.6"/></g>`,
+  gece: `<path d="M2.6-8.1A8.4 8.4 0 1 0 6.6 7.4 9.6 9.6 0 0 1 2.6-8.1Z" fill="currentColor"/>
+    <circle cx="7.4" cy="-6.2" r="1.25" fill="currentColor"/>
+    <circle cx="9.6" cy="-1.8" r=".85" fill="currentColor"/>`,
+};
+
+function clockSVG(){
+  const C = 125, R = 105, r = 45, MID = (R + r) / 2;
+  const segs = SLOTS.map((sl, k) => {
+    const [lx, ly] = polar(C, C, MID, (sl.from + sl.to) / 2);
+    return `<g class="seg tone-${sl.tone}" data-v="${sl.v}" data-k="${k}">
+      <path class="seg-bg" d="${donutArc(C,C,R,r,sl.from,sl.to,0.32)}"/>
+      <g class="ico" transform="translate(${lx.toFixed(1)},${(ly-19).toFixed(1)})">${ICONS[sl.tone]}</g>
+      <text class="seg-h" x="${lx.toFixed(1)}" y="${(ly+6).toFixed(1)}">${String(sl.from).padStart(2,'0')}–${String(sl.to%24).padStart(2,'0')}</text>
+      <text class="seg-w" x="${lx.toFixed(1)}" y="${(ly+18).toFixed(1)}">${sl.word}</text>
+    </g>`;
+  }).join('');
+  // İşaretler dilim SINIRLARINDA — geçiş saatlerini gösterir
+  const marks = [8,16,24].map(h => {
+    const [x,y] = polar(C, C, R + 16, h);
+    return `<text class="mk" x="${x.toFixed(1)}" y="${(y+3.5).toFixed(1)}">${String(h%24).padStart(2,'0')}.00</text>`;
+  }).join('');
+  return `<svg class="clock" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
+    ${marks}${segs}
+    <circle cx="${C}" cy="${C}" r="${r-4}" fill="#fff"/>
+    <text class="ctr-a" id="ctrA" x="${C}" y="${C+2}">Seçin</text>
+    <text class="ctr-b" id="ctrB" x="${C}" y="${C+19}"></text>
+  </svg>`;
+}
+
 /* ═══ Seçenek kümeleri ══════════════════════════════════════════════════ */
 const KOMORBID = ['Diyabet','Tiroid hastalığı','Romatolojik hastalık (romatoid artrit vb.)',
   'Tansiyon','Hiçbiri'];
@@ -319,6 +513,13 @@ const QS = [
   {k:'side',    type:'choice', row:true, title:'Hangi omzunuz için geldiniz?', opts:['Sağ','Sol']},
   {k:'smoke',   type:'choice', row:true, title:'Sigara kullanıyor musunuz?',
    sub:'Tendon iyileşmesini etkilediği için soruyoruz.', opts:['Hayır','Evet','Bıraktım']},
+  {k:'smokeDet',type:'pair',   title:'Sigara ayrıntısı',
+   sub:'Paket-yıl hesaplayabilmemiz için. Bıraktıysanız içtiğiniz dönemi düşünün.',
+   a:{k:'smokePerDay', id:'f_spd', t:'Günde kaç adet', ph:'20', max:80},
+   b:{k:'smokeYears',  id:'f_syr', t:'Kaç yıl',       ph:'20', max:80},
+   when:()=>A.smoke && A.smoke!=='Hayır'},
+  {k:'smokeQuit',type:'num',   title:'Kaç yıl önce bıraktınız?', ph:'3', id:'f_sq', max:70,
+   when:()=>A.smoke==='Bıraktım'},
   {k:'comorbid',type:'multi',  title:'Bilinen bir hastalığınız var mı?',
    sub:'Hepsini işaretleyebilirsiniz.', opts:KOMORBID, none:'Hiçbiri'},
 
@@ -332,8 +533,17 @@ const QS = [
   {k:'workComp',type:'choice', title:'Bu şikâyet için açılmış bir iş kazası veya meslek hastalığı dosyanız var mı?',
    opts:IS_KAZASI},
   {k:'workLoad',type:'choice', title:'İşiniz omzunuzu ne kadar zorluyor?', pairs:IS_YUKU},
-  {k:'ohSport', type:'choice', title:'Baş üstü kol kullandığınız bir spor yapıyor musunuz?',
-   opts:BASUSTU_SPOR},
+  {k:'sportYes',type:'choice', row:true, title:'Düzenli spor yapıyor musunuz?', opts:['Evet','Hayır']},
+  {k:'sport',   type:'choice', title:'Hangi sporu yapıyorsunuz?', opts:SPORLAR,
+   when:()=>A.sportYes==='Evet'},
+  {k:'sportLvl',type:'choice', title:'Bu sporu hangi düzeyde yapıyorsunuz?', pairs:SPOR_DUZEY,
+   when:()=>A.sportYes==='Evet'},
+  {k:'sportFreq',type:'pair',  title:'Ne sıklıkla ve ne kadar zamandır?',
+   a:{k:'sportWeek', id:'f_sw', t:'Haftada kaç kez', ph:'3',  max:21},
+   b:{k:'sportYrs',  id:'f_sy', t:'Kaç yıldır',      ph:'10', max:70},
+   when:()=>A.sportYes==='Evet'},
+  {k:'ohSport', type:'choice', row:true, when:()=>A.sportYes==='Evet',
+   title:'Bu sporda kolunuzu omuz hizasının üstüne çıkarıyor musunuz?', opts:BAS_USTU},
 
   {k:'night',   type:'yn',     title:'Gece ağrısı', sub:'Hepsini yanıtlayın.', q:[
     ['nightPain','Ağrı geceleri uykunuzu bölüyor mu?'],
@@ -341,6 +551,17 @@ const QS = [
     ['restPain','Hiçbir şey yapmazken de ağrınız oluyor mu?']]},
   {k:'nights',  type:'num',    title:'Haftada kaç gece uykunuz bölünüyor?',
    ph:'4', id:'f_nights', max:7, when:()=>A.nightPain==='Evet'},
+
+  {k:'sleepPos',type:'pos',    title:'Genellikle hangi pozisyonda uyursunuz?',
+   sub:'Gecenin çoğunu geçirdiğiniz duruşu seçin. Büyütmek için fotoğrafa dokunun — hangi tarafınıza yattığınızı bir sonraki soruda soracağız.'},
+  {k:'lieOnArm',type:'choice', row:true, title:'Hangi kolunuzun üzerine yatıyorsunuz?',
+   opts:['Sağ','Sol','Hiçbiri']},
+  {k:'partner', type:'choice', row:true, title:'Yatağınızı partnerinizle paylaşıyor musunuz?',
+   opts:['Evet','Hayır']},
+  {k:'bedSide', type:'choice', row:true, title:'Yatağın hangi tarafında yatıyorsunuz?',
+   opts:['Sağ','Sol'], when:()=>A.partner==='Evet'},
+  {k:'painHour',type:'clock',  title:'Ağrınız günün hangi saatlerinde en çok oluyor?',
+   sub:'En çok ağrıdığınız tek dilimi seçin.'},
 
   {k:'physio',  type:'choice', title:'Bu omuz için fizik tedavi gördünüz mü?', opts:FIZIK_TED},
   {k:'inj',     type:'choice', title:'Omzunuza kaç kez kortizon (iğne) yapıldı?',
@@ -415,6 +636,25 @@ function bodyFor(q){
       <div><div class="flab">Kilo · kg</div><input class="field" id="f_w" type="number"
         inputmode="decimal" min="20" max="300" step="0.1" placeholder="76"></div></div>
       <div class="readout" id="bmi"></div></div>`;
+    case 'pair': return `<div class="body"><div class="pair">
+      <div><div class="flab">${q.a.t}</div><input class="field" id="${q.a.id}" type="number"
+        inputmode="numeric" min="0" max="${q.a.max||99}" placeholder="${q.a.ph||''}"></div>
+      <div><div class="flab">${q.b.t}</div><input class="field" id="${q.b.id}" type="number"
+        inputmode="numeric" min="0" max="${q.b.max||99}" placeholder="${q.b.ph||''}"></div></div>
+      <div class="readout" id="pairOut"></div></div>`;
+    case 'pos': return `<div class="body" style="margin-top:20px">
+      <div class="pos-grid">${POSITIONS.map((p, n) => `
+        <button type="button" class="pos" data-v="${p.id}">
+          <div class="pos-art">
+            <div class="pos-tick">${TICKW}</div>
+            <span class="pos-no">${n+1}</span>
+            <img src="img/uyku/t${p.img}.jpg" alt="${p.name}" decoding="async"
+                 onload="this.classList.add('rdy')">
+            <span class="pos-zoom">${ZOOM}</span>
+          </div>
+          <div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div>
+        </button>`).join('')}</div></div>`;
+    case 'clock': return `<div class="body clock-wrap">${clockSVG()}</div>`;
     case 'multi': return `<div class="body"><div class="opts">${q.opts.map(o =>
       `<button type="button" class="opt" data-v="${esc(o)}">
         <span class="dot">${TICK}</span>${o}</button>`).join('')}</div></div>`;
@@ -499,6 +739,8 @@ function paint(){
   dock.classList.toggle('hide', i===LAST);
   cta.textContent = i===0 ? 'Başla' : i===QS.length ? 'Gönder' : 'Devam';
   cta.disabled = !answered(i);
+  const qq = QS[i-1];
+  if (qq && qq.type === 'pos') warmGrid();
 }
 
 /* ═══ Doğrulama — her bölüm zorunlu ═════════════════════════════════════ */
@@ -514,6 +756,9 @@ function answered(n){
     case 'hw':       return !!(val('f_h') && val('f_w'));
     case 'yn':       return q.q.every(([k]) => A[k]);
     case 'multi':    return !!(A[q.k]||[]).length;
+    case 'pair':     return !!(val(q.a.id) && val(q.b.id));
+    case 'pos':      return !!A.sleepPos;
+    case 'clock':    return !!A.painHour;
     case 'vas':      return A[q.k] !== undefined;
     case 'pct':      return A.expPct !== undefined;
     case 'ases':     return (A.ases||[]).filter(x=>x!==undefined).length === 10;
@@ -547,6 +792,7 @@ function ok(){
   if (q.type==='num')      A[q.k] = val(q.id);
   if (q.type==='date')     A[q.k] = val('f_date');
   if (q.type==='hw'){      A.height = val('f_h'); A.weight = val('f_w'); }
+  if (q.type==='pair'){    A[q.a.k] = val(q.a.id); A[q.b.k] = val(q.b.id); }
   return true;
 }
 
@@ -585,6 +831,28 @@ stage.addEventListener('click', e => {
       const cta = document.getElementById('cta');
       cta.scrollIntoView({behavior:'smooth',block:'nearest'});
     }
+    return;
+  }
+
+  // Uyku duruşu — fotoğrafa dokununca tam ekran, kartın altına dokununca seçer
+  const posBtn = e.target.closest('.pos');
+  if (posBtn && s.contains(posBtn)){
+    const idx = [...posBtn.parentElement.children].indexOf(posBtn);
+    if (e.target.closest('.pos-art')) { openLb(idx); return; }
+    selectPos(posBtn.dataset.v);
+    return;
+  }
+
+  // Ağrının en yoğun olduğu saat dilimi
+  const seg = e.target.closest('.seg');
+  if (seg && s.contains(seg)){
+    A.painHour = seg.dataset.v;
+    [...s.querySelectorAll('.seg')].forEach(x => x.classList.toggle('on', x===seg));
+    const sl = SLOTS[+seg.dataset.k];
+    const ca = document.getElementById('ctrA'), cb = document.getElementById('ctrB');
+    ca.textContent = sl.word; ca.classList.add('set'); cb.textContent = sl.v;
+    document.getElementById('cta').disabled = false;
+    autoNext(420);
     return;
   }
 
@@ -662,6 +930,13 @@ stage.addEventListener('input', e => {
     out.classList.add('on');
   }
 
+  if (id==='f_spd' || id==='f_syr'){
+    const a=+val('f_spd'), y=+val('f_syr'), out=document.getElementById('pairOut');
+    if (!a||!y){ out.classList.remove('on'); return; }
+    out.innerHTML = `Yaklaşık <b>${Math.round(a/20*y*10)/10} paket-yıl</b>`;
+    out.classList.add('on');
+  }
+
   if (id==='f_date'){
     const d = val('f_date'), out = document.getElementById('dateOut');
     if (!d){ out.classList.remove('on'); return; }
@@ -678,6 +953,71 @@ document.addEventListener('keydown', e => {
   if (e.key==='Enter'){ e.preventDefault(); next(); }
   else if (e.key==='Escape') prev();
 });
+
+const warmed = new Set();
+function warm(list){
+  list.forEach(u => { if (warmed.has(u)) return; warmed.add(u); const im = new Image(); im.src = u; });
+}
+function warmGrid(){ warm(POSITIONS.map(p => 'img/uyku/t' + p.img + '.jpg')); }
+function warmFull(k){
+  const n = POSITIONS.length;
+  [0, 1, -1, 2, -2].forEach(d => warm(['img/uyku/p' + POSITIONS[(k + d + n) % n].img + '.jpg']));
+}
+
+/* ─── Pozisyon seçimi ve tam ekran ──────────────────────────────────────── */
+let lbAt = 0;
+const PHOTOS = () => POSITIONS;
+
+function selectPos(id){
+  A.sleepPos = id;
+  const grid = screens[i].querySelector('.pos-grid');
+  if (grid) [...grid.children].forEach(b => b.classList.toggle('on', b.dataset.v === id));
+  document.getElementById('cta').disabled = false;
+  autoNext(260);
+}
+
+function paintLb(){
+  const p = POSITIONS[lbAt];
+  const list = PHOTOS(), n = list.indexOf(p) + 1;
+  const el = document.getElementById('lbImg');
+  const big = 'img/uyku/p' + p.img + '.jpg';
+  // Önbellekteki küçük görseli hemen göster, büyüğü inince sessizce değiştir —
+  // dokununca boş ekran beklemesin.
+  el.src = warmed.has(big) ? big : 'img/uyku/t' + p.img + '.jpg';
+  el.alt = p.name + ' — ' + p.sub;
+  if (el.src.indexOf('/p') === -1) {
+    const hi = new Image();
+    hi.onload = () => { if (POSITIONS[lbAt] === p) el.src = big; warmed.add(big); };
+    hi.src = big;
+  }
+  document.getElementById('lbName').textContent = p.name;
+  document.getElementById('lbSub').textContent = p.sub;
+  document.getElementById('lbCount').textContent = n + ' / ' + list.length;
+  warmFull(lbAt);
+}
+function openLb(idx){
+  lbAt = idx;
+  paintLb();
+  const lb = document.getElementById('lb');
+  lb.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeLb(){
+  document.getElementById('lb').hidden = true;
+  document.body.style.overflow = '';
+}
+function stepLb(d){
+  const list = PHOTOS();
+  let k = list.indexOf(POSITIONS[lbAt]) + d;
+  k = (k + list.length) % list.length;
+  lbAt = POSITIONS.indexOf(list[k]);
+  paintLb();
+}
+function confirmLb(){
+  const id = POSITIONS[lbAt].id;
+  closeLb();
+  selectPos(id);
+}
 
 /* ═══ Puanlama ══════════════════════════════════════════════════════════ */
 // ASES = (10 − ağrı) × 5 + (10 maddenin toplamı / 30) × 50 → 0-100, yüksek = iyi
@@ -721,11 +1061,22 @@ function submit(){
     dominant:A.dominant||'', side:A.side||'',
     dominantSide:(A.dominant&&A.side)?(A.dominant===A.side?'Dominant':'Dominant değil'):'',
     smoke:A.smoke||'', comorbid:(A.comorbid||[]).join(', '),
+    smokePerDay:A.smokePerDay||'', smokeYears:A.smokeYears||'',
+    packYears:(A.smokePerDay&&A.smokeYears)
+      ? Math.round(+A.smokePerDay/20*+A.smokeYears*10)/10 : '',
+    smokeQuitYears:A.smokeQuit||'',
     durationMonths:A.durMon||'', onset:A.onset||'',
     traumaDate:A.traumaDate||'', daysSinceTrauma:gun,
-    workComp:A.workComp||'', workLoad:A.workLoad||'', overheadSport:A.ohSport||'',
+    workComp:A.workComp||'', workLoad:A.workLoad||'',
+    sportYes:A.sportYes||'', sport:A.sport||'', sportLevel:A.sportLvl||'',
+    sportWeek:A.sportWeek||'', sportYears:A.sportYrs||'', overheadSport:A.ohSport||'',
     nightPain:A.nightPain||'', sideLie:A.sideLie||'', restPain:A.restPain||'',
     nightsPerWeek:A.nights||'',
+    sleepPos:(posById(A.sleepPos)||{}).name||'',
+    sleepPosNo:A.sleepPos ? POSITIONS.findIndex(p=>p.id===A.sleepPos)+1 : '',
+    sleepPosBase:(posById(A.sleepPos)||{}).base||'',
+    lieOnArm:A.lieOnArm||'', partner:A.partner||'', bedSide:A.bedSide||'',
+    painHour:A.painHour||'',
     physio:A.physio||'', injections:A.inj||'', injectionTiming:A.injTime||'',
     prevSurgSame:A.prevSurgSame||'', prevOther:A.prevOther||'', neckProb:A.neckProb||'',
     asesPain:A.asesPain, ases:asesScore(),

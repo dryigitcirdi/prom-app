@@ -1132,7 +1132,7 @@ const RC_HEADERS = [
   'Yaş', 'Cinsiyet', 'Boy (cm)', 'Kilo (kg)', 'VKİ',
   'Dominant El', 'Taraf', 'Dominant Omuz mu', 'Sigara', 'Ek Hastalık',
   'Şikâyet Süresi (ay)', 'Başlangıç', 'Travma Tarihi', 'Travmadan Geçen Gün',
-  'İş Kazası / Meslek Hastalığı', 'İş Yükü', 'Baş Üstü Spor',
+  'İş Kazası / Meslek Hastalığı', 'İş Yükü',
   'Gece Ağrısı', 'Üzerine Yatamıyor', 'İstirahat Ağrısı', 'Haftada Kaç Gece',
   'Fizik Tedavi', 'Enjeksiyon Sayısı', 'Son Enjeksiyon',
   'Önceki Ameliyat (aynı omuz)', 'Karşı Omuz', 'Boyun Sorunu',
@@ -1140,8 +1140,14 @@ const RC_HEADERS = [
   'WORC Belirti', 'WORC Spor', 'WORC İş', 'WORC Yaşam', 'WORC Duygu', 'WORC',
   'Beklenti', 'Beklenen Düzelme (%)',
   'ASES ham', 'WORC ham', 'Vaka No',
+  // ─── Sigara ayrıntısı, spor ve uyku ───
+  'Sigara (adet/gün)', 'Sigara (yıl)', 'Paket-Yıl', 'Bıraktı (yıl önce)',
+  'Spor Yapıyor', 'Spor', 'Spor Düzeyi', 'Spor Haftada Kez', 'Spor Kaç Yıldır',
+  'Baş Üstü Kol Kullanımı',
+  'Uyku Pozisyonu', 'Pozisyon No', 'Pozisyon Tipi', 'Yattığı Kol',
+  'Yatak Partneri', 'Yatağın Tarafı', 'Ağrı Saat Dilimi',
 ];
-const RC_VAKA_COL = 45;
+const RC_VAKA_COL = 44;
 
 function saveRcRow(data) {
   data.patientId = String(data.patientId || '').trim().toUpperCase();
@@ -1156,7 +1162,7 @@ function saveRcRow(data) {
     data.smoke || '', data.comorbid || '',
     n(data.durationMonths), data.onset || '',
     data.traumaDate || '', n(data.daysSinceTrauma),
-    data.workComp || '', data.workLoad || '', data.overheadSport || '',
+    data.workComp || '', data.workLoad || '',
     data.nightPain || '', data.sideLie || '', data.restPain || '', n(data.nightsPerWeek),
     data.physio || '', data.injections || '', data.injectionTiming || '',
     data.prevSurgSame || '', data.prevOther || '', data.neckProb || '',
@@ -1164,6 +1170,13 @@ function saveRcRow(data) {
     n(data.worcS), n(data.worcSp), n(data.worcW), n(data.worcL), n(data.worcE), n(data.worc),
     data.expectGoal || '', n(data.expectPct),
     data.asesRaw || '', data.worcRaw || '',
+  ];
+  const ek = [
+    n(data.smokePerDay), n(data.smokeYears), n(data.packYears), n(data.smokeQuitYears),
+    data.sportYes || '', data.sport || '', data.sportLevel || '',
+    n(data.sportWeek), n(data.sportYears), data.overheadSport || '',
+    data.sleepPos || '', n(data.sleepPosNo), data.sleepPosBase || '',
+    data.lieOnArm || '', data.partner || '', data.bedSide || '', data.painHour || '',
   ];
 
   // Bir protokol no + bir taraf = bir vaka. Aynı omuz için gelen ikinci anket
@@ -1182,14 +1195,17 @@ function saveRcRow(data) {
   }
   if (row) {
     sheet.getRange(row, 1, 1, hasta.length).setValues([hasta]);
+    sheet.getRange(row, hasta.length + 2, 1, ek.length).setValues([ek]);   // Vaka No atlanır
   } else {
-    sheet.appendRow(hasta.concat(['RC-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase()]));
+    sheet.appendRow(hasta
+      .concat(['RC-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase()])
+      .concat(ek));
     row = sheet.getLastRow();
   }
 
   colorSure(sheet, row, 16, data.durationMonths);
-  colorEnj(sheet, row, 28, data.injections, data.injectionTiming);
-  [34, 35, 36, 37, 38, 39, 40].forEach(function (c) { colorKoos(sheet, row, c); });
+  colorEnj(sheet, row, 27, data.injections, data.injectionTiming);
+  [33, 34, 35, 36, 37, 38, 39].forEach(function (c) { colorKoos(sheet, row, c); });   // ASES + 6 WORC
 }
 
 // Şikâyet süresi uzadıkça onarım ve iyileşme şansı düşüyor
