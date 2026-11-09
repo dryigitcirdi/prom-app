@@ -564,6 +564,10 @@ const QS = [
   {k:'nights',  type:'num',    title:'Haftada kaç gece uykunuz bölünüyor?',
    ph:'4', id:'f_nights', max:7, when:()=>A.nightPain==='Evet'},
 
+  {k:'job',     type:'text',   title:'Mesleğiniz', ph:'örn. öğretmen, tornacı, hemşire',
+   sub:'Omzunuzun gün içinde ne kadar zorlandığını anlamak için.'},
+  {k:'shift',   type:'clock',  title:'Mesai saatleriniz',
+   sub:'Çalıştığınız saat aralığına dokunun.'},
   {k:'sleepPos',type:'pos',    title:'Genellikle hangi pozisyonda uyursunuz?',
    sub:'Gecenin çoğunu geçirdiğiniz duruşu seçin. Büyütmek için fotoğrafa dokunun — hangi tarafınıza yattığınızı bir sonraki soruda soracağız.'},
   {k:'lieOnArm',type:'choice', row:true, title:'Hangi kolunuzun üzerine yatıyorsunuz?',
@@ -574,6 +578,12 @@ const QS = [
    opts:['Sağ','Sol'], when:()=>A.partner==='Evet'},
   {k:'painHour',type:'clock',  title:'Ağrınız günün hangi saatlerinde en çok oluyor?',
    sub:'En çok ağrıdığınız tek dilimi seçin.'},
+  {k:'sleepYn1',type:'yn',     title:'Omuz belirtileri', sub:'Hepsini yanıtlayın.', q:[
+    ['stiffness','Omuzlarınızda sabah tutukluğu oluyor mu?'],
+    ['priorPain','Daha önce omuz ağrısı geçirdiniz mi?']]},
+  {k:'sleepYn2',type:'yn',     title:'Ağrı ne zaman artıyor?', sub:'Hepsini yanıtlayın.', q:[
+    ['leavePain','Yıllık izin dönemlerinizde ağrınız oluyor mu?'],
+    ['weekendPain','Hafta sonları ağrınız oluyor mu?']]},
 
   {k:'physio',  type:'choice', title:'Bu omuz için fizik tedavi gördünüz mü?', opts:FIZIK_TED},
   {k:'inj',     type:'choice', title:'Omzunuza kaç kez kortizon (iğne) yapıldı?',
@@ -654,6 +664,8 @@ function bodyFor(q){
       <div><div class="flab">${q.b.t}</div><input class="field" id="${q.b.id}" type="number"
         inputmode="numeric" min="0" max="${q.b.max||99}" placeholder="${q.b.ph||''}"></div></div>
       <div class="readout" id="pairOut"></div></div>`;
+    case 'text': return `<div class="body"><input class="field" id="f_txt"
+      placeholder="${q.ph||''}" autocomplete="off"></div>`;
     case 'pos': return `<div class="body" style="margin-top:20px">
       <div class="pos-grid">${POSITIONS.map((p, n) => `
         <button type="button" class="pos" data-v="${p.id}">
@@ -772,8 +784,9 @@ function answered(n){
     case 'yn':       return q.q.every(([k]) => A[k]);
     case 'multi':    return !!(A[q.k]||[]).length;
     case 'pair':     return !!(val(q.a.id) && val(q.b.id));
+    case 'text':     return !!val('f_txt');
     case 'pos':      return !!A.sleepPos;
-    case 'clock':    return !!A.painHour;
+    case 'clock':    return !!A[q.k];
     case 'vas':      return A[q.k] !== undefined;
     case 'pct':      return A.expPct !== undefined;
     case 'ases':     return (A.ases||[]).filter(x=>x!==undefined).length === 10;
@@ -808,6 +821,7 @@ function ok(){
   if (q.type==='date')     A[q.k] = val('f_date');
   if (q.type==='hw'){      A.height = val('f_h'); A.weight = val('f_w'); }
   if (q.type==='pair'){    A[q.a.k] = val(q.a.id); A[q.b.k] = val(q.b.id); }
+  if (q.type==='text')     A[q.k] = val('f_txt');
   return true;
 }
 
@@ -861,10 +875,11 @@ stage.addEventListener('click', e => {
   // Ağrının en yoğun olduğu saat dilimi
   const seg = e.target.closest('.seg');
   if (seg && s.contains(seg)){
-    A.painHour = seg.dataset.v;
-    [...s.querySelectorAll('.seg')].forEach(x => x.classList.toggle('on', x===seg));
+    A[q.k] = seg.dataset.v;
+    const svg = seg.closest('svg');
+    [...svg.querySelectorAll('.seg')].forEach(x => x.classList.toggle('on', x===seg));
     const sl = SLOTS[+seg.dataset.k];
-    const ca = document.getElementById('ctrA'), cb = document.getElementById('ctrB');
+    const ca = svg.querySelector('.ctr-a'), cb = svg.querySelector('.ctr-b');
     ca.textContent = sl.word; ca.classList.add('set'); cb.textContent = sl.v;
     document.getElementById('cta').disabled = false;
     autoNext(420);
@@ -1092,6 +1107,8 @@ function submit(){
     sleepPosBase:(posById(A.sleepPos)||{}).base||'',
     lieOnArm:A.lieOnArm||'', partner:A.partner||'', bedSide:A.bedSide||'',
     painHour:A.painHour||'',
+    job:A.job||'', shift:A.shift||'', stiffness:A.stiffness||'',
+    priorPain:A.priorPain||'', leavePain:A.leavePain||'', weekendPain:A.weekendPain||'',
     physio:A.physio||'', injections:A.inj||'', injectionTiming:A.injTime||'',
     prevSurgSame:A.prevSurgSame||'', prevOther:A.prevOther||'', neckProb:A.neckProb||'',
     asesPain:A.asesPain, ases:asesScore(),

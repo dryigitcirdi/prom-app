@@ -1152,6 +1152,8 @@ const RC_HEADERS = [
   'Baş Üstü Kol Kullanımı',
   'Uyku Pozisyonu', 'Pozisyon No', 'Pozisyon Tipi', 'Yattığı Kol',
   'Yatak Partneri', 'Yatağın Tarafı', 'Ağrı Saat Dilimi',
+  'Meslek', 'Mesai Saatleri', 'Sabah Tutukluğu', 'Önceki Omuz Ağrısı',
+  'İzinde Ağrı', 'Hafta Sonu Ağrı',
 ];
 const RC_VAKA_COL = 44;
 
@@ -1183,6 +1185,8 @@ function saveRcRow(data) {
     n(data.sportWeek), n(data.sportYears), data.overheadSport || '',
     data.sleepPos || '', n(data.sleepPosNo), data.sleepPosBase || '',
     data.lieOnArm || '', data.partner || '', data.bedSide || '', data.painHour || '',
+    data.job || '', data.shift || '', data.stiffness || '', data.priorPain || '',
+    data.leavePain || '', data.weekendPain || '',
   ];
 
   // Bir protokol no + bir taraf = bir vaka. Aynı omuz için gelen ikinci anket
@@ -1199,19 +1203,50 @@ function saveRcRow(data) {
       row = i + 2; break;
     }
   }
+  let yeniKayit = false;
   if (row) {
     sheet.getRange(row, 1, 1, hasta.length).setValues([hasta]);
     sheet.getRange(row, hasta.length + 2, 1, ek.length).setValues([ek]);   // Vaka No atlanır
   } else {
+    yeniKayit = true;
     sheet.appendRow(hasta
       .concat(['RC-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase()])
       .concat(ek));
     row = sheet.getLastRow();
   }
 
+  // Bu hastalar uyku çalışmasının tam da hedef kitlesi. Aynı yanıtlardan
+  // uyku sayfasına da bir satır yazıyoruz ki çalışma bu kayıtlardan beslensin.
+  // Yalnızca YENİ satırda aynalanır — tekrar gönderimde uyku kaydı çoğalmasın.
+  if (yeniKayit) { try { aynalaUyku_(data); } catch (err) {} }
+
   colorSure(sheet, row, 16, data.durationMonths);
   colorEnj(sheet, row, 27, data.injections, data.injectionTiming);
   [33, 34, 35, 36, 37, 38, 39].forEach(function (c) { colorKoos(sheet, row, c); });   // ASES + 6 WORC
+}
+
+// Omuz ilk değerlendirmesini uyku çalışmasının biçimine çevir
+function uykuSure_(ay) {
+  const a = Number(ay);
+  if (!a && a !== 0) return '';
+  return a < 1 ? '1 aydan az' : a < 3 ? '1 – 3 ay' : a < 6 ? '3 – 6 ay'
+       : a < 12 ? '6 – 12 ay' : a < 24 ? '1 – 2 yıl' : '2 yıldan uzun';
+}
+
+function aynalaUyku_(d) {
+  saveUykuRow({
+    timestamp: d.timestamp, patientId: d.patientId, name: d.name, dx: 'Rotator manşet',
+    gender: d.gender, age: d.age, height: d.height, weight: d.weight, bmi: d.bmi,
+    job: d.job, shift: d.shift, dominant: d.dominant, comorbid: d.comorbid,
+    sleepPos: d.sleepPos, sleepPosCode: d.sleepPosBase, sleepPosId: d.sleepPosNo,
+    lieOnArm: d.lieOnArm, partner: d.partner, bedSide: d.bedSide,
+    painSide: d.side, duration: uykuSure_(d.durationMonths),
+    nightPain: d.nightPain, stiffness: d.stiffness, priorPain: d.priorPain,
+    onset: String(d.onset || '').indexOf('Travma') === 0 ? 'Travma sonrası' : 'Kendiliğinden',
+    load: String(d.workLoad || '') === 'Masa başı' ? 'Hayır' : 'Evet',
+    leavePain: d.leavePain, weekendPain: d.weekendPain, painHours: d.painHour,
+    src: 'Omuz ilk değerlendirme',
+  });
 }
 
 // Şikâyet süresi uzadıkça onarım ve iyileşme şansı düşüyor
