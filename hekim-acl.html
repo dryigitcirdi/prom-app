@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<title>ACL Hekim Girişi</title>
+<title>Hekim Girişi</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="img/app/acl-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ACL Hekim">
+<meta name="apple-mobile-web-app-title" content="Hekim">
 <meta name="theme-color" content="#0b1220">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -73,6 +73,17 @@ main{padding:16px 16px calc(var(--safe-b) + 28px);max-width:620px;margin:0 auto}
 .case-meta{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.45}
 .case-meta b{color:#c6d2e6;font-weight:600}
 
+.brtabs{display:flex;gap:7px;margin-bottom:14px}
+.brtab{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+  color:var(--muted);font-size:14.5px;font-weight:650;cursor:pointer;transition:all .14s}
+.brtab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.qr-box{border:1px solid var(--line);background:#fff;border-radius:18px;padding:20px;
+  text-align:center;margin-top:18px}
+.qr-box canvas{display:block;margin:0 auto;border-radius:10px}
+.qr-h{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#64748b}
+.qr-t{font-size:17px;font-weight:800;color:#0f172a;margin:5px 0 14px;letter-spacing:-.02em}
+.qr-c{font-size:12px;color:#64748b;margin-top:12px;line-height:1.5}
+.qr-u{font:11px ui-monospace,Menlo,monospace;color:#94a3b8;word-break:break-all;margin-top:8px}
 .newbtn{width:100%;padding:12px;border-radius:13px;border:1px dashed var(--line);
   background:transparent;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px}
 .newbtn:active{background:var(--card)}
@@ -150,7 +161,7 @@ textarea.inp{min-height:76px;resize:vertical}
       <path d="M11 31 L29 9" stroke="#fff" stroke-width="5.2" stroke-linecap="round"/>
       <path d="M29 30 L12 10" stroke="#3b82f6" stroke-width="5.2" stroke-linecap="round"/>
     </svg></div>
-    <h1>ACL Hekim Girişi</h1>
+    <h1>Hekim Girişi</h1>
     <p>Hastanın doldurduğu değerlendirmeyi klinik verilerle tamamlayın.</p>
     <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
     <div class="err" id="pinErr"></div>
@@ -169,6 +180,10 @@ textarea.inp{min-height:76px;resize:vertical}
 </header>
 
 <main id="listView" hidden>
+  <div class="brtabs" id="brTabs">
+    <button class="brtab on" data-b="rc"  onclick="setBranch('rc')">Omuz</button>
+    <button class="brtab"    data-b="acl" onclick="setBranch('acl')">ACL</button>
+  </div>
   <input class="search" id="q" placeholder="Hasta ara…" oninput="renderList()">
   <button class="newbtn" onclick="toggleNew()">+ Hasta anketsiz vaka aç</button>
   <div id="newBox" hidden>
@@ -179,6 +194,11 @@ textarea.inp{min-height:76px;resize:vertical}
     <div class="f"><div class="f-t">Taraf</div><div class="chips" id="nSide">
       <button class="chip" onclick="nPick('Sağ',this)">Sağ</button>
       <button class="chip" onclick="nPick('Sol',this)">Sol</button></div></div>
+    <div class="f" id="nDiagBox"><div class="f-t">Tanı</div><div class="chips" id="nDiag">
+      <button class="chip" onclick="nPickDiag('Rotator Manşet',this)">Rotator Manşet</button>
+      <button class="chip" onclick="nPickDiag('Kalsifik Tendinit',this)">Kalsifik Tendinit</button>
+      <button class="chip" onclick="nPickDiag('Bankart Lezyonu',this)">Bankart Lezyonu</button>
+      <button class="chip" onclick="nPickDiag('Donuk Omuz',this)">Donuk Omuz</button></div></div>
     <button class="save" style="width:100%" onclick="createCase()">Vakayı aç</button>
     <div class="hint">Protokol no zorunlu — yalnız isimle eşleştirme karışıklık yaratıyor.
       Hasta pre-op anketini sonradan doldurursa panelden bu vakaya bağlanır.</div>
@@ -199,6 +219,7 @@ textarea.inp{min-height:76px;resize:vertical}
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNMX0NQk2hJE6_IZu7Tc42-ft1md5IVw5xLE8yF7_E2CM1DLHT5TNGPkA/exec';
 const PIN_KEY = 'prom_pin';
@@ -243,7 +264,7 @@ async function tryPin() {
   el('pinErr').textContent = 'Kontrol ediliyor…';
   localStorage.setItem(PIN_KEY, v);
   try {
-    await api({ action: 'aclCases' }, 2);
+    await api({ action: B().act.cases }, 2);
     el('lock').hidden = true;
     el('hd').hidden = false;
     showList();
@@ -266,7 +287,7 @@ async function tryPin() {
 async function loadCases(elle) {
   el('hSub').textContent = 'yükleniyor…';
   try {
-    const j = await api({ action: 'aclCases' });
+    const j = await api({ action: B().act.cases });
     cases = j.cases || [];
     renderList();
     if (elle) toast(cases.length + ' vaka güncellendi');
@@ -317,7 +338,7 @@ function showList() {
 
 // ─── form tanımı ───
 const VAR = v => v === 'Var' || v === 'Yırtık var';
-const FORM = [
+const ACL_FORM = [
   { sec: 'Muayene', f: [
     { k:'extDeficit', t:'Ekstansiyon defisiti', opts:['Yok','<5°','5–10°','>10°'] },
     { k:'flexion',    t:'Fleksiyon', type:'num', unit:'°', ph:'örn. 125' },
@@ -364,7 +385,7 @@ const SPORLAR = ['Futbol / Halı saha','Basketbol','Voleybol','Hentbol','Kayak /
   'Tenis','Güreş / Dövüş sporu','Koşu / Atletizm','Fitness / Ağırlık','Dans',
   'Spor dışı (günlük yaşam, düşme, trafik)','Diğer'];
 const EH = ['Evet','Hayır'];
-const HASTA = [
+const ACL_HASTA = [
   { s:'Kimlik', f:[
     { k:'name', t:'Ad Soyad', type:'txt' },
     { k:'patientId', t:'Protokol no', type:'txt', ph:'hastane dosya / protokol numarası' },
@@ -408,7 +429,7 @@ const HASTA = [
     { k:'preventionProg', t:'Önleyici / ısınma programı', opts:EH },
   ]},
 ];
-const HCOL = {
+const ACL_HCOL = {
   name:'Ad Soyad', patientId:'Hasta ID', age:'Yaş', gender:'Cinsiyet', height:'Boy (cm)',
   weight:'Kilo (kg)', dominant:'Dominant Bacak', smoke:'Sigara', injDate:'Yaralanma Tarihi',
   side:'Taraf', mechanism:'Mekanizma', situation:'Durum', pop:'Pop Sesi',
@@ -420,7 +441,7 @@ const HCOL = {
 };
 
 // Sayfadaki sütun adı → form anahtarı (kayıtlı veriyi geri yüklemek için)
-const COL = {
+const ACL_COL = {
   doctor:'Hekim', extDeficit:'Ekstansiyon Defisiti', flexion:'Fleksiyon (°)', effusion:'Efüzyon',
   lachman:'Lachman', pivot:'Pivot Shift', atrophy:'Uyluk Atrofisi (cm)', mcl:'MCL', pcl:'PCL / PLK',
   examNote:'Muayene Not', mmTear:'MM Yırtık', mmSite:'MM Yeri', mmType:'MM Tipi',
@@ -430,6 +451,97 @@ const COL = {
   mmProc:'MM Girişim', lmProc:'LM Girişim', ramp:'Ramp Tamiri', lateralProc:'Ek Lateral Prosedür',
   cartProc:'Kıkırdak Girişimi', opNote:'İntra-op Not', complication:'Komplikasyon',
 };
+
+/* ═══ Omuz — hekim bölümü ═══════════════════════════════════════════════
+   Akış hekimle başlar: vakayı açar, TANIYI KOYAR, muayene/MR/ameliyat
+   alanlarını doldurur; sonra hastaya o vakanın QR'ı okutulur.             */
+const RC_FORM = [
+  { sec:'Tanı', f:[
+    { k:'diag', t:'Tanı', opts:['Rotator Manşet','Kalsifik Tendinit','Bankart Lezyonu','Donuk Omuz','Diğer'] },
+  ]},
+  { sec:'Muayene', f:[
+    { k:'jobe', t:'Jobe (boş kutu)', opts:['Negatif','Ağrılı','Güçsüz'] },
+    { k:'subscap', t:'Subskapularis (belly-press / lift-off)', opts:['Negatif','Şüpheli','Pozitif'] },
+    { k:'erLag', t:'Dış rotasyon lag', opts:['Yok','Var'] },
+    { k:'impingement', t:'Sıkışma testleri (Neer / Hawkins)', opts:['Negatif','Tek test pozitif','Her ikisi pozitif'] },
+    { k:'painfulArc', t:'Ağrılı ark', opts:['Yok','Var'] },
+    { k:'pseudo', t:'Psödoparalizi', opts:['Yok','Var'] },
+    { k:'examNote', t:'Muayene notu', type:'text' },
+  ]},
+  { sec:'MR', f:[
+    { k:'tearType', t:'Yırtık tipi', opts:['Yırtık yok','Parsiyel — artiküler','Parsiyel — bursal','Tam kat','Masif'] },
+    { k:'tendons', t:'Tutulan tendonlar', multi:true,
+      opts:['Supraspinatus','İnfraspinatus','Subskapularis','Teres minor'],
+      when:a => a.tearType && a.tearType !== 'Yırtık yok' },
+    { k:'tearSize', t:'Yırtık boyutu (AP)', type:'num', unit:'mm',
+      when:a => a.tearType && a.tearType !== 'Yırtık yok' },
+    { k:'patte', t:'Retraksiyon (Patte)', opts:['1','2','3'],
+      when:a => a.tearType && a.tearType !== 'Yırtık yok' },
+    { k:'goutallier', t:'Goutallier (yağlı dejenerasyon)', opts:['0','1','2','3','4'] },
+    { k:'tangent', t:'Tangent işareti (supraspinatus atrofisi)', opts:['Negatif','Pozitif'] },
+    { k:'aha', t:'Akromiohumeral mesafe', type:'num', unit:'mm' },
+    { k:'csa', t:'Kritik omuz açısı', type:'num', unit:'°' },
+    { k:'acromion', t:'Akromion tipi', opts:['I — düz','II — eğri','III — çengel'] },
+    { k:'biceps', t:'Biseps', opts:['Normal','Tendinit','Subluksasyon','Yırtık / rüptür'] },
+    { k:'acJoint', t:'AC eklem', opts:['Normal','Artroz','Belirgin artroz'] },
+    { k:'mrNote', t:'MR notu', type:'text' },
+  ]},
+  { sec:'Ameliyat', f:[
+    { k:'surgDate', t:'Ameliyat tarihi', type:'date' },
+    { k:'technique', t:'Teknik', opts:['Tek sıra','Çift sıra','Köprüleme','Parsiyel tamir','Debridman'] },
+    { k:'anchors', t:'Ankraj sayısı', type:'num' },
+    { k:'extraProc', t:'Ek işlem', multi:true,
+      opts:['Yok','Akromioplasti','Biseps tenotomi','Biseps tenodez','AC rezeksiyon','Kapsüler gevşetme'] },
+    { k:'repairGrade', t:'Tamir derecesi', opts:['Tam tamir','Parsiyel tamir','Tamir edilemedi'] },
+    { k:'opNote', t:'İntra-op not', type:'text' },
+    { k:'complication', t:'Komplikasyon', type:'text', ph:'yoksa boş bırakın' },
+  ]},
+];
+const RC_COL = {
+  doctor:'Hekim', diag:'Tanı', jobe:'Jobe (Supraspinatus)', subscap:'Subskapularis Testi',
+  erLag:'Dış Rotasyon Lag', impingement:'Sıkışma Testleri', painfulArc:'Ağrılı Ark',
+  pseudo:'Psödoparalizi', examNote:'Muayene Not', tearType:'Yırtık Tipi',
+  tendons:'Tutulan Tendonlar', tearSize:'Yırtık Boyutu (mm)', patte:'Retraksiyon (Patte)',
+  goutallier:'Goutallier', tangent:'Tangent (Atrofi)', aha:'Akromiohumeral Mesafe (mm)',
+  csa:'Kritik Omuz Açısı (°)', acromion:'Akromion Tipi', biceps:'Biseps', acJoint:'AC Eklem',
+  mrNote:'MR Not', surgDate:'Ameliyat Tarihi', technique:'Teknik', anchors:'Ankraj Sayısı',
+  extraProc:'Ek İşlem', repairGrade:'Tamir Derecesi', opNote:'İntra-op Not',
+  complication:'Komplikasyon',
+};
+
+const BASE = location.href.split(/[?#]/)[0].replace(/[^\/]*$/, '');
+const BR = {
+  rc: {
+    ad:'Omuz', form:RC_FORM, col:RC_COL, hasta:null, hcol:null,
+    act:{ cases:'rcCases', case:'rcCase', doc:'rcDoc', edit:null },
+    anket: BASE + 'form-rc.html', vakaOn:'RC',
+    ozet:[['Ad / protokol',['Ad Soyad','Hasta ID']],['Yaş / cinsiyet',['Yaş','Cinsiyet']],
+          ['Taraf',['Taraf']],['Şikâyet süresi',['Şikâyet Süresi (ay)']],
+          ['Başlangıç',['Başlangıç']],['Enjeksiyon',['Enjeksiyon Sayısı','Son Enjeksiyon']],
+          ['ASES / WORC',['ASES','WORC']],['Beklenti',['Beklenti']]],
+    doluAlan:'ASES Ağrı (0-10)',
+  },
+  acl: {
+    ad:'ACL', form:ACL_FORM, col:ACL_COL, hasta:ACL_HASTA, hcol:ACL_HCOL,
+    act:{ cases:'aclCases', case:'aclCase', doc:'aclDoc', edit:'aclEdit' },
+    anket: BASE + 'form-acl.html', vakaOn:'ACL',
+    ozet:[['Ad / hasta no',['Ad Soyad','Hasta ID']],['Yaş / cinsiyet',['Yaş','Cinsiyet']],
+          ['Taraf',['Taraf']],['Yaralanma',['Yaralanma Tarihi','Geçen Gün']],
+          ['Mekanizma',['Mekanizma']],['Spor / zemin',['Spor','Zemin']],
+          ['Tegner',['Tegner (öncesi)','Tegner (şimdi)']],['KOOS Spor / Marx',['KOOS Spor','Marx']]],
+    doluAlan:'KOOS Belirti',
+  },
+};
+let brk = 'rc';
+const B = () => BR[brk];
+
+function setBranch(b) {
+  if (brk === b) return;
+  brk = b; cases = []; cur = null;
+  [...document.querySelectorAll('.brtab')].forEach(t => t.classList.toggle('on', t.dataset.b === b));
+  showList();
+  loadCases();
+}
 
 // ─── vaka aç ───
 async function openCase(vaka) {
@@ -445,12 +557,12 @@ async function openCase(vaka) {
   window.scrollTo(0, 0);
 
   let d = null;
-  try { d = (await api({ action: 'aclCase', vaka: vaka })).vaka; }
+  try { d = (await api({ action: B().act.case, vaka: vaka })).vaka; }
   catch (e) { toast('Vaka açılamadı', true); }
 
   detay = d;
   if (d) {
-    Object.keys(COL).forEach(k => { const v = d[COL[k]]; if (v !== '' && v != null) A[k] = String(v); });
+    Object.keys(B().col).forEach(k => { const v = d[B().col[k]]; if (v !== '' && v != null) A[k] = String(v); });
     done = d['Hekim Tamamlandı'] === 'Evet';
     renderSummary(d);
   }
@@ -468,29 +580,54 @@ function kip(duzenle) {
 function renderSummary(d) {
   if (editing) return renderHastaEdit();
   kip(false);
-  const g = d['Geçen Gün'];
   const row = (k, v) => v ? `<div><div class="sum-k">${k}</div><div class="sum-v">${esc(v)}</div></div>` : '';
-  const koos = ['KOOS Belirti','KOOS Ağrı','KOOS GYA','KOOS Spor','KOOS YK']
-    .map(k => d[k]).filter(v => v !== '' && v != null);
+  // Özet alanları branşa göre tanımlı — omuz ve ACL aynı bileşeni kullanır
+  const satirlar = B().ozet.map(([ad, alanlar]) => {
+    const v = alanlar.map(a => d[a]).filter(x => x !== '' && x != null).join(' · ');
+    return row(ad, v);
+  }).join('');
+  const doldu = d[B().doluAlan] !== '' && d[B().doluAlan] != null;
   const duz = d['Veri Düzenleyen'], dzt = d['Düzenleme Zamanı'];
-  el('summary').innerHTML = `
+  const duzenleBtn = B().hcol
+    ? '<button class="sum-edit" onclick="startEdit()">Düzenle</button>' : '';
+  el('summary').innerHTML = qrKutu(d) + `
     <div class="summary">
-      <div class="sum-head">Hastanın doldurduğu pre-op değerlendirme
-        <button class="sum-edit" onclick="startEdit()">Düzenle</button></div>
-      <div class="sum-grid">
-        ${row('Ad / Hasta no', [d['Ad Soyad'], d['Hasta ID']].filter(Boolean).join(' · '))}
-        ${row('Yaş / Cinsiyet', [d['Yaş'], d['Cinsiyet']].filter(Boolean).join(' · '))}
-        ${row('Taraf', d['Taraf'])}
-        ${row('Yaralanma', d['Yaralanma Tarihi'] + (g !== '' && g != null ? ' · ' + g + ' gün' : ''))}
-        ${row('Mekanizma', d['Mekanizma'])}
-        ${row('Hareket', d['Durum'])}
-        ${row('Spor / zemin', [d['Spor'], d['Zemin']].filter(Boolean).join(' · '))}
-        ${row('Tegner', (d['Tegner (öncesi)'] !== '' ? d['Tegner (öncesi)'] : '—') + ' → ' + (d['Tegner (şimdi)'] !== '' ? d['Tegner (şimdi)'] : '—'))}
-        ${row('KOOS Spor / Marx', (d['KOOS Spor'] !== '' ? d['KOOS Spor'] : '—') + ' · ' + (d['Marx'] !== '' ? d['Marx'] : '—'))}
-      </div>
-      ${!koos.length ? '<div class="sum-warn">⚠︎ Hasta anketi henüz doldurulmamış. Kimlik ve yaralanma bilgilerini “Düzenle” ile siz girebilirsiniz; KOOS / Marx / Tegner yalnızca hastanın kendisinden gelir.</div>' : ''}
+      <div class="sum-head">Hastanın doldurduğu değerlendirme${duzenleBtn}</div>
+      <div class="sum-grid">${satirlar}</div>
+      ${!doldu ? '<div class="sum-warn">⚠︎ Hasta anketi henüz doldurulmadı. Yukarıdaki QR\'ı hastaya okutun — yanıtlar bu vakaya düşer.</div>' : ''}
       ${duz ? `<div class="ro">✎ ${esc(duz)} düzenledi · ${esc(String(dzt).slice(0, 10))}${d['Düzenlenen Alanlar'] ? '<br>' + esc(d['Düzenlenen Alanlar']) : ''}</div>` : ''}
     </div>`;
+  ciz(d);
+}
+
+/* ═══ Hastaya okutulacak QR ═════════════════════════════════════════════
+   Akışın kilit parçası: vaka hekimde açılır, anket linki QR olarak burada
+   üretilir. Hasta kendi telefonuyla okutur, yanıtlar protokol no üzerinden
+   aynı satıra düşer. Link kısaltma sunucusuna uğramaz — en az arıza.     */
+function anketUrl(d) {
+  const p = new URLSearchParams({
+    id: d['Hasta ID'] || '', name: d['Ad Soyad'] || '', src: A.doctor || d['Hekim'] || '',
+  });
+  return B().anket + '?' + p.toString();
+}
+function qrKutu(d) {
+  if (d[B().doluAlan] !== '' && d[B().doluAlan] != null) return '';   // anket gelmişse QR'a gerek yok
+  return `<div class="qr-box">
+    <div class="qr-h">Hastaya okutun</div>
+    <div class="qr-t">${esc(d['Ad Soyad'] || 'Hasta')} · ${esc(d['Hasta ID'] || '')}</div>
+    <canvas id="qrC"></canvas>
+    <div class="qr-c">Kamerayla okutsun — anket bu vakaya bağlanır.</div>
+    <div class="qr-u" id="qrU"></div>
+  </div>`;
+}
+function ciz(d) {
+  const c = document.getElementById('qrC');
+  if (!c) return;
+  const url = anketUrl(d);
+  document.getElementById('qrU').textContent = url;
+  if (typeof QRious === 'undefined') return;
+  new QRious({ element: c, value: url, size: 208, level: 'M',
+               background: '#ffffff', foreground: '#0f172a', padding: 0 });
 }
 
 // ─── hasta bölümünü düzelt ───────────────────────────────────────────────────
@@ -499,8 +636,8 @@ function renderSummary(d) {
 // hastanın beyanı olduğu için dokunulmaz.
 function startEdit() {
   H = {};
-  Object.keys(HCOL).forEach(k => {
-    const v = detay ? detay[HCOL[k]] : '';
+  Object.keys(B().hcol || {}).forEach(k => {
+    const v = detay ? detay[B().hcol[k]] : '';
     if (v !== '' && v != null) H[k] = String(v);
   });
   editing = true;
@@ -522,7 +659,7 @@ function renderHastaEdit() {
       <div class="f"><div class="f-t">Adınız</div>
         <input class="inp" placeholder="Adınız" value="${esc(A.doctor || '')}"
                oninput="A.doctor=this.value;localStorage.setItem(DOC_KEY,this.value)"></div></div>
-    ${HASTA.map(s => `<div class="sec"><div class="sec-h">${s.s}</div>` +
+    ${(B().hasta || []).map(s => `<div class="sec"><div class="sec-h">${s.s}</div>` +
       s.f.map(f => fldHtml(f, H, 'setH', 'pickH')).join('') + `</div>`).join('')}
     <button class="save" style="width:100%;margin-bottom:8px" onclick="saveHasta()">Hasta bilgilerini kaydet</button>
     <div class="hint" style="margin-bottom:22px">Kim neyi değiştirdi, satırın sonunda kayda geçer.</div>`;
@@ -533,7 +670,7 @@ async function saveHasta() {
   if (!A.doctor) { toast('Önce adınızı yazın', true); return; }
   const payload = Object.assign({}, H, { vaka: cur.vaka, editor: A.doctor });
   try {
-    const j = await api({ action: 'aclEdit', data: JSON.stringify(payload) });
+    const j = await api({ action: B().act.edit, data: JSON.stringify(payload) });
     if (!j || j.status !== 'ok') throw new Error(j && j.message || 'olmadı');
     toast(j.changed && j.changed.length ? j.changed.length + ' alan güncellendi' : 'Değişiklik yok');
     editing = false;
@@ -543,8 +680,17 @@ async function saveHasta() {
 }
 
 // ─── hasta anketi olmayan vaka ───────────────────────────────────────────────
-let nSide = '';
-function toggleNew() { const b = el('newBox'); b.hidden = !b.hidden; if (!b.hidden) el('nProt').focus(); }
+let nSide = '', nDiag = '';
+function toggleNew() {
+  const b = el('newBox');
+  b.hidden = !b.hidden;
+  el('nDiagBox').style.display = brk === 'rc' ? '' : 'none';   // tanı yalnız omuzda
+  if (!b.hidden) el('nProt').focus();
+}
+function nPickDiag(v, btn) {
+  nDiag = nDiag === v ? '' : v;
+  [...el('nDiag').children].forEach(c => c.classList.toggle('on', c === btn && nDiag === v));
+}
 function nPick(v, btn) {
   nSide = nSide === v ? '' : v;
   [...el('nSide').children].forEach(c => c.classList.toggle('on', c === btn && nSide === v));
@@ -556,13 +702,14 @@ async function createCase() {
   if (!ad) { toast('Hasta adı gerekli', true); return; }
   const doctor = localStorage.getItem(DOC_KEY) || '';
   // Vaka No'yu istemci üretir: ağ tekrarında aynı satır güncellenir, yenisi açılmaz
-  const vaka = 'ACL-' + Array.from({ length: 8 },
+  const vaka = B().vakaOn + '-' + Array.from({ length: 8 },
     () => '0123456789ABCDEF'[Math.floor(Math.random() * 16)]).join('');
   try {
-    const j = await api({ action: 'aclDoc',
-      data: JSON.stringify({ vaka, name: ad, patientId: prot, side: nSide, doctor, done: false }) });
+    const j = await api({ action: B().act.doc,
+      data: JSON.stringify({ vaka, name: ad, patientId: prot, side: nSide,
+                             diag: nDiag, doctor, done: false }) });
     if (!j || j.status !== 'ok') throw new Error('olmadı');
-    el('nName').value = ''; el('nProt').value = ''; nSide = ''; el('newBox').hidden = true;
+    el('nName').value = ''; el('nProt').value = ''; nSide = ''; nDiag = ''; el('newBox').hidden = true;
     await loadCases();
     toast('Vaka açıldı');
     openCase(vaka);
@@ -603,7 +750,7 @@ function renderFields() {
     <div class="f"><div class="f-t">Dolduran hekim</div>
       <input class="inp" id="f_doctor" placeholder="Adınız" value="${esc(A.doctor || '')}"
              oninput="A.doctor=this.value;localStorage.setItem(DOC_KEY,this.value)"></div></div>`;
-  el('fields').innerHTML = hekim + FORM.map(s =>
+  el('fields').innerHTML = hekim + B().form.map(s =>
     `<div class="sec"><div class="sec-h">${s.sec}</div>` +
     s.f.filter(f => !f.when || f.when(A)).map(f => fldHtml(f, A, 'setV', 'pick')).join('') +
     `</div>`).join('');
@@ -631,7 +778,7 @@ async function save() {
   b.disabled = true; b.textContent = 'Kaydediliyor…';
   const payload = Object.assign({}, A, { vaka: cur.vaka, name: cur.ad, done: done });
   try {
-    const j = await api({ action: 'aclDoc', data: JSON.stringify(payload) });
+    const j = await api({ action: B().act.doc, data: JSON.stringify(payload) });
     if (!j || j.status !== 'ok') throw new Error(j && j.message || 'kayıt olmadı');
     const c = cases.find(x => x.vaka === cur.vaka);
     if (c) { c.tamam = done; c.hekim = A.doctor || ''; c.amelTarih = A.surgDate || c.amelTarih; }

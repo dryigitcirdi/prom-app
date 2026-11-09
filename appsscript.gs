@@ -403,6 +403,30 @@ function doGet(e) {
       if (alindi) { try { lock.releaseLock(); } catch (e2) {} }
     }
   }
+  if (e.parameter.action === 'rcDoc') {
+    if (!pinOk_(e)) return unauthorized_();
+    const lock = LockService.getScriptLock();
+    let alindi = false;
+    try { alindi = lock.tryLock(25000); } catch (err) { alindi = false; }
+    try {
+      const vaka = saveRcDoctorRow(JSON.parse(e.parameter.data || '{}'));
+      return ContentService.createTextOutput(JSON.stringify({ status: 'ok', vaka: vaka }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } finally { if (alindi) { try { lock.releaseLock(); } catch (e2) {} } }
+  }
+  if (e.parameter.action === 'rcCases') {
+    if (!pinOk_(e)) return unauthorized_();
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', cases: rcCaseList() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  if (e.parameter.action === 'rcCase') {
+    if (!pinOk_(e)) return unauthorized_();
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ok', vaka: rcCaseDetail(e.parameter.vaka) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   if (e.parameter.action === 'aclCases') {
     if (!pinOk_(e)) return unauthorized_();
     return ContentService.createTextOutput(JSON.stringify({ status: 'ok', cases: aclCaseList() }))
@@ -1158,7 +1182,18 @@ const RC_HEADERS = [
   'Yatak Partneri', 'Yatağın Tarafı', 'Ağrı Saat Dilimi',
   'Meslek', 'Mesai Saatleri', 'Sabah Tutukluğu', 'Önceki Omuz Ağrısı',
   'İzinde Ağrı', 'Hafta Sonu Ağrı',
+  // ─── Hekim bölümü — vakayı hekim açar, tanıyı hekim koyar ───
+  'Hekim', 'Hekim Kayıt Zamanı', 'Tanı',
+  'Jobe (Supraspinatus)', 'Subskapularis Testi', 'Dış Rotasyon Lag',
+  'Sıkışma Testleri', 'Ağrılı Ark', 'Psödoparalizi', 'Muayene Not',
+  'Yırtık Tipi', 'Tutulan Tendonlar', 'Yırtık Boyutu (mm)', 'Retraksiyon (Patte)',
+  'Goutallier', 'Tangent (Atrofi)', 'Akromiohumeral Mesafe (mm)',
+  'Kritik Omuz Açısı (°)', 'Akromion Tipi', 'Biseps', 'AC Eklem', 'MR Not',
+  'Ameliyat Tarihi', 'Teknik', 'Ankraj Sayısı', 'Ek İşlem', 'Tamir Derecesi',
+  'İntra-op Not', 'Komplikasyon', 'Hekim Tamamlandı',
 ];
+const RC_DOC_COL = 68;   // 'Hekim' … 'Hekim Tamamlandı'
+const RC_DOC_LEN = 30;
 const RC_VAKA_COL = 44;
 
 function saveRcRow(data) {
@@ -1227,6 +1262,105 @@ function saveRcRow(data) {
   colorSure(sheet, row, 16, data.durationMonths);
   colorEnj(sheet, row, 27, data.injections, data.injectionTiming);
   [33, 34, 35, 36, 37, 38, 39].forEach(function (c) { colorKoos(sheet, row, c); });   // ASES + 6 WORC
+}
+
+// ─── Omuz hekim girişi ───────────────────────────────────────────────────
+// Akış hekimle başlar: vakayı açar, tanıyı koyar, kendi bölümünü doldurur,
+// sonra hastaya o vakanın QR'ı gider. Anket geldiğinde aynı satıra yazılır.
+function rcDocValues_(d) {
+  const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
+  return [
+    d.doctor || '', new Date(), d.diag || '',
+    d.jobe || '', d.subscap || '', d.erLag || '', d.impingement || '',
+    d.painfulArc || '', d.pseudo || '', d.examNote || '',
+    d.tearType || '', d.tendons || '', n(d.tearSize), d.patte || '',
+    d.goutallier || '', d.tangent || '', n(d.aha), n(d.csa),
+    d.acromion || '', d.biceps || '', d.acJoint || '', d.mrNote || '',
+    d.surgDate || '', d.technique || '', n(d.anchors), d.extraProc || '',
+    d.repairGrade || '', d.opNote || '', d.complication || '',
+    d.done ? 'Evet' : 'Hayır',
+  ];
+}
+
+function saveRcDoctorRow(data) {
+  data.patientId = String(data.patientId || '').trim().toUpperCase();
+  const sheet = ensureSheet(RC_SHEET, RC_HEADERS, [[4, 150], [5, 150], [15, 190], [17, 190], [43, 240], [44, 300]]);
+  const vals = rcDocValues_(data);
+  let row = 0;
+  const last = sheet.getLastRow();
+  if (data.vaka && last >= 2) {
+    const keys = sheet.getRange(2, RC_VAKA_COL, last - 1, 1).getValues();
+    for (let i = 0; i < keys.length; i++) {
+      if (String(keys[i][0] || '').trim() === String(data.vaka).trim()) { row = i + 2; break; }
+    }
+  }
+  if (!row) {
+    const ts = new Date();
+    const bos = new Array(RC_HEADERS.length).fill('');
+    bos[0] = ts;
+    bos[1] = Utilities.formatDate(ts, 'Europe/Istanbul', 'yyyy-MM-dd');
+    bos[2] = data.patientId || '';
+    bos[3] = data.name || '';
+    bos[4] = data.doctor || '';
+    bos[11] = data.side || '';
+    bos[RC_VAKA_COL - 1] = data.vaka || ('RC-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase());
+    sheet.appendRow(bos);
+    row = sheet.getLastRow();
+  }
+  sheet.getRange(row, RC_DOC_COL, 1, RC_DOC_LEN).setValues([vals]);
+  sheet.getRange(row, RC_DOC_COL + RC_DOC_LEN - 1).setBackground(data.done ? '#dcfce7' : '#fef9c3');
+  return String(sheet.getRange(row, RC_VAKA_COL).getValue() || '');
+}
+
+function rcCaseList() {
+  const sheet = ensureSheet(RC_SHEET, RC_HEADERS, [[4, 150], [5, 150], [15, 190], [17, 190], [43, 240], [44, 300]]);
+  const last = sheet.getLastRow();
+  if (last < 2) return [];
+  const d = sheet.getRange(2, 1, last - 1, RC_HEADERS.length).getValues();
+  const out = [];
+  for (let i = 0; i < d.length; i++) {
+    const r = d[i];
+    if (!String(r[2] || '').trim() && !String(r[3] || '').trim()) continue;
+    let vaka = String(r[RC_VAKA_COL - 1] || '').trim();
+    if (!vaka) {
+      vaka = 'RC-' + Utilities.getUuid().replace(/-/g, '').slice(0, 8).toUpperCase();
+      sheet.getRange(i + 2, RC_VAKA_COL).setValue(vaka);
+    }
+    out.push({
+      vaka: vaka, ad: String(r[3] || ''), id: String(r[2] || ''),
+      tarih: r[1] instanceof Date ? Utilities.formatDate(r[1], 'Europe/Istanbul', 'yyyy-MM-dd') : String(r[1] || ''),
+      taraf: String(r[11] || ''), yas: r[5] === '' ? null : Number(r[5]),
+      tani: String(r[RC_DOC_COL + 1] || ''),
+      hekim: String(r[RC_DOC_COL - 1] || ''),
+      hastaDoldu: r[32] !== '' && r[32] !== null,     // ASES Ağrı dolu mu
+      ases: r[32] === '' ? null : Number(r[33]),
+      amelTarih: r[RC_DOC_COL + 21] instanceof Date
+        ? Utilities.formatDate(r[RC_DOC_COL + 21], 'Europe/Istanbul', 'yyyy-MM-dd')
+        : String(r[RC_DOC_COL + 21] || ''),
+      tamam: String(r[RC_DOC_COL + RC_DOC_LEN - 2] || '') === 'Evet',
+    });
+  }
+  return out.reverse();
+}
+
+function rcCaseDetail(vaka) {
+  const sheet = ensureSheet(RC_SHEET, RC_HEADERS, [[4, 150], [5, 150], [15, 190], [17, 190], [43, 240], [44, 300]]);
+  const last = sheet.getLastRow();
+  if (last < 2) return null;
+  const keys = sheet.getRange(2, RC_VAKA_COL, last - 1, 1).getValues();
+  for (let i = 0; i < keys.length; i++) {
+    if (String(keys[i][0] || '').trim() === String(vaka).trim()) {
+      const r = sheet.getRange(i + 2, 1, 1, RC_HEADERS.length).getValues()[0];
+      const o = {};
+      for (let c = 0; c < RC_HEADERS.length; c++) {
+        const v = r[c];
+        o[RC_HEADERS[c]] = v instanceof Date
+          ? Utilities.formatDate(v, 'Europe/Istanbul', 'yyyy-MM-dd') : v;
+      }
+      return o;
+    }
+  }
+  return null;
 }
 
 // Omuz ilk değerlendirmesini uyku çalışmasının biçimine çevir
