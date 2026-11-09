@@ -156,6 +156,10 @@ h1{font-size:clamp(25px,6.6vw,32px);font-weight:700;letter-spacing:-.035em;line-
 @keyframes pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
 .done h1{font-size:29px}
 .done .sub{margin-top:13px;text-align:center}
+.go2{margin-top:26px;padding:17px 30px;border:none;border-radius:15px;background:var(--ink);
+  color:#fff;font-size:16.5px;font-weight:650;letter-spacing:-.01em;cursor:pointer;
+  transition:transform .14s var(--ease)}
+.go2:active{transform:scale(.97)}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
@@ -712,8 +716,11 @@ stage.innerHTML = `
   <section class="screen done" data-i="${QS.length+1}">
     <div class="ring"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff"
       stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-    <h1>Teşekkür ederiz</h1>
-    <p class="sub">Yanıtlarınız kaydedildi. Doktorunuz ameliyat öncesi değerlendirmenizde bu bilgileri görecek.</p>
+    <h1>Birinci bölüm tamam</h1>
+    <p class="sub">Şimdi omuz ölçümlerine geçiyoruz: ağrı, hareket açıklığı ve günlük yaşam soruları.
+       Bu bölüm ameliyat sonrası kontrollerinizde de aynen tekrarlanacak — değişimi ancak böyle ölçebiliriz.</p>
+    <button class="go2" id="go2" onclick="ikinciBolum()">İkinci bölüme geç</button>
+    <p class="sub" style="font-size:13px" id="go2Note">Birkaç saniye içinde kendiliğinden açılacak.</p>
   </section>`;
 
 const screens = [...document.querySelectorAll('.screen')];
@@ -1095,12 +1102,36 @@ function submit(){
     worcRaw:WORC.map(k=>(A['worc_'+k.k]||[]).join(',')).join(' | '),
   };
 
-  if (PREVIEW){ setTimeout(()=>go(LAST,1),500); return; }
+  if (PREVIEW){ setTimeout(()=>{ go(LAST,1); kopru(true); },500); return; }
   const f = document.createElement('iframe');
   f.style.display='none';
   f.src = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
   document.body.appendChild(f);
-  setTimeout(()=>{ try{f.remove();}catch(e){} go(LAST,1); }, 2600);
+  setTimeout(()=>{ try{f.remove();}catch(e){} go(LAST,1); kopru(false); }, 2600);
+}
+
+/* ═══ İkinci bölüm — omuz seti ══════════════════════════════════════════
+   Ameliyat sonrası kontroller form.html ile yapılıyor. Pre-op'ta da AYNI
+   dosyayı kullanıyoruz: ölçekler kopyalanmadığı için iki dönem birebir
+   karşılaştırılabilir kalıyor. İki kayıt protokol no ile eşleşir.          */
+const OMUZ_URL = location.href.split(/[?#]/)[0].replace(/[^\/]*$/, '') + 'form.html';
+// Önizlemede yönlendirme yapılmaz, yalnız düğme görünür
+function kopru(onizleme){
+  const not = document.getElementById('go2Note');
+  if (onizleme){ not.textContent = 'Önizleme — ikinci bölüme geçmek için düğmeye dokunun.'; return; }
+  let kalan = 5;
+  const yaz = () => not.textContent = kalan + ' saniye içinde kendiliğinden açılacak.';
+  yaz();
+  const t = setInterval(() => { kalan--; if (kalan <= 0){ clearInterval(t); ikinciBolum(); } else yaz(); }, 1000);
+}
+
+function ikinciBolum(){
+  const p = new URLSearchParams({
+    name: A.name || '', id: A.protokol || qp.get('id') || '',
+    leg: (A.side || '').toLocaleLowerCase('tr'), fu: 'preop',
+    procedure: 'Rotator Manşet',
+  });
+  location.href = OMUZ_URL + '?' + p.toString();
 }
 
 /* ═══ Başlat ════════════════════════════════════════════════════════════ */
