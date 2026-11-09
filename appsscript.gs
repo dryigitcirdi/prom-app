@@ -320,6 +320,9 @@ const HEADERS = [
   'Girişim Tarihi', 'Post-op Gün', 'Taraf',
   'VAS (0-10)', 'Abduksiyon (°)', 'Öne Fleksiyon (°)', 'İç Rotasyon', 'İR Pozisyon', 'Dış Rotasyon (°)',
   'DASH (0-100)', 'Constant (0-100)', 'Uyku VAS (0-10)', 'SF-12 PCS', 'SF-12 MCS', 'Takip',
+  // ─── Yalnız takip dönemlerinde dolar ───
+  'Komplikasyon', 'Komplikasyon Not',
+  'Spora Dönüş', 'Aynı Spor', 'Eski Seviye', 'Dönüş Süresi (ay)', 'Dönememe Nedeni',
 ];
 
 function doPost(e) {
@@ -488,6 +491,9 @@ function saveToSheet(data) {
     n(data.sf12_pcs),
     n(data.sf12_mcs),
     data.followup || '',
+    data.complication || '', data.complicationNote || '',
+    data.rts || '', data.rtsSameSport || '', data.rtsLevel || '',
+    n(data.rtsMonths), data.rtsReason || '',
   ];
 
   // Aynı hastanın satırları dönem sırasıyla alt alta gelecek şekilde yerleştir

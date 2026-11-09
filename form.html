@@ -525,6 +525,15 @@
                       display: flex; justify-content: space-between; align-items: center; }
     .const-rom-label { font-size: 12px; color: var(--muted); line-height: 1.4; }
     .const-rom-score { font-size: 16px; font-weight: 800; color: var(--primary); }
+    /* ── Takip ek bloğu: komplikasyon ve spora dönüş ──── */
+    .fx-q { font-size: 15px; font-weight: 600; margin: 22px 0 10px; line-height: 1.45; }
+    .fx-q:first-of-type { margin-top: 6px; }
+    .fx-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fx-opts .side-btn { flex: 0 1 auto; padding: 11px 15px; font-size: 14px; }
+    .fx-note, .fx-num { width: 100%; margin-top: 12px; padding: 12px 14px; font: inherit;
+      border: 1px solid #e2e8f0; border-radius: 12px; outline: none; resize: vertical; }
+    .fx-note:focus, .fx-num:focus { border-color: #1e6fff; }
+
     /* ── Strength slider ──────────────────────────────── */
     .str-track {
       position: relative; height: 52px; border-radius: 12px;
@@ -1045,6 +1054,59 @@
       </div>
     </div>
   </div>
+
+  <!-- Yalnız takip dönemlerinde görünür — pre-op'ta anlamı yok -->
+  <div class="card" id="fuExtras" style="display:none">
+    <div class="card-label">Girişimden Sonra</div>
+    <div class="card-question">Bu bölüm takip değerlendirmesine aittir.</div>
+
+    <div class="fx-q">Beklenmeyen bir sorun yaşadınız mı?</div>
+    <div class="fx-opts" id="fxComp">
+      <button class="side-btn" data-v="Yok">Yok</button>
+      <button class="side-btn" data-v="Enfeksiyon">Enfeksiyon</button>
+      <button class="side-btn" data-v="Donuk omuz">Donuk omuz / hareket kısıtlılığı</button>
+      <button class="side-btn" data-v="Sinir sorunu">Uyuşma / güçsüzlük</button>
+      <button class="side-btn" data-v="Yeniden yırtık şüphesi">Yeniden yırtık şüphesi</button>
+      <button class="side-btn" data-v="Yeniden ameliyat">Yeniden ameliyat</button>
+      <button class="side-btn" data-v="Diğer">Diğer</button>
+    </div>
+    <textarea id="fxCompNote" class="fx-note" rows="2"
+              placeholder="Varsa kısaca yazın — ne zaman, nasıl"></textarea>
+
+    <div class="fx-q">Spora veya düzenli egzersize döndünüz mü?</div>
+    <div class="fx-opts" id="fxRts">
+      <button class="side-btn" data-v="Hayır">Hayır</button>
+      <button class="side-btn" data-v="Kısmen">Kısmen döndüm</button>
+      <button class="side-btn" data-v="Evet">Evet, döndüm</button>
+    </div>
+
+    <div id="fxBack" style="display:none">
+      <div class="fx-q">Eski sporunuza mı döndünüz?</div>
+      <div class="fx-opts" id="fxSame">
+        <button class="side-btn" data-v="Aynı spor">Evet, aynı spor</button>
+        <button class="side-btn" data-v="Başka spor">Başka bir spora geçtim</button>
+      </div>
+      <div class="fx-q">Eski seviyenizde yapabiliyor musunuz?</div>
+      <div class="fx-opts" id="fxLevel">
+        <button class="side-btn" data-v="Eski seviyemde">Evet, eski seviyemde</button>
+        <button class="side-btn" data-v="Daha düşük">Daha düşük seviyede</button>
+        <button class="side-btn" data-v="Çok daha düşük">Çok daha düşük</button>
+      </div>
+      <div class="fx-q">Kaç ayda döndünüz?</div>
+      <input type="number" id="fxMonths" class="fx-num" min="0" max="60" placeholder="örn. 6">
+    </div>
+
+    <div id="fxWhy" style="display:none">
+      <div class="fx-q">Dönmediyseniz en büyük engel ne?</div>
+      <div class="fx-opts" id="fxReason">
+        <button class="side-btn" data-v="Omzum izin vermiyor">Omzum izin vermiyor</button>
+        <button class="side-btn" data-v="Güvenmiyorum">Güvenmiyorum, korkuyorum</button>
+        <button class="side-btn" data-v="Hekim izin vermedi">Hekimim henüz izin vermedi</button>
+        <button class="side-btn" data-v="Zamanım yok">Zamanım yok</button>
+        <button class="side-btn" data-v="İlgim kalmadı">İlgim kalmadı</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════
@@ -1167,6 +1229,47 @@ function deriveFU(diag, d) {
   if (has2W(diag) && d <= 28) return '2. Hafta';
   if (d <= 100) return '6. Hafta';
   return '6. Ay';
+}
+
+/* ═══ Takip ek bloğu ═══════════════════════════════════════════════════════
+   Komplikasyon ve spora dönüş yalnız takip dönemlerinde sorulur. Spora dönüş
+   üç kırılımda: döndü mü → aynı spora mı → eski seviyesinde mi. Tek soruyla
+   sorulursa "döndüm" diyenlerin bir kısmı eski seviyesinde olmadığı için
+   başarı oranı olduğundan yüksek çıkar.                                     */
+const fx = { comp: [], compNote: '', rts: '', rtsSame: '', rtsLevel: '', rtsMonths: '', rtsReason: '' };
+
+function fxPick(kutu, cok) {
+  const box = document.getElementById(kutu);
+  box.addEventListener('click', e => {
+    const b = e.target.closest('.side-btn');
+    if (!b) return;
+    const v = b.dataset.v;
+    if (cok) {
+      if (v === 'Yok') fx.comp = fx.comp.includes('Yok') ? [] : ['Yok'];
+      else {
+        fx.comp = fx.comp.filter(x => x !== 'Yok');
+        fx.comp = fx.comp.includes(v) ? fx.comp.filter(x => x !== v) : fx.comp.concat([v]);
+      }
+      [...box.children].forEach(x => x.classList.toggle('active', fx.comp.includes(x.dataset.v)));
+      return;
+    }
+    const alan = { fxRts:'rts', fxSame:'rtsSame', fxLevel:'rtsLevel', fxReason:'rtsReason' }[kutu];
+    fx[alan] = fx[alan] === v ? '' : v;
+    [...box.children].forEach(x => x.classList.toggle('active', x.dataset.v === fx[alan]));
+    if (kutu === 'fxRts') {
+      const dondu = fx.rts === 'Evet' || fx.rts === 'Kısmen';
+      document.getElementById('fxBack').style.display = dondu ? '' : 'none';
+      document.getElementById('fxWhy').style.display  = fx.rts === 'Hayır' ? '' : 'none';
+    }
+  });
+}
+['fxRts','fxSame','fxLevel','fxReason'].forEach(k => fxPick(k, false));
+fxPick('fxComp', true);
+document.getElementById('fxCompNote').addEventListener('input', e => fx.compNote = e.target.value);
+document.getElementById('fxMonths').addEventListener('input', e => fx.rtsMonths = e.target.value);
+
+function syncFxBlock() {
+  document.getElementById('fuExtras').style.display = getFollowup() === 'Pre-op' ? 'none' : '';
 }
 
 function getFollowup() {
@@ -1876,6 +1979,7 @@ function showSection(n) {
   if (n === 4) initFFlex();
   if (n === 5) initIR();
   if (n === 6) initER();
+  if (n === 10) syncFxBlock();
   if (n === 7) initDASH();
   if (n === 8) initConstant();
   if (n === 9) initSF12();
@@ -1954,7 +2058,14 @@ function submitForm() {
     sleep_vas:     scores.sleep,
     sf12_pcs:      scores.sf12_pcs,
     sf12_mcs:      scores.sf12_mcs,
-    followup:      getFollowup()
+    followup:      getFollowup(),
+    complication:  fx.comp.join(', '),
+    complicationNote: fx.compNote,
+    rts:           fx.rts,
+    rtsSameSport:  fx.rtsSame,
+    rtsLevel:      fx.rtsLevel,
+    rtsMonths:     fx.rtsMonths,
+    rtsReason:     fx.rtsReason
   };
 
   if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
