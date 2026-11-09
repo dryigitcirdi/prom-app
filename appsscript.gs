@@ -168,7 +168,11 @@ function ensureSheet(name, headers, widths) {
     sheet.setFrozenRows(1);
     (widths || []).forEach(function (w) { sheet.setColumnWidth(w[0], w[1]); });
   }
-  if (sheet.getRange(1, headers.length).getValue() !== headers[headers.length - 1]) {
+  // Yalnız son başlığa bakmak yetmiyordu: ortadaki bir sütun yeniden adlandırılınca
+  // başlık satırı güncellenmeden kalıyordu. Tüm başlıkları karşılaştır.
+  const mevcut = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
+  const farkli = headers.some(function (h, i) { return String(mevcut[i] || '') !== String(h); });
+  if (farkli) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     const hr = sheet.getRange(1, 1, 1, headers.length);
     hr.setBackground('#1e6fff'); hr.setFontColor('#ffffff');
@@ -1139,7 +1143,7 @@ const RC_HEADERS = [
   'Dominant El', 'Taraf', 'Dominant Omuz mu', 'Sigara', 'Ek Hastalık',
   'Şikâyet Süresi (ay)', 'Başlangıç', 'Travma Tarihi', 'Travmadan Geçen Gün',
   'İş Kazası / Meslek Hastalığı', 'İş Yükü',
-  'Gece Ağrısı', 'Üzerine Yatamıyor', 'İstirahat Ağrısı', 'Haftada Kaç Gece',
+  'Gece Ağrısı', 'Ağrılı Omuz Üzerine Yatabiliyor', 'İstirahat Ağrısı', 'Haftada Kaç Gece',
   'Fizik Tedavi', 'Enjeksiyon Sayısı', 'Son Enjeksiyon',
   'Önceki Ameliyat (aynı omuz)', 'Karşı Omuz', 'Boyun Sorunu',
   'ASES Ağrı (0-10)', 'ASES',

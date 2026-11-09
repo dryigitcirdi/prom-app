@@ -616,7 +616,7 @@
         <td class="demo-val" id="demoName">—</td>
       </tr>
       <tr>
-        <td class="demo-lbl">Tanı</td>
+        <td class="demo-lbl">Değerlendirme</td>
         <td class="demo-val" id="demoProcedure">—</td>
       </tr>
       <tr>
@@ -633,15 +633,15 @@
       </tr>
     </table>
 
-    <!-- Tanı seçimi — veriler ilgili tanının takip çizelgesine kaydedilir -->
-    <div class="fu-pick">
-      <div class="fu-pick-title">Tanınız</div>
+    <!-- Tanı hastaya sorulmaz: kalsifik tendinit / rotator manşet / Bankart ayrımı
+         muayene ve MR ile konur, hekim kendi bölümünde belirler. Düğmeler gizli
+         tutulur ki linkteki tanı yine de koda taşınsın. -->
+    <div class="fu-pick" style="display:none">
       <div class="side-btns">
-        <button class="side-btn" id="diagBtn0" onclick="selectDiagOpt('Kalsifik Tendinit')">Kalsifik<br>Tendinit</button>
-        <button class="side-btn" id="diagBtn1" onclick="selectDiagOpt('Rotator Manşet')">Rotator<br>Manşet</button>
-        <button class="side-btn" id="diagBtn2" onclick="selectDiagOpt('Bankart Lezyonu')">Bankart<br>Lezyonu</button>
+        <button class="side-btn" id="diagBtn0" onclick="selectDiagOpt('Kalsifik Tendinit')">Kalsifik Tendinit</button>
+        <button class="side-btn" id="diagBtn1" onclick="selectDiagOpt('Rotator Manşet')">Rotator Manşet</button>
+        <button class="side-btn" id="diagBtn2" onclick="selectDiagOpt('Bankart Lezyonu')">Bankart Lezyonu</button>
       </div>
-      <div class="fu-pick-note">Doktorunuzun belirttiği tanı seçili gelir; yanlışsa değiştirebilirsiniz.</div>
     </div>
 
     <!-- Takip dönemi — hasta hangi değerlendirmeyi doldurduğunu belirtir -->
@@ -1306,7 +1306,7 @@ function selectDiagOpt(diag) {
   DIAG_OPTIONS.forEach((d, i) =>
     document.getElementById('diagBtn' + i).classList.toggle('on', d === diag));
   const el = document.getElementById('demoProcedure');
-  if (el) el.textContent = diag;
+  if (el) el.textContent = 'Omuz değerlendirmesi';
   // 2. Hafta butonu yalnızca Kalsifik Tendinit'te görünür
   document.getElementById('fuBtn1').style.display = has2W(diag) ? '' : 'none';
   if (!has2W(diag) && selectedFU === '2. Hafta') {
@@ -1409,7 +1409,7 @@ function selectLeg(leg) {
 
 function initDemographics() {
   document.getElementById('demoName').textContent      = patientName;
-  document.getElementById('demoProcedure').textContent = procedureType;
+  document.getElementById('demoProcedure').textContent = 'Omuz değerlendirmesi';
   document.getElementById('demoDate').textContent      = formatDate(surgeryDateStr) || '—';
   document.getElementById('demoDays').textContent      = daysPostOp !== null ? daysPostOp + '. gün' : '—';
 

@@ -487,8 +487,8 @@ const IS_YUKU = [
   ['Orta','Düzenli kol kaldırma, taşıma var'],
   ['Ağır','Sürekli baş üstü çalışıyorum'],
 ];
-const SPORLAR = ['Voleybol','Basketbol','Hentbol','Tenis / badminton','Yüzme','Kürek / kano',
-  'Fitness / ağırlık','Golf','Futbol','Koşu / yürüyüş','Bisiklet','Diğer'];
+const SPORLAR = ['Futbol','Basketbol','Tenis / badminton','Fitness / ağırlık',
+  'Voleybol','Yüzme','Hentbol','Koşu / yürüyüş','Bisiklet','Golf','Kürek / kano','Diğer'];
 // Düzey tanımları ACL anketiyle birebir aynı — iki kohort karşılaştırılabilsin
 const SPOR_DUZEY = [
   ['Profesyonel','Spordan gelir elde ediyorum'],
@@ -559,7 +559,7 @@ const QS = [
 
   {k:'night',   type:'yn',     title:'Gece ağrısı', sub:'Hepsini yanıtlayın.', q:[
     ['nightPain','Ağrı geceleri uykunuzu bölüyor mu?'],
-    ['sideLie','Ağrılı omzunuzun üzerine yatamıyor musunuz?'],
+    ['sideLie','Ağrılı omzunuzun üzerine yatabiliyor musunuz?'],
     ['restPain','Hiçbir şey yapmazken de ağrınız oluyor mu?']]},
   {k:'nights',  type:'num',    title:'Haftada kaç gece uykunuz bölünüyor?',
    ph:'4', id:'f_nights', max:7, when:()=>A.nightPain==='Evet'},
