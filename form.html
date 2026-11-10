@@ -1425,6 +1425,8 @@ const EN = {
   'Visual Analog Sleep Scale':'Visual analogue sleep scale',
   'örn. 6':'e.g. 6',
 };
+const tt = s => (LANG === 'en' && EN[s] !== undefined) ? EN[s] : s;
+
 function trPass(root) {
   if (LANG !== 'en') return;
   const kok = root || document.body;
@@ -2244,7 +2246,6 @@ function showSection(n) {
   btnNext.textContent   = tt(btnLabels[n] || 'İleri →');
   btnNext.disabled      = false;
 
-  const tt = s => (LANG === 'en' && EN[s] !== undefined) ? EN[s] : s;
   document.getElementById('headerLabel').textContent = tt(headerMeta[n]?.label || '');
   document.getElementById('headerTitle').textContent = tt(headerMeta[n]?.title || '');
   document.getElementById('headerSub').textContent   = '';
