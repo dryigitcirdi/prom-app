@@ -895,7 +895,7 @@ function bodyFor(q){
     case 'clock': return `<div class="body clock-wrap">${clockSVG()}</div>`;
     case 'multi': return `<div class="body"><div class="opts">${q.opts.map(o =>
       `<button type="button" class="opt" data-v="${esc(o)}">
-        <span class="dot">${TICK}</span>${o}</button>`).join('')}</div></div>`;
+        <span class="dot">${TICK}</span>${t(o)}</button>`).join('')}</div></div>`;
     case 'vas': return `<div class="body"><div class="vas">${
       Array.from({length:11},(_,n)=>`<button type="button" class="vas-b" data-v="${n}">${n}</button>`).join('')
       }</div><div class="ends"><span>${t(q.lo)}</span><span>${t(q.hi)}</span></div></div>`;
