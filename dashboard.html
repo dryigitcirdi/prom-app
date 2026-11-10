@@ -1464,7 +1464,8 @@ function refreshAll() {
   renderRc();
   const base = baseRows();
   if (activeBranch === 'Sports Medicine')
-    document.getElementById('totalBadge').textContent = base.length + ' kayıt';
+    document.getElementById('totalBadge').textContent =
+      base.length + ' takip · ' + rcSecili().length + ' pre-op';
   filterTable();
   updateStats(activeFU === 'Tümü' ? base : base.filter(r => fuOf(r) === activeFU));
   renderMatrix(base);
@@ -4408,8 +4409,6 @@ function rcSecili() {
 
 function renderRc() {
   const R = rcSecili();
-  document.getElementById('totalBadge').textContent =
-    baseRows().length + ' takip · ' + R.length + ' pre-op';
 
   const anket = R.filter(x => x.ases !== null);
   const enjRisk = R.filter(x => (x.enj === '2 kez' || x.enj === '3 ve üzeri')
@@ -4485,7 +4484,7 @@ function renderRcTable() {
     : `<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">📭</div>
          <div>Bu tanıda pre-op kaydı yok — vakalar hekim uygulamasından açılır.</div></div></td></tr>`;
   document.getElementById('rcTable').innerHTML = head + '<tbody>' + body + '</tbody>';
-  if (rcSel !== null && rcSel < rcRows.length) showRcDetail(rcSel);
+  if (rcSel !== null && rcSel < rcSecili().length) showRcDetail(rcSel);
 }
 
 function showRcDetail(i) {
