@@ -1200,6 +1200,239 @@ const patientId      = params.get('id')        || '';
 const surgeryDateStr = params.get('surgery')   || '';
 const surgeryLeg     = params.get('leg')       || '';
 const procedureType  = params.get('procedure') || 'Kalsifik Tendinit';
+/* ═══ İngilizce ═══════════════════════════════════════════════════════════
+   ?lang=en ile açılır. Çeviri, çizimden sonra DOM üzerinde tek geçişte
+   yapılır: metinler hem statik HTML'de hem şablon dizgelerinde dağınık,
+   her çıkış noktasını ayrı sarmalamak kırılgan olurdu.
+   DASH, SF-12 ve Constant'ta ORİJİNAL İngilizce ifadeler kullanılır.       */
+const LANG = params.get('lang') === 'en' ? 'en' : 'tr';
+const EN = {
+  // ── Kabuk ──
+  'Omuz Değerlendirme Anketi':'Shoulder Assessment',
+  'OMUZ DEĞERLENDİRMESİ':'SHOULDER ASSESSMENT',
+  'Hoş Geldiniz':'Welcome', 'Merhaba,':'Hello,',
+  'Omzunuzu daha iyi takip edebilmemiz için birkaç soru soracağız.':
+    'We will ask a few questions so we can follow your shoulder more closely.',
+  'Yanıtlarınız doğrudan doktorunuza iletilir.':'Your answers go straight to your doctor.',
+  'Ağrı değerlendirmesi (VAS)':'Pain assessment (VAS)',
+  'Eklem hareket açıklığı':'Range of motion',
+  'Fonksiyonel skorlar (DASH · Constant-Murley · SF-12)':'Functional scores (DASH · Constant-Murley · SF-12)',
+  'Uyku kalitesi':'Sleep quality', 'Uyku Kalitesi':'Sleep Quality',
+  'Dönem':'Assessment point', 'Taraf':'Side', 'Post-op Gün':'Days post-op',
+  'Post-op süre':'Time since surgery', 'Post-op Süre':'Time since surgery',
+  'Sağ':'Right', 'Sol':'Left', 'Sağ omuz':'Right shoulder', 'Sol omuz':'Left shoulder',
+  'Hasta Bilgileri':'Your details', 'Bilgilerinizi doğrulayın':'Please check your details',
+  'Ad Soyad':'Name', 'Protokol no':'Hospital number', 'Girilecek':'To be entered',
+  'Değerlendirme':'Assessment', 'Omuz değerlendirmesi':'Shoulder assessment',
+  'Ameliyat tarihi':'Date of surgery', 'Ameliyat tarafı':'Operated side',
+  'Girişim tarihi':'Date of procedure', 'Girişimden bu yana':'Since the procedure',
+  'Hangi dönemin değerlendirmesini dolduruyorsunuz?':'Which assessment are you completing?',
+  'Ameliyat öncesi':'Before surgery', 'Omuz iğnesi öncesi':'Before the shoulder injection',
+  'Girişim Öncesi':'Before procedure', 'Pre-op':'Pre-op',
+  '2. Hafta':'Week 2', '6. Hafta':'Week 6', '6. Ay':'Month 6',
+  'Takip randevunuzu kaçırdıysanız ve geçmiş bir dönemi sonradan dolduruyorsanız, o dönemi seçerek yanıtlarınızı ilgili döneme kaydedebilirsiniz.':
+    'If you missed a follow-up appointment and are completing an earlier assessment now, select that point so your answers are filed against it.',
+  'Protokol numaranız':'Your hospital number',
+  'Hastane kaydınızdaki protokol / dosya numarası. Önceki değerlendirmenizle eşleşmesi için gerekli.':
+    'The hospital record or file number. We need it to match this with your earlier assessment.',
+  'Protokol / dosya no':'Hospital / file number',
+  'Hangi omzunuz ameliyat edildi?':'Which shoulder was operated on?',
+  'Başla':'Start', 'Devam →':'Continue →', 'İleri →':'Next →', 'Geri':'Back', 'Gönder':'Submit',
+  'Gönderiliyor…':'Submitting…',
+  'Teşekkürler!':'Thank you!', 'Yanıtlarınız başarıyla kaydedildi.':'Your answers have been saved.',
+  'Bu sayfayı kapatabilirsiniz.':'You can close this page.',
+  'VAS Ağrı':'VAS pain', 'Abdüksiyon':'Abduction',
+  // ── VAS ──
+  'Bölüm 1 / 3 — Ağrı Değerlendirmesi':'Part 1 of 3 — Pain',
+  'ortalama ağrı':'average pain', 'şiddetini aşağıdaki cetvelde işaretleyiniz.':'severity on the scale below.',
+  'Son bir haftadaki':'Over the past week, mark your',
+  'Ağrı yok':'No pain', 'Dayanılmaz ağrı':'Worst imaginable pain',
+  'Hafif ağrı':'Mild pain', 'Orta şiddette ağrı':'Moderate pain',
+  'Şiddetli ağrı':'Severe pain', 'Çok şiddetli ağrı':'Very severe pain', 'Ağrısız':'Pain free',
+  // ── EHA ──
+  'Bölüm 2 / 3 — Eklem Hareket Açıklığı':'Part 2 of 3 — Range of motion',
+  'Abduksiyon (yana kaldırma)':'Abduction (raising to the side)',
+  'Omuzunuzu ağrısız olarak ne kadar yana kaldırabildiğinizi sürükleyerek belirtiniz.':
+    'Drag to show how far you can raise your arm to the side without pain.',
+  'Öne fleksiyon (öne kaldırma)':'Forward flexion (raising in front)',
+  'Omuzunuzu ağrısız olarak ne kadar öne kaldırabildiğinizi sürükleyerek belirtiniz.':
+    'Drag to show how far you can raise your arm in front without pain.',
+  'İç rotasyon (el arkada)':'Internal rotation (hand behind back)',
+  'Kolunuzu büküp elinizi sırtınıza götürün ve olabildiğince yukarı kaydırın. Elinizin ulaştığı bölgeyi seçin.':
+    'Bend your elbow, put your hand behind your back and slide it up as far as you can. Select where your hand reaches.',
+  'Dış rotasyon (kolu dışa döndürme)':'External rotation (rotating the arm outwards)',
+  "Kolunuz yanda sarkık, dirsek 90° bükük iken elin öne'den dışarıya ne kadar döndüğünü sürükleyerek belirtiniz.":
+    'With your arm at your side and your elbow bent to 90°, drag to show how far your hand turns outwards from the front.',
+  'Mavi noktayı sürükleyin':'Drag the blue dot',
+  'Mavi noktayı yukarı sürükleyin':'Drag the blue dot upwards',
+  'Mavi noktayı dışarı sürükleyin':'Drag the blue dot outwards',
+  'Kalça':'Buttock', 'Üst bel':'Waist', 'Kürek kemiği':'Shoulder blade',
+  'Bel':'Lower back', 'Sırt':'Mid-back', 'önde':'front', 'dışarı':'out',
+  // ── DASH (orijinal) ──
+  'Kol, Omuz ve El Anketi (DASH)':'Disabilities of the Arm, Shoulder and Hand (DASH)',
+  "Lütfen son bir haftayı düşünerek yanıtlayın. 30 sorudan en az 27'si yanıtlanmalıdır.":
+    'Please answer thinking of the past week. At least 27 of the 30 questions must be answered.',
+  'DASH Skoru':'DASH score', '0 / 30 soru yanıtlandı':'0 of 30 answered',
+  'A — Aktiviteler':'A — Activities',
+  'Son bir haftada aşağıdaki faaliyetleri yaparken ne kadar güçlük çektiniz?':
+    'Please rate your ability to do the following activities in the last week.',
+  'Güçlük yok':'No difficulty', 'Hafif güçlük':'Mild difficulty', 'Orta güçlük':'Moderate difficulty',
+  'Ciddi güçlük':'Severe difficulty', 'Yapamıyorum':'Unable',
+  'Sıkı veya yeni bir kapak açmak':'Open a tight or new jar',
+  'Yazmak':'Write', 'Anahtar çevirmek':'Turn a key', 'Yemek hazırlamak':'Prepare a meal',
+  'Ağır bir kapıyı itmek':'Push open a heavy door',
+  'Başınızın üzerindeki bir rafa nesne koymak':'Place an object on a shelf above your head',
+  'Ağır ev işleri yapmak (örn. duvar boyama, zemin yıkama)':'Do heavy household chores (e.g. wash walls, wash floors)',
+  'Bahçe veya çim işleri yapmak':'Garden or do yard work',
+  'Yatak yapmak':'Make a bed', 'Alışveriş veya evrak çantası taşımak':'Carry a shopping bag or briefcase',
+  'Ağır nesne taşımak (4,5 kg üzerinde)':'Carry a heavy object (over 10 lb / 4.5 kg)',
+  'Baş üzerindeki bir ampulü değiştirmek':'Change a lightbulb overhead',
+  'Saçı yıkamak veya kurutmak':'Wash or blow dry your hair', 'Sırtı yıkamak':'Wash your back',
+  'Kazak veya süveter giymek':'Put on a pullover sweater', 'Bıçakla yemek kesmek':'Use a knife to cut food',
+  'Az çabayla yapılan eğlence aktiviteleri (örn. kart oynamak, örgü örmek)':
+    'Recreational activities which require little effort (e.g. card playing, knitting)',
+  'Kola kuvvet veya darbe uygulayan eğlence aktiviteleri (örn. golf, tenis, çekiç kullanma)':
+    'Recreational activities in which you take some force or impact through your arm (e.g. golf, hammering, tennis)',
+  'Kolu serbest hareket ettiren eğlence aktiviteleri (örn. frizbi, badminton)':
+    'Recreational activities in which you move your arm freely (e.g. playing frisbee, badminton)',
+  'Ulaşım gereksinimlerini karşılamak (bir yerden bir yere gitmek)':
+    'Manage transportation needs (getting from one place to another)',
+  'Cinsel aktiviteler':'Sexual activities',
+  'B — Semptomlar':'B — Symptoms',
+  'Geçen hafta kol, omuz veya elinizdeki belirtilerin şiddetini değerlendirin:':
+    'Please rate the severity of the following symptoms in the last week.',
+  'Yok':'None', 'Hafif':'Mild', 'Orta':'Moderate', 'Şiddetli':'Severe', 'Aşırı şiddetli':'Extreme',
+  'Kol, omuz veya el ağrısı':'Arm, shoulder or hand pain',
+  'Belirli bir aktivite sırasında kol, omuz veya el ağrısı':'Arm, shoulder or hand pain when you performed any specific activity',
+  'Kol, omuz veya elde uyuşma / karıncalanma':'Tingling (pins and needles) in your arm, shoulder or hand',
+  'Kol, omuz veya elde güçsüzlük':'Weakness in your arm, shoulder or hand',
+  'Kol, omuz veya elde tutukluk / sertlik':'Stiffness in your arm, shoulder or hand',
+  'C — Genel Etkiler':'C — Overall impact',
+  'Kol, omuz veya el ağrınız nedeniyle uyumakta ne kadar güçlük çektiniz?':
+    'During the past week, how much difficulty have you had sleeping because of the pain in your arm, shoulder or hand?',
+  'Ciddi':'Severe', 'Uyuyamadım':'So much difficulty that I cannot sleep',
+  'Kol, omuz veya el sorunum nedeniyle kendimi daha az yetenekli, özgüvensiz veya yararsız hissettim.':
+    'I feel less capable, less confident or less useful because of my arm, shoulder or hand problem.',
+  'Kol, omuz veya el sorunum nedeniyle aile, arkadaş veya sosyal gruplarla aktivitelerimi kısıtladım.':
+    'My arm, shoulder or hand problem has limited my normal social activities with family, friends or groups.',
+  'Kol, omuz veya el sorunum iş veya günlük aktivitelerimi olumsuz etkiledi.':
+    'My arm, shoulder or hand problem has interfered with my work or other regular daily activities.',
+  'Hiç katılmıyorum':'Strongly disagree', 'Katılmıyorum':'Disagree', 'Kararsızım':'Neither agree nor disagree',
+  'Katılıyorum':'Agree', 'Kesinlikle katılıyorum':'Strongly agree',
+  // ── Constant ──
+  'Constant Score':'Constant score', 'Omuz Fonksiyon Skoru':'Shoulder function score',
+  'Son 4 haftayı düşünerek yanıtlayın. Toplam 100 puan — yüksek = iyi.':
+    'Answer thinking of the past 4 weeks. Total 100 points — higher is better.',
+  'A — Ağrı (0–15 puan)':'A — Pain (0–15 points)',
+  'Son 4 haftada omuz ağrınızı en iyi tanımlayan seçeneği işaretleyin:':
+    'Select the option that best describes your shoulder pain over the past 4 weeks.',
+  'B — Günlük Aktiviteler (0–20 puan)':'B — Activities of daily living (0–20 points)',
+  'Yapabildiğiniz aktiviteleri seçin (birden fazla seçilebilir):':'Select what you are able to do (more than one may apply).',
+  'Tüm mesai saatlerinde çalışabiliyorum':'I can work a full day',
+  'Tüm spor / rekreasyon aktivitelerimi yapabiliyorum':'I can take part in all my sport and recreation',
+  'Omuz ağrısı uykumu etkilemiyor':'Shoulder pain does not disturb my sleep',
+  'Omuzunuzu zorlamadan elinizi en yüksek nereye götürebilirsiniz?':
+    'Without straining your shoulder, how high can you place your hand?',
+  'Bel seviyesi':'Waist level', 'Göğüs kafesi':'Xiphoid level', 'Boyun':'Neck',
+  'Baş üstü':'Top of head', 'Baş üzerinde tam':'Above head',
+  'C — Hareket Açıklığı (0/40 puan)':'C — Range of motion (0/40 points)',
+  'Önceki bölümde girilen ölçümlerden otomatik hesaplanmıştır.':'Calculated automatically from the measurements you entered earlier.',
+  'Yana Abduksiyon':'Abduction', 'Öne Fleksiyon':'Forward flexion',
+  'İç Rotasyon':'Internal rotation', 'Dış Rotasyon':'External rotation',
+  'D — Kuvvet (0–25 puan)':'D — Strength (0–25 points)',
+  'Kolunuzu 90° yana açık tutarken ne kadar ağırlık kaldırabilirsiniz?':
+    'With your arm held out to the side at 90°, how much weight can you lift?',
+  '← Kaydırarak seçin':'← Slide to choose',
+  'Ağrı: —/15 · Aktivite: —/20 · ROM: 0/40 · Güç: —/25':'Pain —/15 · ADL —/20 · ROM 0/40 · Strength —/25',
+  // ── SF-12 ──
+  'SF-12 Anketi':'SF-12 questionnaire', 'Genel Sağlık Ölçeği':'General health measure',
+  'SF-12 Genel Sağlık Anketi':'SF-12 General Health Survey',
+  "Son 4 haftayı düşünerek yanıtlayın. Fiziksel (PCS) ve Mental (MCS) sağlık puanı hesaplanır — toplum ortalaması 50'dir, yüksek puan iyidir.":
+    'Answer thinking of the past 4 weeks. Physical (PCS) and Mental (MCS) scores are calculated — the population average is 50 and higher is better.',
+  '0 / 12 soru yanıtlandı':'0 of 12 answered',
+  'A — Genel Sağlık':'A — General health',
+  'Genel olarak sağlığınız için aşağıdakilerden hangisini söyleyebilirsiniz?':
+    'In general, would you say your health is:',
+  'Mükemmel':'Excellent', 'Çok iyi':'Very good', 'İyi':'Good', 'Kötü':'Poor',
+  'B — Fiziksel Aktiviteler':'B — Physical activities',
+  'Sağlığınız şu anda sizi bu aktivitelerde kısıtlıyor mu?':
+    'Does your health now limit you in these activities?',
+  'Orta düzeyde aktiviteler: masa taşımak, elektrik süpürgesiyle temizlik, bahçe işleri gibi':
+    'Moderate activities, such as moving a table, pushing a vacuum cleaner or gardening',
+  'Birkaç kat merdiven çıkmak':'Climbing several flights of stairs',
+  'Evet, çok kısıtlıyor':'Yes, limited a lot', 'Evet, biraz kısıtlıyor':'Yes, limited a little',
+  'Hayır, hiç kısıtlamıyor':'No, not limited at all',
+  'C — Fiziksel Sağlık':'C — Physical health',
+  'Son 4 hafta içinde, fiziksel sağlığınız nedeniyle işinizde veya günlük aktivitelerinizde:':
+    'During the past 4 weeks, as a result of your physical health, have you:',
+  'İstediğinizden daha azını başardınız':'Accomplished less than you would like',
+  'İşinizde veya diğer aktivitelerinizde kısıtlandınız':'Been limited in the kind of work or other activities',
+  'D — Duygusal Sorunlar':'D — Emotional problems',
+  'Son 4 hafta içinde, duygusal sorunlarınız (üzüntü, sıkıntı gibi) nedeniyle:':
+    'During the past 4 weeks, as a result of any emotional problems (such as feeling depressed or anxious), have you:',
+  'İşinizi veya diğer aktivitelerinizi her zamanki kadar dikkatli yapamadınız':
+    'Done work or other activities less carefully than usual',
+  'E — Ağrı':'E — Pain',
+  'Son 4 hafta içinde ağrı, normal işinizi (hem ev dışında hem ev işlerinde) ne kadar etkiledi?':
+    'During the past 4 weeks, how much did pain interfere with your normal work (including both work outside the home and housework)?',
+  'Hiç':'Not at all', 'Çok az':'A little bit', 'Oldukça':'Quite a bit', 'Aşırı':'Extremely',
+  'F — Ruh Hâli':'F — Mood',
+  'Son 4 hafta içinde ne kadar süreyle…':'How much of the time during the past 4 weeks…',
+  'Kendinizi sakin ve huzurlu hissettiniz':'Have you felt calm and peaceful',
+  'Enerji doluydunuz':'Did you have a lot of energy',
+  'Kendinizi kederli ve hüzünlü hissettiniz':'Have you felt downhearted and depressed',
+  'Her zaman':'All of the time', 'Çoğu zaman':'Most of the time',
+  'Oldukça sık':'A good bit of the time', 'Bazen':'Some of the time',
+  'Nadiren':'A little of the time', 'Hiçbir zaman':'None of the time',
+  'G — Sosyal Aktiviteler':'G — Social activities',
+  'Son 4 hafta içinde fiziksel sağlığınız veya duygusal sorunlarınız, sosyal aktivitelerinizi (arkadaş veya akraba ziyareti gibi) ne kadar süreyle engelledi?':
+    'During the past 4 weeks, how much of the time has your physical health or emotional problems interfered with your social activities (like visiting friends or relatives)?',
+  // ── Uyku ──
+  'Uyku Kalitesi — Visual Analog Sleep Scale':'Sleep quality — visual analogue sleep scale',
+  'Omuz ağrınızı da göz önünde bulundurarak, son zamanlardaki':'Taking your shoulder pain into account, mark your recent',
+  'gece uyku kalitenizi':'night-time sleep quality', 'aşağıdaki cetvelde işaretleyiniz.':'on the scale below.',
+  'Hiç uyuyamadım':'No sleep at all', 'Mükemmel uyku':'Perfect sleep',
+  'Orta kalitede uyku':'Moderate sleep',
+  // ── Takip bloğu ──
+  'Girişimden Sonra':'Since your procedure',
+  'Bu bölüm takip değerlendirmesine aittir.':'This section applies to follow-up assessments.',
+  'Beklenmeyen bir sorun yaşadınız mı?':'Have you had any unexpected problems?',
+  'Enfeksiyon':'Infection', 'Donuk omuz / hareket kısıtlılığı':'Frozen shoulder / loss of movement',
+  'Uyuşma / güçsüzlük':'Numbness / weakness', 'Yeniden yırtık şüphesi':'Suspected re-tear',
+  'Yeniden ameliyat':'Further surgery', 'Diğer':'Other',
+  'Spora veya düzenli egzersize döndünüz mü?':'Have you returned to sport or regular exercise?',
+  'Hayır':'No', 'Evet':'Yes', 'Kısmen döndüm':'Partly', 'Evet, döndüm':'Yes, fully',
+  'Eski sporunuza mı döndünüz?':'Did you return to the same sport?',
+  'Evet, aynı spor':'Yes, the same sport', 'Başka bir spora geçtim':'I switched to another sport',
+  'Eski seviyenizde yapabiliyor musunuz?':'Can you perform at your previous level?',
+  'Evet, eski seviyemde':'Yes, at my previous level', 'Daha düşük seviyede':'At a lower level',
+  'Çok daha düşük':'At a much lower level',
+  'Kaç ayda döndünüz?':'After how many months did you return?',
+  'Dönmediyseniz en büyük engel ne?':'If you have not returned, what is the main obstacle?',
+  'Omzum izin vermiyor':'My shoulder will not allow it',
+  'Güvenmiyorum, korkuyorum':'I lack confidence, I am afraid',
+  'Hekimim henüz izin vermedi':'My doctor has not cleared me yet',
+  'Zamanım yok':'I do not have time', 'İlgim kalmadı':'I have lost interest',
+  'Varsa kısaca yazın — ne zaman, nasıl':'If so, describe briefly — when and how',
+  'örn. 6':'e.g. 6',
+};
+function trPass(root) {
+  if (LANG !== 'en') return;
+  const kok = root || document.body;
+  const w = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT);
+  const nodes = []; let nd;
+  while (nd = w.nextNode()) nodes.push(nd);
+  nodes.forEach(n => {
+    const s = (n.nodeValue || '').replace(/\s+/g, ' ').trim();
+    if (!s) return;
+    const v = EN[s];
+    if (v !== undefined) n.nodeValue = v;
+  });
+  kok.querySelectorAll('[placeholder]').forEach(e => {
+    const v = EN[(e.placeholder || '').trim()];
+    if (v !== undefined) e.placeholder = v;
+  });
+}
 
 // Takip dönemi: linkteki fu parametresi (preop | 2w | 6w | 6m), yoksa post-op günden türetilir
 // 2. Hafta yalnızca Kalsifik Tendinit takip planında vardır.
@@ -1955,6 +2188,11 @@ erSvg.addEventListener('touchend',     () => { erDragging = false; });
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('welcomeName').textContent = patientName;
 document.getElementById('chipDays').textContent    = daysPostOp !== null ? daysPostOp + '. gün' : '—';
+if (LANG === 'en') {
+  document.documentElement.lang = 'en';
+  document.title = EN['Omuz Değerlendirme Anketi'];
+  trPass(document.body);
+}
 document.getElementById('chipLeg').textContent     = legLabel(activeLeg) || '—';
 document.getElementById('chipFU').textContent      = fuPatientLabel(getFollowup()) || '—';
 updateVAS(5);
@@ -2013,6 +2251,9 @@ function showSection(n) {
   if (n === 7) initDASH();
   if (n === 8) initConstant();
   if (n === 9) initSF12();
+  trPass(document.getElementById('sec' + n));
+  trPass(document.getElementById('navBar'));
+  trPass(document.querySelector('.header') || document.body);
 }
 
 function sars(id) {
