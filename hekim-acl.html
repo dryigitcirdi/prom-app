@@ -468,14 +468,6 @@ const RC_FORM = [
   { sec:'Tanı', f:[
     { k:'diag', t:'Tanı', opts:['Rotator Manşet','Kalsifik Tendinit','Bankart Lezyonu','Donuk Omuz','Diğer'] },
   ]},
-  { sec:'Muayene', f:[
-    { k:'subscap', t:'Subskapularis (belly-press / lift-off)', opts:['Negatif','Şüpheli','Pozitif'] },
-    { k:'erLag', t:'Dış rotasyon lag', opts:['Yok','Var'] },
-    { k:'impingement', t:'Sıkışma testleri (Neer / Hawkins)', opts:['Negatif','Tek test pozitif','Her ikisi pozitif'] },
-    { k:'painfulArc', t:'Ağrılı ark', opts:['Yok','Var'] },
-    { k:'pseudo', t:'Psödoparalizi', opts:['Yok','Var'] },
-    { k:'examNote', t:'Muayene notu', type:'text' },
-  ]},
   { sec:'MR', f:[
     { k:'tearType', t:'Yırtık tipi', opts:['Yırtık yok','Parsiyel — artiküler','Parsiyel — bursal','Tam kat','Masif'] },
     { k:'tendons', t:'Tutulan tendonlar', multi:true,
@@ -503,9 +495,7 @@ const RC_FORM = [
   ]},
 ];
 const RC_COL = {
-  doctor:'Hekim', diag:'Tanı', subscap:'Subskapularis Testi',
-  erLag:'Dış Rotasyon Lag', impingement:'Sıkışma Testleri', painfulArc:'Ağrılı Ark',
-  pseudo:'Psödoparalizi', examNote:'Muayene Not', tearType:'Yırtık Tipi',
+  doctor:'Hekim', diag:'Tanı', tearType:'Yırtık Tipi',
   tendons:'Tutulan Tendonlar', tearSize:'Yırtık Boyutu (mm)', patte:'Retraksiyon (Patte)',
   goutallier:'Goutallier', acromion:'Akromion Tipi', biceps:'Biseps', acJoint:'AC Eklem',
   mrNote:'MR Not', surgDate:'Ameliyat Tarihi', technique:'Teknik', anchors:'Ankraj Sayısı',
