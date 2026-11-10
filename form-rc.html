@@ -336,6 +336,220 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCfdhoKPMPsHNM
 const qp = new URLSearchParams(location.search);
 const A = {};
 const PREVIEW = qp.get('preview') === '1';
+/* ═══ İngilizce ═══════════════════════════════════════════════════════════
+   ?lang=en ile açılır. Sözlükte karşılığı olmayan metin olduğu gibi geçer,
+   böylece eksik çeviri ekranda hemen görünür.
+   ASES, WORC ve Tegner gibi ölçeklerde ORİJİNAL İngilizce ifadeler kullanılır —
+   Türkçeden geri çevirmek ölçeği bozar.                                     */
+const LANG = qp.get('lang') === 'en' ? 'en' : 'tr';
+const EN = {
+  // ── Kabuk ──
+  'Omuz Ameliyat Öncesi Değerlendirme':'Shoulder Pre-operative Assessment',
+  'Ameliyat öncesi değerlendirme':'Pre-operative assessment',
+  'Omuz<br>cerrahisi öncesi':'Before your<br>shoulder surgery',
+  'Ameliyattan önceki omuz durumunuzu kayıt altına alıyoruz. Bu bilgiler hem sizin\n       iyileşmenizi takip etmemizi hem de sonuçları uluslararası kayıt verileriyle karşılaştırmamızı sağlıyor.':
+    'We are recording the condition of your shoulder before surgery. This lets us follow your recovery and compare the results with international registry data.',
+  'Bölüm':'Steps', 'Süre':'Time', 'Tarih':'Date', '~9 dk':'~9 min',
+  'Lütfen sonuna kadar tamamlayın.':'Please complete all of it.',
+  'Yarım bırakılan formlar kaydedilmez.\n       Yanıtlarınız gizli tutulur ve yalnızca tedavi ve araştırma için kullanılır.':
+    'Unfinished forms are not saved. Your answers are kept confidential and used only for your care and for research.',
+  'Başla':'Start', 'Devam':'Continue', 'Gönder':'Submit', 'Gönderiliyor…':'Submitting…',
+  'Birinci bölüm tamam':'Part one complete',
+  'Şimdi omuz ölçümlerine geçiyoruz: ağrı, hareket açıklığı ve günlük yaşam soruları.\n       Bu bölüm ameliyat sonrası kontrollerinizde de aynen tekrarlanacak — değişimi ancak böyle ölçebiliriz.':
+    'Now we move on to the shoulder measurements: pain, range of motion and daily activities. The same section is repeated at your follow-up visits — that is the only way we can measure change.',
+  'İkinci bölüme geç':'Go to part two',
+  'Birkaç saniye içinde kendiliğinden açılacak.':'It will open automatically in a few seconds.',
+  'Önizleme — ikinci bölüme geçmek için düğmeye dokunun.':'Preview — tap the button to go to part two.',
+  'son bölüm':'last step', 'bölüm kaldı':'steps left',
+  'Bu benim pozisyonum':'This is my position',
+  'Başka bir pozisyona bakayım':'Let me look at another one',
+  'Kapat':'Close', 'Önceki':'Previous', 'Sonraki':'Next',
+  'Seçin':'Select', 'Kaydırarak işaretleyin':'Drag to mark',
+  'Hiç düzelmez':'No improvement', 'Tamamen düzelir':'Complete recovery',
+  'Boy · cm':'Height · cm', 'Kilo · kg':'Weight · kg',
+  'Evet':'Yes', 'Hayır':'No',
+  'Tamamlandı':'Complete', 'yanıtlandı':'answered',
+  ' — devam edebilirsiniz':' — you may continue',
+  // ── Sorular ──
+  'Protokol numaranız':'Your hospital number',
+  'Hastane kaydınızdaki protokol / dosya numarası. Yanıtlarınızın doğru dosyayla eşleşmesi için gerekli — aynı isimde birden çok hasta olabiliyor.':
+    'The hospital record or file number. We need it so your answers are matched to the right record — more than one patient can share a name.',
+  'Protokol / dosya no':'Hospital / file number',
+  'Bilmiyorsanız size anketi veren\n       hekime veya sekreterliğe sorabilirsiniz.':
+    'If you do not know it, ask the doctor or the secretary who gave you this form.',
+  'Önce sizi tanıyalım':'First, tell us who you are',
+  'Adınız ve soyadınız':'Your first and last name',
+  'Yaşınız':'Your age', 'Cinsiyetiniz':'Your sex', 'Kadın':'Female', 'Erkek':'Male',
+  'Boyunuz ve kilonuz':'Your height and weight',
+  'Hangi elinizi kullanıyorsunuz?':'Which hand do you use?', 'Sağ':'Right', 'Sol':'Left',
+  'Hangi omzunuz için geldiniz?':'Which shoulder are you here for?',
+  'Sigara kullanıyor musunuz?':'Do you smoke?',
+  'Tendon iyileşmesini etkilediği için soruyoruz.':'We ask because it affects tendon healing.',
+  'Bıraktım':'I quit',
+  'Sigara ayrıntısı':'Smoking details',
+  'Paket-yıl hesaplayabilmemiz için. Bıraktıysanız içtiğiniz dönemi düşünün.':
+    'So we can work out pack-years. If you have quit, think of the period when you smoked.',
+  'Günde kaç adet':'Cigarettes per day', 'Kaç yıl':'For how many years',
+  'Kaç yıl önce bıraktınız?':'How many years ago did you quit?',
+  'Bilinen bir hastalığınız var mı?':'Do you have any known medical conditions?',
+  'Hepsini işaretleyebilirsiniz.':'You can select more than one.',
+  'Diyabet':'Diabetes', 'Tiroid hastalığı':'Thyroid disease',
+  'Romatolojik hastalık (romatoid artrit vb.)':'Rheumatological disease (e.g. rheumatoid arthritis)',
+  'Tansiyon':'High blood pressure', 'Hiçbiri':'None of these',
+  'Omuz şikâyetiniz kaç aydır sürüyor?':'How many months have you had shoulder symptoms?',
+  'Yaklaşık bir sayı yeterli. Şikâyet süresi, iyileşme şansını etkileyen en önemli bilgilerden biri.':
+    'An approximate number is fine. How long symptoms have lasted is one of the strongest factors affecting recovery.',
+  'Şikâyetiniz nasıl başladı?':'How did your symptoms start?',
+  'Travma ile başladı':'After an injury',
+  'Düşme, ani zorlanma veya çekme sonrası':'A fall, a sudden strain or a pull',
+  'Sinsi başladı':'Gradually', 'Belirli bir olay yok, yavaş yavaş arttı':'No particular event, it built up slowly',
+  'Zaten ağrı vardı, travmayla arttı':'Pain was already there, an injury made it worse',
+  'Önceden şikâyet vardı, bir olaydan sonra belirginleşti':'Symptoms existed before and became clear after an event',
+  'Travma hangi tarihte oldu?':'When did the injury happen?',
+  'Tam gününü hatırlamıyorsanız yaklaşık tarihi seçin.':'If you do not recall the exact day, pick an approximate date.',
+  'Bu şikâyet için açılmış bir iş kazası veya meslek hastalığı dosyanız var mı?':
+    'Is there a workplace injury or occupational disease claim for this problem?',
+  'Evet — iş kazası':'Yes — workplace injury', 'Evet — meslek hastalığı':'Yes — occupational disease',
+  'İşiniz omzunuzu ne kadar zorluyor?':'How much does your work strain your shoulder?',
+  'Masa başı':'Desk work', 'Omzumu zorlamıyor':'It does not strain my shoulder',
+  'Hafif':'Light', 'Ara sıra kol kaldırıyorum':'I raise my arm occasionally',
+  'Orta':'Moderate', 'Düzenli kol kaldırma, taşıma var':'Regular lifting and carrying',
+  'Ağır':'Heavy', 'Sürekli baş üstü çalışıyorum':'I work overhead constantly',
+  'Düzenli spor yapıyor musunuz?':'Do you play sport regularly?',
+  'Hangi sporu yapıyorsunuz?':'Which sport?',
+  'Futbol':'Football', 'Basketbol':'Basketball', 'Tenis / badminton':'Tennis / badminton',
+  'Fitness / ağırlık':'Gym / weights', 'Voleybol':'Volleyball', 'Yüzme':'Swimming',
+  'Hentbol':'Handball', 'Koşu / yürüyüş':'Running / walking', 'Bisiklet':'Cycling',
+  'Golf':'Golf', 'Kürek / kano':'Rowing / canoeing', 'Diğer':'Other',
+  'Bu sporu hangi düzeyde yapıyorsunuz?':'At what level do you play?',
+  'Profesyonel':'Professional', 'Spordan gelir elde ediyorum':'I earn money from the sport',
+  'Yarı profesyonel / amatör lig':'Semi-professional / amateur league',
+  'Lisanslıyım, düzenli antrenman yapıyorum':'I am registered and train regularly',
+  'Rekreasyonel düzenli':'Regular recreational', 'Haftada en az bir kez, lisansım yok':'At least once a week, not registered',
+  'Weekend warrior':'Weekend player', 'Düzensiz, ayda birkaç kez':'Irregular, a few times a month',
+  'Ne sıklıkla ve ne kadar zamandır?':'How often, and for how long?',
+  'Haftada kaç kez':'Times per week', 'Kaç yıldır':'For how many years',
+  'Bu sporda kolunuzu omuz hizasının üstüne çıkarıyor musunuz?':
+    'Do you raise your arm above shoulder level in this sport?',
+  'Sürekli':'Constantly', 'Ara sıra':'Occasionally',
+  'Gece ağrısı':'Night pain', 'Hepsini yanıtlayın.':'Please answer all of them.',
+  'Ağrı geceleri uykunuzu bölüyor mu?':'Does pain wake you at night?',
+  'Ağrılı omzunuzun üzerine yatabiliyor musunuz?':'Can you lie on your painful shoulder?',
+  'Hiçbir şey yapmazken de ağrınız oluyor mu?':'Do you have pain even at rest?',
+  'Haftada kaç gece uykunuz bölünüyor?':'How many nights a week is your sleep broken?',
+  'Mesleğiniz':'Your occupation',
+  'örn. öğretmen, tornacı, hemşire':'e.g. teacher, machinist, nurse',
+  'Omzunuzun gün içinde ne kadar zorlandığını anlamak için.':'To understand how much your shoulder is loaded during the day.',
+  'Mesai saatleriniz':'Your working hours',
+  'Çalıştığınız saat aralığına dokunun.':'Tap the hours you work.',
+  'Gündüz':'Daytime', 'Akşam':'Evening', 'Gece':'Night',
+  'Genellikle hangi pozisyonda uyursunuz?':'Which position do you usually sleep in?',
+  'Gecenin çoğunu geçirdiğiniz duruşu seçin. Büyütmek için fotoğrafa dokunun — hangi tarafınıza yattığınızı bir sonraki soruda soracağız.':
+    'Choose the position you spend most of the night in. Tap a photo to enlarge it — we will ask which side you lie on next.',
+  'Sırtüstü':'On your back', 'Yüzüstü':'On your front', 'Yan':'On your side',
+  'Yan · cenin':'On your side · foetal',
+  'kollar yanda':'arms by your sides', 'baş yana dönük':'head turned to the side',
+  'kollar önde uzanmış':'arms stretched out in front', 'dizler karına çekili':'knees drawn up',
+  'bir bacak yukarı çekili':'one leg drawn up', 'bir kol başın üstünde':'one arm above the head',
+  'üst bacak öne çekili':'upper leg drawn forward', 'eller ensede':'hands behind the head',
+  'Hangi kolunuzun üzerine yatıyorsunuz?':'Which arm do you lie on?',
+  'Yatağınızı partnerinizle paylaşıyor musunuz?':'Do you share your bed with a partner?',
+  'Yatağın hangi tarafında yatıyorsunuz?':'Which side of the bed do you sleep on?',
+  'Ağrınız günün hangi saatlerinde en çok oluyor?':'At what time of day is your pain worst?',
+  'En çok ağrıdığınız tek dilimi seçin.':'Choose the single period when it hurts most.',
+  'Omuz belirtileri':'Shoulder symptoms',
+  'Omuzlarınızda sabah tutukluğu oluyor mu?':'Do you have morning stiffness in your shoulders?',
+  'Daha önce omuz ağrısı geçirdiniz mi?':'Have you had shoulder pain before?',
+  'Ağrı ne zaman artıyor?':'When does the pain increase?',
+  'Yıllık izin dönemlerinizde ağrınız oluyor mu?':'Do you have pain while on annual leave?',
+  'Hafta sonları ağrınız oluyor mu?':'Do you have pain at weekends?',
+  'Bu omuz için fizik tedavi gördünüz mü?':'Have you had physiotherapy for this shoulder?',
+  'Evet — 1 kür':'Yes — one course', 'Evet — 2 kür':'Yes — two courses',
+  'Evet — 3 ve üzeri':'Yes — three or more courses',
+  'Omzunuza kaç kez kortizon (iğne) yapıldı?':'How many steroid injections have you had in this shoulder?',
+  'Sayısı ve zamanlaması iyileşmeyi etkilediği için ayrı ayrı soruyoruz.':
+    'We ask about the number and the timing separately because both affect healing.',
+  'Hiç olmadım':'None', '1 kez':'One', '2 kez':'Two', '3 ve üzeri':'Three or more',
+  'Son iğne ne zaman yapıldı?':'When was the last injection?',
+  'Son 3 ay içinde':'Within the last 3 months', '3–6 ay önce':'3–6 months ago',
+  '6–12 ay önce':'6–12 months ago', '1 yıldan uzun süre önce':'More than a year ago',
+  'Geçmişiniz':'Your history',
+  'Aynı omzunuzdan daha önce ameliyat oldunuz mu?':'Have you had surgery on this shoulder before?',
+  'Diğer omzunuzda da manşet yırtığı veya ameliyatı oldu mu?':'Have you had a cuff tear or surgery on the other shoulder?',
+  'Boyun fıtığı veya boyun ağrısı sorununuz var mı?':'Do you have neck problems or neck pain?',
+  // ── ASES (orijinal İngilizce) ──
+  'Omuz ağrınız ne kadar şiddetli?':'How severe is your shoulder pain?',
+  'Son bir haftadaki en kötü hâlini düşünün.':'Think of the worst it has been in the past week.',
+  'Ağrı yok':'No pain', 'Dayanılmaz':'Worst imaginable',
+  'Bu işleri yapabiliyor musunuz?':'Are you able to do the following?',
+  'Ağrılı omzunuzu düşünerek yanıtlayın.':'Answer for your painful shoulder.',
+  'Yapamıyorum':'Unable to do', 'Çok zorlanıyorum':'Very difficult',
+  'Biraz zorlanıyorum':'Somewhat difficult', 'Zorlanmıyorum':'Not difficult',
+  'Montunuzu / ceketinizi giymek':'Put on a coat',
+  'Ağrılı omzunuzun üzerine yatmak':'Sleep on your painful or affected side',
+  'Sırtınızı yıkamak (veya arkadan sutyen bağlamak)':'Wash back / do up bra in back',
+  'Tuvalet sonrası temizlik':'Manage toileting',
+  'Saçınızı taramak':'Comb hair',
+  'Yüksek bir rafa uzanmak':'Reach a high shelf',
+  'Omuz hizasının üstüne 5 kg kaldırmak':'Lift 10 lb (4.5 kg) above shoulder',
+  'Bir topu omuz üstünden atmak':'Throw a ball overhand',
+  'Her zamanki işinizi yapmak':'Do usual work',
+  'Her zamanki sporunuzu yapmak':'Do usual sport',
+  // ── WORC (orijinal İngilizce) ──
+  'Fiziksel belirtiler':'Physical symptoms',
+  'Son bir haftayı düşünerek her satırı kaydırarak işaretleyin.':
+    'Thinking of the past week, drag the slider on each line.',
+  'Son bir haftayı düşünerek her satırı işaretleyin.':'Thinking of the past week, mark each line.',
+  'Hiç yok':'No', 'Aşırı':'Extreme', 'Hiç':'None',
+  'Zorluk yok':'No difficulty', 'Aşırı zorluk':'Extreme difficulty',
+  'Omzunuzda ne kadar keskin, saplanıcı ağrı oluyor?':'How much sharp pain do you experience in your shoulder?',
+  'Omzunuzda ne kadar sürekli, kemiren bir ağrı oluyor?':'How much constant, nagging pain do you experience in your shoulder?',
+  'Omzunuzda ne kadar güçsüzlük hissediyorsunuz?':'How much weakness do you experience in your shoulder?',
+  'Omzunuzda ne kadar tutukluk (sertlik) oluyor?':'How much stiffness do you experience in your shoulder?',
+  'Omzunuz yüzünden boyun kaslarınızda ne kadar rahatsızlık oluyor?':
+    'How much discomfort do you experience in your neck muscles as a result of your shoulder condition?',
+  'Omzunuzda ne kadar takılma, çıtırtı veya sürtünme hissi oluyor?':
+    'How much clicking, grinding or crunching do you experience in your shoulder?',
+  'Spor ve rekreasyon':'Sports and recreation',
+  'Spor / egzersiz düzeninizde ne kadar zorlanıyorsunuz?':'How much difficulty do you experience with your fitness or exercise routine?',
+  'Bir şeyi omuz üstünden atmakta veya kaldırmakta ne kadar zorlanıyorsunuz?':
+    'How much difficulty do you experience throwing or lifting something overhead?',
+  'Hız gerektiren hareketlerde ne kadar zorlanıyorsunuz?':'How much difficulty do you experience with activities that require speed?',
+  'Her zamanki hobi ve boş zaman etkinliklerinizde ne kadar zorlanıyorsunuz?':
+    'How much difficulty do you experience doing your usual hobbies or recreational activities?',
+  'İş':'Work',
+  'Her zamanki işinizi yapmakta ne kadar zorlanıyorsunuz?':'How much difficulty do you experience doing your usual work?',
+  'Baş üstü kol çalışmasında ne kadar zorlanıyorsunuz?':'How much difficulty do you experience with overhead arm work?',
+  'Tekrarlayan kol hareketlerinde ne kadar zorlanıyorsunuz?':'How much difficulty do you experience with repetitive arm movements?',
+  'Omzunuz yüzünden işinizi ne kadar değiştirmek zorunda kaldınız?':
+    'How much have you had to modify or change your work because of your shoulder?',
+  'Yaşam tarzı':'Lifestyle',
+  'Omzunuz yüzünden uyumakta ne kadar zorlanıyorsunuz?':'How much difficulty do you experience sleeping because of your shoulder?',
+  'Ailenizle veya arkadaşlarınızla şakalaşıp oynamakta ne kadar zorlanıyorsunuz?':
+    'How much difficulty do you experience roughhousing or playing with family or friends?',
+  'Giyinip soyunmakta ne kadar zorlanıyorsunuz?':'How much difficulty do you experience putting on or taking off your clothes?',
+  'Omzunuz yüzünden yaşam düzeniniz ne kadar değişti?':'How much of a change in your lifestyle have you had because of your shoulder?',
+  'Duygular':'Emotions',
+  'Omzunuz yüzünden ne kadar çaresiz / bıkkın hissediyorsunuz?':'How frustrated are you because of your shoulder?',
+  'Omzunuz yüzünden ne kadar moraliniz bozuk?':'How "down in the dumps" or depressed are you because of your shoulder?',
+  'Omzunuzun daha kötüye gitmesinden ne kadar endişeleniyorsunuz?':'How worried are you about your shoulder getting worse?',
+  // ── Beklenti ──
+  'Ameliyattan en çok ne bekliyorsunuz?':'What do you most expect from surgery?',
+  'Sizin için en önemli olanı seçin.':'Choose the one that matters most to you.',
+  'Ağrımın geçmesi':'Relief of my pain', 'Hareketimin artması':'Better movement',
+  'Gücümün artması':'More strength', 'Uykumun düzelmesi':'Better sleep',
+  'İşime dönebilmek':'Returning to work', 'Sporuma dönebilmek':'Returning to sport',
+  'Günlük işlerimi yapabilmek':'Managing everyday tasks',
+  'Ameliyattan sonra omzunuz sizce yüzde kaç düzelir?':'How much do you think your shoulder will improve after surgery?',
+  'Beklentiniz, sonucu etkileyen ayrı bir etken olduğu için soruyoruz.':
+    'We ask because your expectation is itself a factor in the outcome.',
+};
+function t(s) {
+  if (LANG === 'tr' || s == null) return s;
+  const k = String(s);
+  return Object.prototype.hasOwnProperty.call(EN, k) ? EN[k] : k;
+}
+EN['Adım'] = 'Step';
 /* ═══ ASES — Amerikan Omuz ve Dirsek Cerrahları Skoru ════════════════════
    Ağrı VAS (0-10) + 10 günlük yaşam maddesi (0-3).
    Skor = (10 − ağrı) × 5 + (madde toplamı / 30) × 50 → 0-100, yüksek = iyi.
@@ -457,7 +671,7 @@ function clockSVG(){
       <path class="seg-bg" d="${donutArc(C,C,R,r,sl.from,sl.to,0.32)}"/>
       <g class="ico" transform="translate(${lx.toFixed(1)},${(ly-19).toFixed(1)})">${ICONS[sl.tone]}</g>
       <text class="seg-h" x="${lx.toFixed(1)}" y="${(ly+6).toFixed(1)}">${String(sl.from).padStart(2,'0')}–${String(sl.to%24).padStart(2,'0')}</text>
-      <text class="seg-w" x="${lx.toFixed(1)}" y="${(ly+18).toFixed(1)}">${sl.word}</text>
+      <text class="seg-w" x="${lx.toFixed(1)}" y="${(ly+18).toFixed(1)}">${t(sl.word)}</text>
     </g>`;
   }).join('');
   // İşaretler dilim SINIRLARINDA — geçiş saatlerini gösterir
@@ -468,7 +682,7 @@ function clockSVG(){
   return `<svg class="clock" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
     ${marks}${segs}
     <circle cx="${C}" cy="${C}" r="${r-4}" fill="#fff"/>
-    <text class="ctr-a" id="ctrA" x="${C}" y="${C+2}">Seçin</text>
+    <text class="ctr-a" id="ctrA" x="${C}" y="${C+2}">${t('Seçin')}</text>
     <text class="ctr-b" id="ctrB" x="${C}" y="${C+19}"></text>
   </svg>`;
 }
@@ -618,23 +832,23 @@ const TICKW = TICK.replace('#09090b','#ffffff');
 const esc = v => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 
 function head(q,i){
-  return `<div class="eyebrow">Adım ${i} / ${QS.length}</div><h1>${q.title}</h1>` +
-         (q.sub ? `<p class="sub">${q.sub}</p>` : '');
+  return `<div class="eyebrow">${t('Adım')} ${i} / ${QS.length}</div><h1>${t(q.title)}</h1>` +
+         (q.sub ? `<p class="sub">${t(q.sub)}</p>` : '');
 }
 
 function optList(q){
   const items = q.pairs
     ? q.pairs.map(p => `<button type="button" class="opt" data-v="${esc(p[0])}">
-        <span class="dot">${TICK}</span><span>${p[0]}<small>${p[1]}</small></span></button>`)
+        <span class="dot">${TICK}</span><span>${t(p[0])}<small>${t(p[1])}</small></span></button>`)
     : q.opts.map(o => `<button type="button" class="opt" data-v="${esc(o)}">
-        <span class="dot">${TICK}</span>${o}</button>`);
+        <span class="dot">${TICK}</span>${t(o)}</button>`);
   return `<div class="opts${q.row ? ' row' : ''}">${items.join('')}</div>`;
 }
 
 function likert(name, opts, rows, start){
-  return `<div class="lk-head">${opts.map(o=>`<span>${o}</span>`).join('')}</div>` +
-    rows.map((t,n) => `<div class="lk-row" data-g="${name}" data-i="${start+n}">
-      <div class="lk-q"><span class="lk-n">${start+n+1}</span><span>${t}</span></div>
+  return `<div class="lk-head">${opts.map(o=>`<span>${t(o)}</span>`).join('')}</div>` +
+    rows.map((satir,n) => `<div class="lk-row" data-g="${name}" data-i="${start+n}">
+      <div class="lk-q"><span class="lk-n">${start+n+1}</span><span>${t(satir)}</span></div>
       <div class="lk-opts">${opts.map((o,v)=>
         `<button type="button" class="lk-b" data-v="${v}">${v}</button>`).join('')}</div>
     </div>`).join('');
@@ -644,25 +858,24 @@ function bodyFor(q){
   switch(q.type){
     case 'protokol': return `<div class="body"><input class="field" id="f_prot"
       inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false"
-      placeholder="Protokol / dosya no"></div>
-      <p class="sub" style="margin-top:14px;font-size:13.5px">Bilmiyorsanız size anketi veren
-       hekime veya sekreterliğe sorabilirsiniz.</p>`;
+      placeholder="${t('Protokol / dosya no')}"></div>
+      <p class="sub" style="margin-top:14px;font-size:13.5px">${t('Bilmiyorsanız size anketi veren\n       hekime veya sekreterliğe sorabilirsiniz.')}</p>`;
     case 'ident': return `<div class="body"><input class="field" id="f_name"
-      placeholder="Adınız ve soyadınız" autocomplete="name"></div>`;
+      placeholder="${t('Adınız ve soyadınız')}" autocomplete="name"></div>`;
     case 'num': return `<div class="body"><input class="field" id="${q.id}" type="number"
       inputmode="numeric" min="0" max="${q.max||120}" placeholder="${q.ph||''}"></div>`;
     case 'date': return `<div class="body"><input class="field" id="f_date" type="date"></div>
       <div class="readout" id="dateOut"></div>`;
     case 'hw': return `<div class="body"><div class="pair">
-      <div><div class="flab">Boy · cm</div><input class="field" id="f_h" type="number"
+      <div><div class="flab">${t('Boy · cm')}</div><input class="field" id="f_h" type="number"
         inputmode="numeric" min="80" max="250" placeholder="178"></div>
-      <div><div class="flab">Kilo · kg</div><input class="field" id="f_w" type="number"
+      <div><div class="flab">${t('Kilo · kg')}</div><input class="field" id="f_w" type="number"
         inputmode="decimal" min="20" max="300" step="0.1" placeholder="76"></div></div>
       <div class="readout" id="bmi"></div></div>`;
     case 'pair': return `<div class="body"><div class="pair">
-      <div><div class="flab">${q.a.t}</div><input class="field" id="${q.a.id}" type="number"
+      <div><div class="flab">${t(q.a.t)}</div><input class="field" id="${q.a.id}" type="number"
         inputmode="numeric" min="0" max="${q.a.max||99}" placeholder="${q.a.ph||''}"></div>
-      <div><div class="flab">${q.b.t}</div><input class="field" id="${q.b.id}" type="number"
+      <div><div class="flab">${t(q.b.t)}</div><input class="field" id="${q.b.id}" type="number"
         inputmode="numeric" min="0" max="${q.b.max||99}" placeholder="${q.b.ph||''}"></div></div>
       <div class="readout" id="pairOut"></div></div>`;
     case 'text': return `<div class="body"><input class="field" id="f_txt"
@@ -677,7 +890,7 @@ function bodyFor(q){
                  onload="this.classList.add('rdy')">
             <span class="pos-zoom">${ZOOM}</span>
           </div>
-          <div class="pos-name">${p.name}</div><div class="pos-sub">${p.sub}</div>
+          <div class="pos-name">${t(p.name)}</div><div class="pos-sub">${t(p.sub)}</div>
         </button>`).join('')}</div></div>`;
     case 'clock': return `<div class="body clock-wrap">${clockSVG()}</div>`;
     case 'multi': return `<div class="body"><div class="opts">${q.opts.map(o =>
@@ -685,26 +898,26 @@ function bodyFor(q){
         <span class="dot">${TICK}</span>${o}</button>`).join('')}</div></div>`;
     case 'vas': return `<div class="body"><div class="vas">${
       Array.from({length:11},(_,n)=>`<button type="button" class="vas-b" data-v="${n}">${n}</button>`).join('')
-      }</div><div class="ends"><span>${q.lo}</span><span>${q.hi}</span></div></div>`;
+      }</div><div class="ends"><span>${t(q.lo)}</span><span>${t(q.hi)}</span></div></div>`;
     case 'pct': return `<div class="body">
       <div class="pct-big" id="pctOut">—</div>
-      <div class="pct-sub">Kaydırarak işaretleyin</div>
+      <div class="pct-sub">${t('Kaydırarak işaretleyin')}</div>
       <input class="sl" id="f_pct" type="range" min="0" max="100" step="5" value="50">
-      <div class="ends"><span>Hiç düzelmez</span><span>Tamamen düzelir</span></div></div>`;
-    case 'yn': return `<div class="body">${q.q.map(([k,t]) => `
+      <div class="ends"><span>${t('Hiç düzelmez')}</span><span>${t('Tamamen düzelir')}</span></div></div>`;
+    case 'yn': return `<div class="body">${q.q.map(([k,satir]) => `
       <div class="lk-row" data-yn="${k}">
-        <div class="lk-q"><span>${t}</span></div>
+        <div class="lk-q"><span>${t(satir)}</span></div>
         <div class="opts row" style="gap:8px">
-          <button type="button" class="opt" data-v="Evet">Evet</button>
-          <button type="button" class="opt" data-v="Hayır">Hayır</button>
+          <button type="button" class="opt" data-v="Evet">${t('Evet')}</button>
+          <button type="button" class="opt" data-v="Hayır">${t('Hayır')}</button>
         </div></div>`).join('')}</div>`;
     case 'ases': return `<div class="body">${likert('ases', ASES_OPTS, ASES_ADL, 0)}
       <div class="lk-done" id="done_ases"></div></div>`;
-    case 'worc': return `<div class="body">${q.ww.q.map((t,n)=>`
+    case 'worc': return `<div class="body">${q.ww.q.map((satir,n)=>`
       <div class="sl-row" data-w="${q.ww.k}" data-i="${n}">
-        <div class="sl-q"><span class="sl-n">${n+1}</span><span>${t}</span></div>
+        <div class="sl-q"><span class="sl-n">${n+1}</span><span>${t(satir)}</span></div>
         <input class="sl" type="range" min="0" max="100" step="1" value="50">
-        <div class="ends"><span>${q.ww.lo}</span><span class="sl-val">—</span><span>${q.ww.hi}</span></div>
+        <div class="ends"><span>${t(q.ww.lo)}</span><span class="sl-val">—</span><span>${t(q.ww.hi)}</span></div>
       </div>`).join('')}<div class="lk-done" id="done_${q.ww.k}"></div></div>`;
     default: return `<div class="body">${optList(q)}</div>`;
   }
@@ -712,28 +925,25 @@ function bodyFor(q){
 
 stage.innerHTML = `
   <section class="screen cover live" data-i="0">
-    <div class="eyebrow">Ameliyat öncesi değerlendirme</div>
-    <h1>Omuz<br>cerrahisi öncesi</h1>
-    <p class="sub">Ameliyattan önceki omuz durumunuzu kayıt altına alıyoruz. Bu bilgiler hem sizin
-       iyileşmenizi takip etmemizi hem de sonuçları uluslararası kayıt verileriyle karşılaştırmamızı sağlıyor.</p>
+    <div class="eyebrow">${t('Ameliyat öncesi değerlendirme')}</div>
+    <h1>${t('Omuz<br>cerrahisi öncesi')}</h1>
+    <p class="sub">${t('Ameliyattan önceki omuz durumunuzu kayıt altına alıyoruz. Bu bilgiler hem sizin\n       iyileşmenizi takip etmemizi hem de sonuçları uluslararası kayıt verileriyle karşılaştırmamızı sağlıyor.')}</p>
     <div class="facts">
-      <div><div class="fact-k">Bölüm</div><div class="fact-v">${QS.length}</div></div>
-      <div><div class="fact-k">Süre</div><div class="fact-v">~9 dk</div></div>
-      <div><div class="fact-k">Tarih</div><div class="fact-v" id="today">—</div></div>
+      <div><div class="fact-k">${t('Bölüm')}</div><div class="fact-v">${QS.length}</div></div>
+      <div><div class="fact-k">${t('Süre')}</div><div class="fact-v">${t('~9 dk')}</div></div>
+      <div><div class="fact-k">${t('Tarih')}</div><div class="fact-v" id="today">—</div></div>
     </div>
-    <p class="consent"><b>Lütfen sonuna kadar tamamlayın.</b> Yarım bırakılan formlar kaydedilmez.
-       Yanıtlarınız gizli tutulur ve yalnızca tedavi ve araştırma için kullanılır.</p>
+    <p class="consent"><b>${t('Lütfen sonuna kadar tamamlayın.')}</b> ${t('Yarım bırakılan formlar kaydedilmez.\n       Yanıtlarınız gizli tutulur ve yalnızca tedavi ve araştırma için kullanılır.')}</p>
   </section>
   ${QS.map((q,n) => `<section class="screen${['koos','marx','yn'].includes(q.type)?' tall':''}"
       data-i="${n+1}"><div class="mid">${head(q,n+1)}${bodyFor(q)}</div></section>`).join('')}
   <section class="screen done" data-i="${QS.length+1}">
     <div class="ring"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff"
       stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-    <h1>Birinci bölüm tamam</h1>
-    <p class="sub">Şimdi omuz ölçümlerine geçiyoruz: ağrı, hareket açıklığı ve günlük yaşam soruları.
-       Bu bölüm ameliyat sonrası kontrollerinizde de aynen tekrarlanacak — değişimi ancak böyle ölçebiliriz.</p>
-    <button class="go2" id="go2" onclick="ikinciBolum()">İkinci bölüme geç</button>
-    <p class="sub" style="font-size:13px" id="go2Note">Birkaç saniye içinde kendiliğinden açılacak.</p>
+    <h1>${t('Birinci bölüm tamam')}</h1>
+    <p class="sub">${t('Şimdi omuz ölçümlerine geçiyoruz: ağrı, hareket açıklığı ve günlük yaşam soruları.\n       Bu bölüm ameliyat sonrası kontrollerinizde de aynen tekrarlanacak — değişimi ancak böyle ölçebiliriz.')}</p>
+    <button class="go2" id="go2" onclick="ikinciBolum()">${t('İkinci bölüme geç')}</button>
+    <p class="sub" style="font-size:13px" id="go2Note">${t('Birkaç saniye içinde kendiliğinden açılacak.')}</p>
   </section>`;
 
 const screens = [...document.querySelectorAll('.screen')];
@@ -760,12 +970,13 @@ function paint(){
   const done = i===0 ? 0 : Math.min(i,QS.length), kalan = QS.length-done;
   document.getElementById('rail').style.width = (done/QS.length*100)+'%';
   document.getElementById('count').innerHTML = (i>0 && i<=QS.length)
-    ? (kalan===0 ? '<b>son bölüm</b>' : kalan<=4 ? `<b>${kalan}</b> bölüm kaldı` : `<b>${done}</b> / ${QS.length}`) : '';
+    ? (kalan===0 ? `<b>${t('son bölüm')}</b>` : kalan<=4 ? `<b>${kalan}</b> ${t('bölüm kaldı')}`
+       : `<b>${done}</b> / ${QS.length}`) : '';
   document.getElementById('back').classList.toggle('on', i>0 && i<=QS.length);
   document.getElementById('topbar').classList.toggle('solid', i>0);
   const dock = document.getElementById('dock'), cta = document.getElementById('cta');
   dock.classList.toggle('hide', i===LAST);
-  cta.textContent = i===0 ? 'Başla' : i===QS.length ? 'Gönder' : 'Devam';
+  cta.textContent = t(i===0 ? 'Başla' : i===QS.length ? 'Gönder' : 'Devam');
   cta.disabled = !answered(i);
   const qq = QS[i-1];
   if (qq && qq.type === 'pos') warmGrid();
@@ -854,8 +1065,8 @@ stage.addEventListener('click', e => {
     const hedef = ASES_ADL.length;
     const dolu = (A[g]||[]).filter(x=>x!==undefined).length;
     const out = document.getElementById('done_' + g);
-    if (out) out.innerHTML = dolu===hedef ? '<b>Tamamlandı</b> — devam edebilirsiniz'
-                                          : `${dolu} / ${hedef} yanıtlandı`;
+    if (out) out.innerHTML = dolu===hedef ? `<b>${t('Tamamlandı')}</b>${t(' — devam edebilirsiniz')}`
+                                          : `${dolu} / ${hedef} ${t('yanıtlandı')}`;
     document.getElementById('cta').disabled = !answered(i);
     if (dolu === hedef) {
       const cta = document.getElementById('cta');
@@ -881,7 +1092,7 @@ stage.addEventListener('click', e => {
     [...svg.querySelectorAll('.seg')].forEach(x => x.classList.toggle('on', x===seg));
     const sl = SLOTS[+seg.dataset.k];
     const ca = svg.querySelector('.ctr-a'), cb = svg.querySelector('.ctr-b');
-    ca.textContent = sl.word; ca.classList.add('set'); cb.textContent = sl.v;
+    ca.textContent = t(sl.word); ca.classList.add('set'); cb.textContent = sl.v;
     document.getElementById('cta').disabled = false;
     autoNext(420);
     return;
@@ -935,8 +1146,8 @@ stage.addEventListener('input', e => {
     slRow.querySelector('.sl-val').textContent = v;
     const hedef = q.ww.q.length, dolu = (A[g]||[]).filter(x=>x!==undefined).length;
     const out = document.getElementById('done_' + q.ww.k);
-    if (out) out.innerHTML = dolu===hedef ? '<b>Tamamlandı</b> — devam edebilirsiniz'
-                                          : `${dolu} / ${hedef} yanıtlandı`;
+    if (out) out.innerHTML = dolu===hedef ? `<b>${t('Tamamlandı')}</b>${t(' — devam edebilirsiniz')}`
+                                          : `${dolu} / ${hedef} ${t('yanıtlandı')}`;
     document.getElementById('cta').disabled = !answered(i);
     return;
   }
@@ -957,14 +1168,18 @@ stage.addEventListener('input', e => {
     if (!h||!w||h<80){ out.classList.remove('on'); return; }
     const b = w/Math.pow(h/100,2);
     const s = b<18.5?'zayıf':b<25?'normal':b<30?'fazla kilolu':'obez';
-    out.innerHTML = `Vücut kitle indeksiniz <b>${b.toFixed(1)}</b> · ${s}`;
+    out.innerHTML = LANG === 'en'
+      ? `Your body mass index is <b>${b.toFixed(1)}</b> · ${({'zayıf':'underweight','normal':'normal','fazla kilolu':'overweight','obez':'obese'})[s]}`
+      : `Vücut kitle indeksiniz <b>${b.toFixed(1)}</b> · ${s}`;
     out.classList.add('on');
   }
 
   if (id==='f_spd' || id==='f_syr'){
     const a=+val('f_spd'), y=+val('f_syr'), out=document.getElementById('pairOut');
     if (!a||!y){ out.classList.remove('on'); return; }
-    out.innerHTML = `Yaklaşık <b>${Math.round(a/20*y*10)/10} paket-yıl</b>`;
+    out.innerHTML = LANG === 'en'
+      ? `About <b>${Math.round(a/20*y*10)/10} pack-years</b>`
+      : `Yaklaşık <b>${Math.round(a/20*y*10)/10} paket-yıl</b>`;
     out.classList.add('on');
   }
 
@@ -972,9 +1187,13 @@ stage.addEventListener('input', e => {
     const d = val('f_date'), out = document.getElementById('dateOut');
     if (!d){ out.classList.remove('on'); return; }
     const gun = Math.floor((Date.now()-new Date(d+'T00:00:00'))/86400000);
-    if (gun<0){ out.innerHTML='Tarih ileride görünüyor, kontrol eder misiniz?'; out.classList.add('on'); return; }
+    if (gun<0){ out.innerHTML = LANG === 'en'
+      ? 'That date is in the future — could you check it?'
+      : 'Tarih ileride görünüyor, kontrol eder misiniz?'; out.classList.add('on'); return; }
     const ay = Math.round(gun/30.44*10)/10;
-    out.innerHTML = `Travmadan bu yana <b>${gun} gün</b> (${ay} ay) geçmiş`;
+    out.innerHTML = LANG === 'en'
+      ? `<b>${gun} days</b> (${ay} months) since the injury`
+      : `Travmadan bu yana <b>${gun} gün</b> (${ay} ay) geçmiş`;
     out.classList.add('on');
   }
 
@@ -1078,7 +1297,7 @@ function submit(){
   if (sending) return;
   sending = true;
   const cta = document.getElementById('cta');
-  cta.textContent = 'Gönderiliyor…'; cta.disabled = true;
+  cta.textContent = t('Gönderiliyor…'); cta.disabled = true;
 
   const h=+A.height, w=+A.weight;
   const gun = A.traumaDate
@@ -1149,11 +1368,21 @@ function ikinciBolum(){
     leg: (A.side || '').toLocaleLowerCase('tr'), fu: 'preop',
     procedure: 'Rotator Manşet',
   });
+  if (LANG === 'en') p.set('lang', 'en');
   location.href = OMUZ_URL + '?' + p.toString();
 }
 
 /* ═══ Başlat ════════════════════════════════════════════════════════════ */
-document.getElementById('today').textContent = new Date().toLocaleDateString('tr-TR');
+if (LANG === 'en') {
+  document.documentElement.lang = 'en';
+  document.title = t('Omuz Ameliyat Öncesi Değerlendirme');
+  // Tam ekran görüntüleyicinin sabit metinleri
+  const lbOk = document.querySelector('.lb-ok'), lbAlt = document.querySelector('.lb-alt');
+  if (lbOk) lbOk.textContent = t('Bu benim pozisyonum');
+  if (lbAlt) lbAlt.textContent = t('Başka bir pozisyona bakayım');
+}
+document.getElementById('today').textContent =
+  new Date().toLocaleDateString(LANG === 'en' ? 'en-GB' : 'tr-TR');
 if (qp.get('side')) A.side = qp.get('side');
 if (qp.get('id')) { A.protokol = qp.get('id');
   setTimeout(()=>{ const p=document.getElementById('f_prot'); if(p) p.value=A.protokol; },0); }
