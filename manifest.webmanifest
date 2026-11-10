@@ -1,7 +1,7 @@
 {
-  "name": "ACL Hekim Girişi",
-  "short_name": "ACL Hekim",
-  "description": "Ameliyat sonrası ACL vakasının klinik verilerini sıcağı sıcağına kaydet",
+  "name": "Hekim Girişi",
+  "short_name": "Hekim",
+  "description": "Omuz ve ACL vakalarını aç, klinik verileri gir, hastaya QR okut",
   "start_url": "hekim-acl.html",
   "scope": ".",
   "display": "standalone",
