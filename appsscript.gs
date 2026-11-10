@@ -1184,7 +1184,7 @@ const RC_HEADERS = [
   'İzinde Ağrı', 'Hafta Sonu Ağrı',
   // ─── Hekim bölümü — vakayı hekim açar, tanıyı hekim koyar ───
   'Hekim', 'Hekim Kayıt Zamanı', 'Tanı',
-  'Jobe (Supraspinatus)', 'Subskapularis Testi', 'Dış Rotasyon Lag',
+  'Subskapularis Testi', 'Dış Rotasyon Lag',
   'Sıkışma Testleri', 'Ağrılı Ark', 'Psödoparalizi', 'Muayene Not',
   'Yırtık Tipi', 'Tutulan Tendonlar', 'Yırtık Boyutu (mm)', 'Retraksiyon (Patte)',
   'Goutallier', 'Akromion Tipi', 'Biseps', 'AC Eklem', 'MR Not',
@@ -1192,7 +1192,7 @@ const RC_HEADERS = [
   'İntra-op Not', 'Komplikasyon', 'Hekim Tamamlandı',
 ];
 const RC_DOC_COL = 68;   // 'Hekim' … 'Hekim Tamamlandı'
-const RC_DOC_LEN = 27;
+const RC_DOC_LEN = 26;
 const RC_VAKA_COL = 44;
 
 function saveRcRow(data) {
@@ -1270,7 +1270,7 @@ function rcDocValues_(d) {
   const n = v => (v !== undefined && v !== null && v !== '') ? Number(v) : '';
   return [
     d.doctor || '', new Date(), d.diag || '',
-    d.jobe || '', d.subscap || '', d.erLag || '', d.impingement || '',
+    d.subscap || '', d.erLag || '', d.impingement || '',
     d.painfulArc || '', d.pseudo || '', d.examNote || '',
     d.tearType || '', d.tendons || '', n(d.tearSize), d.patte || '',
     d.goutallier || '', d.acromion || '', d.biceps || '', d.acJoint || '', d.mrNote || '',
@@ -1332,9 +1332,9 @@ function rcCaseList() {
       hekim: String(r[RC_DOC_COL - 1] || ''),
       hastaDoldu: r[32] !== '' && r[32] !== null,     // sütun 33 = ASES skoru
       ases: r[32] === '' || r[32] === null ? null : Number(r[32]),
-      amelTarih: r[RC_DOC_COL + 18] instanceof Date
-        ? Utilities.formatDate(r[RC_DOC_COL + 18], 'Europe/Istanbul', 'yyyy-MM-dd')
-        : String(r[RC_DOC_COL + 18] || ''),
+      amelTarih: r[RC_DOC_COL + 17] instanceof Date
+        ? Utilities.formatDate(r[RC_DOC_COL + 17], 'Europe/Istanbul', 'yyyy-MM-dd')
+        : String(r[RC_DOC_COL + 17] || ''),
       tamam: String(r[RC_DOC_COL + RC_DOC_LEN - 2] || '') === 'Evet',
     });
   }
