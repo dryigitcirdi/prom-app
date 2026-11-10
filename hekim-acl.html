@@ -550,6 +550,7 @@ async function openCase(vaka) {
   cur = { vaka: vaka, ad: c ? c.ad : '' };
   A = {}; H = {}; editing = false; detay = null; done = false;
   qrDonem = (c && c.hastaDoldu && (B().donemler || []).length > 1) ? B().donemler[1][0] : 'preop';
+  qrLang = 'tr';
   el('listView').hidden = true; el('formView').hidden = false;
   el('backBtn').hidden = false; el('reloadBtn').hidden = true;
   el('hTitle').textContent = (c && c.ad) || 'Vaka';
@@ -608,21 +609,22 @@ function renderSummary(d) {
    aynı satıra düşer. Link kısaltma sunucusuna uğramaz — en az arıza.     */
 // Ameliyat öncesi ilk değerlendirme kendi formunda; takipler omuz setinde.
 // Her ikisinde de protokol no linkte gider — kayıt aynı hastaya bağlanır.
-let qrDonem = 'preop';
+let qrDonem = 'preop', qrLang = 'tr';
 function anketUrl(d) {
   const prot = d['Hasta ID'] || '', ad = d['Ad Soyad'] || '';
   const taraf = d['Taraf'] || '', src = A.doctor || d['Hekim'] || '';
-  if (qrDonem === 'preop') {
+  const p = qrDonem === 'preop'
     // Taraf linkte gider: hekim zaten seçti, hasta farklı yanıtlayıp
     // ikinci satır açmasın.
-    return B().anket + '?' + new URLSearchParams({ id: prot, name: ad, side: taraf, src }).toString();
-  }
-  return BASE + 'form.html?' + new URLSearchParams({
-    id: prot, name: ad, leg: taraf.toLocaleLowerCase('tr'),
-    fu: qrDonem, procedure: d['Tanı'] || '',
-  }).toString();
+    ? new URLSearchParams({ id: prot, name: ad, side: taraf, src })
+    : new URLSearchParams({ id: prot, name: ad, leg: taraf.toLocaleLowerCase('tr'),
+                            fu: qrDonem, procedure: d['Tanı'] || '' });
+  if (qrLang === 'en') p.set('lang', 'en');
+  return (qrDonem === 'preop' ? B().anket : BASE + 'form.html') + '?' + p.toString();
 }
 function qrSec(k) { qrDonem = k; renderSummary(detay || {}); }
+// Yabancı hasta için anketin İngilizcesi aynı dosyadan açılır
+function qrDil(k) { qrLang = k; renderSummary(detay || {}); }
 function qrKutu(d) {
   const donemler = B().donemler || [['preop','Ameliyat öncesi']];
   const secim = donemler.length > 1
@@ -633,6 +635,8 @@ function qrKutu(d) {
     <div class="qr-h">Hastaya okutun</div>
     <div class="qr-t">${esc(d['Ad Soyad'] || 'Hasta')} · ${esc(d['Hasta ID'] || '')}</div>
     ${secim}
+    <div class="qr-don">${[['tr','Türkçe'],['en','English']].map(([k, ad]) =>
+      `<button class="qr-d${k === qrLang ? ' on' : ''}" onclick="qrDil('${k}')">${ad}</button>`).join('')}</div>
     <canvas id="qrC"></canvas>
     <div class="qr-c">Kamerayla okutsun — yanıtlar bu hastaya bağlanır.</div>
     <div class="qr-act">
