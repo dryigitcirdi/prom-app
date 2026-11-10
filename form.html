@@ -616,6 +616,10 @@
         <td class="demo-val" id="demoName">—</td>
       </tr>
       <tr>
+        <td class="demo-lbl">Protokol no</td>
+        <td class="demo-val" id="demoId">—</td>
+      </tr>
+      <tr>
         <td class="demo-lbl">Değerlendirme</td>
         <td class="demo-val" id="demoProcedure">—</td>
       </tr>
@@ -654,6 +658,18 @@
         <button class="side-btn" id="fuBtn3" onclick="selectFUOpt('6. Ay')">6. Ay</button>
       </div>
       <div class="fu-pick-note">Takip randevunuzu kaçırdıysanız ve geçmiş bir dönemi sonradan dolduruyorsanız, o dönemi seçerek yanıtlarınızı ilgili döneme kaydedebilirsiniz.</div>
+    </div>
+
+    <!-- Protokol no linkte yoksa sorulur — takip kaydı bu numarayla eşleşir -->
+    <div id="protPicker" style="display:none;">
+      <div class="side-alert">
+        <div class="side-alert-title">Protokol numaranız</div>
+        <div class="fu-pick-note" style="margin:0 0 10px">
+          Hastane kaydınızdaki protokol / dosya numarası. Önceki değerlendirmenizle
+          eşleşmesi için gerekli.</div>
+        <input type="text" id="protInput" class="fx-num" style="margin-top:0"
+               placeholder="Protokol / dosya no" autocomplete="off" autocapitalize="characters">
+      </div>
     </div>
 
     <!-- Shown only when leg is missing from URL -->
@@ -1316,6 +1332,7 @@ function selectDiagOpt(diag) {
 }
 
 let activeLeg = surgeryLeg; // may be updated from demographics picker
+let activeId  = String(patientId || '').trim().toUpperCase();
 // Ekranda gösterilecek taraf etiketi (URL'den 'sag'/'sol' gelebilir)
 function legLabel(v) {
   if (!v) return '';
@@ -1409,6 +1426,8 @@ function selectLeg(leg) {
 
 function initDemographics() {
   document.getElementById('demoName').textContent      = patientName;
+  document.getElementById('demoId').textContent        = activeId || 'Girilecek';
+  document.getElementById('protPicker').style.display  = activeId ? 'none' : 'block';
   document.getElementById('demoProcedure').textContent = 'Omuz değerlendirmesi';
   document.getElementById('demoDate').textContent      = formatDate(surgeryDateStr) || '—';
   document.getElementById('demoDays').textContent      = daysPostOp !== null ? daysPostOp + '. gün' : '—';
@@ -1996,7 +2015,19 @@ function showSection(n) {
   if (n === 9) initSF12();
 }
 
+function sars(id) {
+  const el = document.getElementById(id);
+  el.style.animation = 'none'; el.offsetHeight; el.style.animation = 'shake 0.35s ease';
+}
+
 function goNext() {
+  // Protokol no zorunlu: takip kaydının doğru hastaya bağlanması buna dayanıyor
+  if (currentSection === 1 && !activeId) {
+    const v = (document.getElementById('protInput').value || '').trim().toUpperCase();
+    if (v.length < 4) { sars('protPicker'); document.getElementById('protInput').focus(); return; }
+    activeId = v;
+    document.getElementById('demoId').textContent = activeId;
+  }
   // Require side selection if missing
   if (currentSection === 1 && !activeLeg) {
     const picker = document.getElementById('sidePicker');
@@ -2052,7 +2083,7 @@ function submitForm() {
     timestamp:     now.toISOString(),
     date:          now.toLocaleDateString('tr-TR'),
     time:          now.toLocaleTimeString('tr-TR'),
-    patientId,
+    patientId:     activeId,
     patientName,
     diagnosis:     selectedDiag,
     surgeryDate:   surgeryDateStr,
