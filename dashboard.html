@@ -83,6 +83,12 @@
     .branch-tab { padding: 12px 22px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer;
                   border: none; background: none; border-bottom: 2.5px solid transparent; transition: all 0.15s; }
     .branch-tab:hover { color: var(--primary); }
+    .region-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .region-tab { padding: 10px 20px; font-size: 14px; font-weight: 650; color: var(--muted);
+      background: white; border: 1px solid var(--border); border-radius: 12px; cursor: pointer;
+      transition: all .15s; }
+    .region-tab:hover { color: var(--primary); }
+    .region-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
     .branch-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
     /* Tümör modülü */
     .tumor-layout { display: grid; grid-template-columns: 400px 1fr; gap: 20px; align-items: start; }
@@ -457,6 +463,10 @@
   </div>
 
   <div id="sportsView">
+  <div class="region-tabs">
+    <button class="region-tab active" data-b="omuz" onclick="setBolge('omuz', this)">🦾 Omuz</button>
+    <button class="region-tab" data-b="diz" onclick="setBolge('diz', this)">🦵 Diz</button>
+  </div>
   <div id="omuzBlock">
   <!-- Özet kartlar — satır 1 -->
   <div class="stats-grid">
@@ -639,6 +649,48 @@
     </table>
   </div>
   </div><!-- /omuzBlock -->
+
+  <!-- ════════ OMUZ — AMELİYAT ÖNCESİ DEĞERLENDİRME ════════ -->
+  <div id="rcBlock">
+    <div class="card" style="margin-bottom:20px;">
+      <div class="section-title">🩺 Ameliyat Öncesi Değerlendirme</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.65;">
+        Hekim uygulamasından açılan vakalar. Hastanın doldurduğu ASES / WORC ile
+        hekimin girdiği MR ve ameliyat bilgileri aynı satırda. Yukarıdaki takip
+        tabloları ameliyat sonrası dönemleri, bu bölüm başlangıç durumunu gösterir.
+      </div>
+    </div>
+
+    <div class="stats-grid" id="rcStats"></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="section-title">🔬 MR ve Ameliyat Dağılımı</div>
+      <div id="rcDist"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="section-title">💉 Risk Kesitleri</div>
+      <div id="rcRisk"></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6;">
+        İki ve üzeri enjeksiyon ya da son 6 ay içindeki enjeksiyon retear riskini belirgin
+        artırıyor. Şikâyet süresi uzadıkça onarım ve iyileşme şansı düşüyor.
+      </div>
+    </div>
+
+    <div class="card table-card" style="margin-bottom:20px;">
+      <div class="section-title">📋 Hastalar</div>
+      <div class="filter-bar">
+        <input type="text" id="rcFilterName" placeholder="Hasta ara..." oninput="renderRcTable()" style="width:180px;">
+        <span class="count-badge" id="rcCount">—</span>
+      </div>
+      <div style="overflow-x:auto;"><table class="data-table" id="rcTable"></table></div>
+    </div>
+
+    <div class="card" id="rcDetailCard" style="display:none;">
+      <div class="section-title">🔎 Hasta Ayrıntısı</div>
+      <div id="rcDetail"></div>
+    </div>
+  </div><!-- /rcBlock -->
 
   <!-- ════════ ACL — yatış öncesi (pre-op) değerlendirme ════════ -->
   <div id="aclBlock" style="display:none;">
@@ -1107,6 +1159,22 @@ const BRANCHES = {
 };
 let activeBranch = 'Sports Medicine';
 
+// Sports Medicine iki bölgeye ayrılır; tanı seçicisi bölgeye göre dolar.
+const BOLGELER = {
+  omuz: { ad: 'Omuz', tanilar: ['Rotator Manşet', 'Kalsifik Tendinit', 'Bankart Lezyonu', 'Donuk Omuz'] },
+  diz:  { ad: 'Diz',  tanilar: ['ACL Yırtığı'] },
+};
+let activeBolge = 'omuz';
+
+function setBolge(k, btn) {
+  activeBolge = k;
+  document.querySelectorAll('.region-tab').forEach(t => t.classList.toggle('active', t.dataset.b === k));
+  const df = document.getElementById('diagFilter');
+  df.innerHTML = '<option value="Tümü">Tüm Tanılar</option>' +
+    BOLGELER[k].tanilar.map(d => `<option value="${d}">${d}</option>`).join('');
+  refreshAll();
+}
+
 function branchOf(diag) {
   for (const b in BRANCHES) if (BRANCHES[b].includes(diag)) return b;
   return 'Sports Medicine'; // eski/bilinmeyen tanılar varsayılan olarak Sports Medicine'de
@@ -1123,9 +1191,11 @@ function setBranch(name, btn) {
   const sports = name === 'Sports Medicine';
   const df = document.getElementById('diagFilter');
   df.style.display = sports ? '' : 'none';
-  df.innerHTML = '<option value="Tümü">Tüm Tanılar</option>' +
-    BRANCHES[name].map(d => `<option value="${d}">${d}</option>`).join('');
-  if (sports) { refreshAll(); }
+  if (sports) {
+    df.innerHTML = '<option value="Tümü">Tüm Tanılar</option>' +
+      BOLGELER[activeBolge].tanilar.map(d => `<option value="${d}">${d}</option>`).join('');
+    refreshAll();
+  }
   else if (name === 'Tümör') {
     document.getElementById('totalBadge').textContent = tumorPatients.length + ' hasta';
     initBodyMap();
@@ -1376,19 +1446,22 @@ window.onload = function() {
 // Aktif tanı filtresinden geçen kayıtlar — tüm görünümlerin tabanı
 function baseRows() {
   const d = document.getElementById('diagFilter').value;
-  const inBranch = allRows.filter(r => branchOf(r.diagnosis || '') === activeBranch);
+  const bolge = BOLGELER[activeBolge].tanilar;
+  const inBranch = allRows.filter(r => branchOf(r.diagnosis || '') === activeBranch
+                                    && bolge.includes(r.diagnosis || ''));
   return d === 'Tümü' ? inBranch : inBranch.filter(r => (r.diagnosis || '') === d);
 }
 
 // Tablo + istatistik + matris — tek noktadan tazele
 function refreshAll() {
-  // Sports Medicine içinde ACL ayrı bir veri kümesidir (PROM_ACL_PreOp) —
-  // omuz kartları/tabloları yerine kendi paneli gösterilir.
-  const aclOn = activeBranch === 'Sports Medicine'
-             && document.getElementById('diagFilter').value === ACL_DIAG;
-  document.getElementById('omuzBlock').style.display = aclOn ? 'none' : '';
-  document.getElementById('aclBlock').style.display  = aclOn ? '' : 'none';
-  if (aclOn) { renderAcl(); drawAclQR(); return; }
+  // Diz bölgesinin verisi ayrı sayfalarda (PROM_ACL_PreOp); omuz bölgesinde
+  // hem takip tabloları hem ameliyat öncesi değerlendirme paneli gösterilir.
+  const diz = activeBolge === 'diz';
+  document.getElementById('omuzBlock').style.display = diz ? 'none' : '';
+  document.getElementById('rcBlock').style.display   = diz ? 'none' : '';
+  document.getElementById('aclBlock').style.display  = diz ? '' : 'none';
+  if (diz) { renderAcl(); drawAclQR(); return; }
+  renderRc();
   const base = baseRows();
   if (activeBranch === 'Sports Medicine')
     document.getElementById('totalBadge').textContent = base.length + ' kayıt';
@@ -1450,6 +1523,7 @@ function loadData(attempt) {
       try { hydrateHip(d.hipOpRows, d.hipRows); } catch (e) { console.warn('kalça yükleme:', e); }
       try { hydrateUyku(d.uykuRows); } catch (e) { console.warn('uyku yükleme:', e); }
       try { hydrateAcl(d.aclRows);   } catch (e) { console.warn('ACL yükleme:', e); }
+      try { hydrateRc(d.rcRows);     } catch (e) { console.warn('omuz pre-op yükleme:', e); }
       refreshAll();
       if (activeBranch === 'Tümör') renderTumorPatients();
       if (activeBranch === 'Kalça Artroskopisi') renderHipPatients();
@@ -4286,6 +4360,193 @@ function whatsappAcl() {
   const msg = encodeURIComponent(
     `Merhaba ${name},\n\nAmeliyat öncesi diz değerlendirmeniz için lütfen aşağıdaki anketi doldurur musunuz? Ameliyat sonrası iyileşmenizi bu bilgilerle karşılaştıracağız. (~8 dakika)\n\n${text}\n\nTeşekkürler.`);
   window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// OMUZ — AMELİYAT ÖNCESİ DEĞERLENDİRME (PROM_RC_PreOp)
+// Hasta bölümü (ASES / WORC / risk) ile hekim bölümü (tanı / MR / ameliyat)
+// aynı satırda. Takip tablolarından ayrı durur: oradaki kayıtlar dönem bazlı.
+// ═══════════════════════════════════════════════════════════════════════════
+let rcRows = [], rcSel = null;
+
+function hydrateRc(rows) {
+  if (!rows || rows.length < 2) { rcRows = []; return; }
+  rcRows = rows.slice(1).filter(r => txt(r[2]) || txt(r[3])).map(r => ({
+    tarih: isoDay(r[1]), id: txt(r[2]), ad: txt(r[3]), kaynak: txt(r[4]),
+    yas: num(r[5]), cinsiyet: txt(r[6]), vki: num(r[9]),
+    dominantEl: txt(r[10]), taraf: txt(r[11]), dominantMi: txt(r[12]),
+    sigara: txt(r[13]), ek: txt(r[14]),
+    sure: num(r[15]), baslangic: txt(r[16]), gun: num(r[18]),
+    isKazasi: txt(r[19]), isYuku: txt(r[20]),
+    gece: txt(r[21]), yatabiliyor: txt(r[22]), istirahat: txt(r[23]), geceSayi: num(r[24]),
+    fizik: txt(r[25]), enj: txt(r[26]), enjZaman: txt(r[27]),
+    oncekiAmeliyat: txt(r[28]), karsiOmuz: txt(r[29]), boyun: txt(r[30]),
+    asesAgri: num(r[31]), ases: num(r[32]),
+    worcS: num(r[33]), worcSp: num(r[34]), worcW: num(r[35]),
+    worcL: num(r[36]), worcE: num(r[37]), worc: num(r[38]),
+    beklenti: txt(r[39]), beklenenPct: num(r[40]),
+    vaka: txt(r[43]),
+    paketYil: num(r[46]), spor: txt(r[49]), sporDuzey: txt(r[50]), basUstu: txt(r[53]),
+    uykuPoz: txt(r[54]), yattigiKol: txt(r[57]), agriSaati: txt(r[60]),
+    meslek: txt(r[61]),
+    hekim: txt(r[67]), tani: txt(r[69]),
+    yirtikTipi: txt(r[70]), tendonlar: txt(r[71]), yirtikBoyut: num(r[72]),
+    patte: txt(r[73]), goutallier: txt(r[74]), akromion: txt(r[75]),
+    biseps: txt(r[76]), acEklem: txt(r[77]),
+    amelTarih: isoDay(r[79]), teknik: txt(r[80]), ankraj: num(r[81]),
+    ekIslem: txt(r[82]), tamir: txt(r[83]), komplikasyon: txt(r[85]),
+    tamamlandi: txt(r[86]) === 'Evet',
+  }));
+}
+
+// Tanı süzgeci bu panele de uygulanır
+function rcSecili() {
+  const d = document.getElementById('diagFilter').value;
+  return d === 'Tümü' ? rcRows : rcRows.filter(r => r.tani === d);
+}
+
+function renderRc() {
+  const R = rcSecili();
+  document.getElementById('totalBadge').textContent =
+    baseRows().length + ' takip · ' + R.length + ' pre-op';
+
+  const anket = R.filter(x => x.ases !== null);
+  const enjRisk = R.filter(x => (x.enj === '2 kez' || x.enj === '3 ve üzeri')
+                             || x.enjZaman === 'Son 3 ay içinde' || x.enjZaman === '3–6 ay önce');
+  document.getElementById('rcStats').innerHTML = [
+    ['Vaka', R.length, 'pre-op kaydı'],
+    ['Anketi Dolduran', anket.length, R.length ? Math.round(anket.length / R.length * 100) + '%' : ''],
+    ['Ort. Yaş', aclAvg(R.map(x => x.yas)) ?? '—', 'yıl'],
+    ['Şikâyet Süresi', aclMedian(R.map(x => x.sure)) ?? '—', 'ay (medyan)'],
+    ['ASES', aclAvg(R.map(x => x.ases)) ?? '—', '/ 100'],
+    ['WORC', aclAvg(R.map(x => x.worc)) ?? '—', '/ 100'],
+    ['Enjeksiyon Riski', R.length ? Math.round(enjRisk.length / R.length * 100) + '%' : '—', '≥2 veya son 6 ay'],
+    ['Ameliyat Oldu', R.filter(x => x.amelTarih).length, 'vaka'],
+  ].map(([k, v, u]) => `<div class="stat-card"><div class="stat-label">${k}</div>
+      <div class="stat-value">${v}</div><div class="stat-sub">${u}</div></div>`).join('');
+
+  const grid = (bas, pairs, tot) => `<div><div class="bar-head">${bas}</div>${aclBarRows(pairs, tot)}</div>`;
+  document.getElementById('rcDist').innerHTML = R.length ? `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px;">
+      ${grid('Tanı', aclTally(R, 'tani'), R.length)}
+      ${grid('Yırtık tipi', aclTally(R, 'yirtikTipi'), R.length)}
+      ${grid('Goutallier', aclTally(R, 'goutallier'), R.length)}
+      ${grid('Teknik', aclTally(R, 'teknik'), R.length)}
+    </div>` : '<div style="color:var(--muted);font-size:13px;">Henüz vaka yok</div>';
+
+  const KOVA = [['0–6 ay', 0, 6, '#16a34a'], ['6–12 ay', 6, 12, '#f59e0b'], ['12 ay +', 12, 1e9, '#dc2626']];
+  const sureli = R.filter(x => x.sure !== null && !isNaN(x.sure));
+  const sureRenk = {}; KOVA.forEach(([ad, a, b, c]) => sureRenk[ad] = c);
+  document.getElementById('rcRisk').innerHTML = R.length ? `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px;">
+      <div><div class="bar-head">Şikâyet süresi</div>
+        ${aclBarRows(KOVA.map(([ad, a, b]) => [ad, sureli.filter(x => x.sure >= a && x.sure < b).length]),
+                     sureli.length, sureRenk)}</div>
+      <div><div class="bar-head">Enjeksiyon sayısı</div>${aclBarRows(aclTally(R, 'enj'), R.length)}</div>
+      <div><div class="bar-head">Son enjeksiyon</div>${aclBarRows(aclTally(R, 'enjZaman'), R.length)}</div>
+    </div>` : '<div style="color:var(--muted);font-size:13px;">Henüz vaka yok</div>';
+
+  renderRcTable();
+}
+
+function rcSureRenk(a) {
+  if (a === null || isNaN(a)) return '';
+  return a <= 6 ? 'color:#16a34a;font-weight:700' : a <= 12 ? 'color:#ca8a04;font-weight:700'
+       : 'color:#dc2626;font-weight:700';
+}
+
+function renderRcTable() {
+  const q = (document.getElementById('rcFilterName').value || '').toLowerCase();
+  const list = rcSecili().map((r, i) => ({ r, i }))
+    .filter(({ r }) => !q || (r.ad + ' ' + r.id + ' ' + r.tani).toLowerCase().includes(q));
+  document.getElementById('rcCount').textContent = list.length + ' / ' + rcRows.length;
+
+  const head = `<thead><tr>
+    <th>Tarih</th><th>Hasta</th><th>Protokol</th><th>Yaş</th><th>Taraf</th><th>Tanı</th>
+    <th>Süre (ay)</th><th>Enjeksiyon</th><th>ASES</th><th>WORC</th>
+    <th>Yırtık</th><th>Goutallier</th><th>Ameliyat</th><th>Teknik</th><th>Durum</th>
+  </tr></thead>`;
+  const body = list.length ? list.map(({ r, i }) => `<tr onclick="showRcDetail(${i})" style="cursor:pointer;">
+      <td>${r.tarih || '—'}</td>
+      <td><b>${r.ad || '—'}</b>${r.hekim ? `<div style="font-size:11px;color:var(--muted)">${r.hekim}</div>` : ''}</td>
+      <td>${r.id || '—'}</td><td>${r.yas ?? '—'}</td><td>${r.taraf || '—'}</td>
+      <td>${r.tani || '—'}</td>
+      <td style="${rcSureRenk(r.sure)}">${r.sure ?? '—'}</td>
+      <td>${r.enj || '—'}</td>
+      <td style="${aclKoosRenk(r.ases)}">${r.ases ?? '—'}</td>
+      <td style="${aclKoosRenk(r.worc)}">${r.worc ?? '—'}</td>
+      <td>${r.yirtikTipi || '—'}</td><td>${r.goutallier || '—'}</td>
+      <td>${r.amelTarih || '—'}</td><td>${r.teknik || '—'}</td>
+      <td>${r.ases === null ? '<span class="fu-badge fu-none">Anket bekliyor</span>'
+            : r.tamamlandi ? '<span class="fu-badge fu-6m">Tamam</span>'
+            : '<span class="fu-badge fu-preop">Hekim bekliyor</span>'}</td>
+    </tr>`).join('')
+    : `<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">📭</div>
+         <div>Bu tanıda pre-op kaydı yok — vakalar hekim uygulamasından açılır.</div></div></td></tr>`;
+  document.getElementById('rcTable').innerHTML = head + '<tbody>' + body + '</tbody>';
+  if (rcSel !== null && rcSel < rcRows.length) showRcDetail(rcSel);
+}
+
+function showRcDetail(i) {
+  rcSel = i;
+  const r = rcSecili()[i];
+  if (!r) return;
+  const sat = (k, v) => `<div class="det"><div class="det-k">${k}</div><div class="det-v">${v || '—'}</div></div>`;
+  const worc = [['Belirtiler', r.worcS], ['Spor', r.worcSp], ['İş', r.worcW],
+                ['Yaşam', r.worcL], ['Duygular', r.worcE]];
+  const bar = worc.map(([ad, v]) => `<div class="bar-row">
+      <div class="bar-lbl">${ad}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${v === null ? 0 : v}%;
+        background:${v === null ? '#cbd5e1' : v >= 75 ? '#16a34a' : v >= 50 ? '#f59e0b' : '#dc2626'}"></div></div>
+      <div class="bar-val">${v ?? '—'}</div></div>`).join('');
+
+  document.getElementById('rcDetailCard').style.display = '';
+  document.getElementById('rcDetail').innerHTML = `
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <div style="font-size:21px;font-weight:800;letter-spacing:-.02em;">${r.ad || 'İsimsiz'}</div>
+      <span class="badge badge-blue">${r.taraf || '—'} omuz</span>
+      <span style="font-size:12px;color:var(--muted);">${r.id || ''}${r.vaka ? ' · ' + r.vaka : ''}</span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto;"
+              onclick="rcSel=null;document.getElementById('rcDetailCard').style.display='none';">Kapat</button>
+    </div>
+    <div class="bar-head">Hekim</div>
+    <div class="det-grid">
+      ${sat('Tanı', r.tani)} ${sat('Yırtık tipi', r.yirtikTipi)} ${sat('Tutulan tendonlar', r.tendonlar)}
+      ${sat('Yırtık boyutu', r.yirtikBoyut ? r.yirtikBoyut + ' mm' : '')}
+      ${sat('Retraksiyon (Patte)', r.patte)} ${sat('Goutallier', r.goutallier)}
+      ${sat('Akromion', r.akromion)} ${sat('Biseps', r.biseps)} ${sat('AC eklem', r.acEklem)}
+      ${sat('Ameliyat', r.amelTarih)} ${sat('Teknik', r.teknik)}
+      ${sat('Ankraj', r.ankraj)} ${sat('Ek işlem', r.ekIslem)} ${sat('Tamir derecesi', r.tamir)}
+      ${sat('Komplikasyon', r.komplikasyon)}
+    </div>
+    <div class="bar-head" style="margin-top:22px;">Hasta</div>
+    <div class="det-grid">
+      ${sat('Yaş / cinsiyet', [r.yas, r.cinsiyet].filter(Boolean).join(' · '))}
+      ${sat('VKİ', r.vki)} ${sat('Meslek', r.meslek)} ${sat('İş yükü', r.isYuku)}
+      ${sat('Dominant omuz mu', r.dominantMi)}
+      ${sat('Sigara', [r.sigara, r.paketYil ? r.paketYil + ' paket-yıl' : ''].filter(Boolean).join(' · '))}
+      ${sat('Ek hastalık', r.ek)}
+      ${sat('Şikâyet süresi', r.sure !== null ? r.sure + ' ay' : '')}
+      ${sat('Başlangıç', r.baslangic)} ${sat('İş kazası', r.isKazasi)}
+      ${sat('Spor', [r.spor, r.sporDuzey].filter(Boolean).join(' · '))}
+      ${sat('Baş üstü kullanım', r.basUstu)}
+      ${sat('Gece ağrısı', [r.gece, r.geceSayi ? r.geceSayi + ' gece/hafta' : ''].filter(Boolean).join(' · '))}
+      ${sat('Ağrılı omza yatabiliyor', r.yatabiliyor)} ${sat('İstirahat ağrısı', r.istirahat)}
+      ${sat('Uyku duruşu', [r.uykuPoz, r.yattigiKol && r.yattigiKol + ' kol'].filter(Boolean).join(' · '))}
+      ${sat('Ağrı saati', r.agriSaati)}
+      ${sat('Fizik tedavi', r.fizik)}
+      ${sat('Enjeksiyon', [r.enj, r.enjZaman].filter(Boolean).join(' · '))}
+      ${sat('Önceki ameliyat', r.oncekiAmeliyat)} ${sat('Karşı omuz', r.karsiOmuz)}
+      ${sat('Boyun sorunu', r.boyun)}
+      ${sat('Beklenti', [r.beklenti, r.beklenenPct !== null ? '%' + r.beklenenPct : ''].filter(Boolean).join(' · '))}
+    </div>
+    <div class="bar-head" style="margin-top:22px;">ASES ${r.ases ?? '—'} / 100
+      <span style="font-weight:400;color:var(--muted);">· ağrı ${r.asesAgri ?? '—'}/10</span></div>
+    <div class="bar-head" style="margin-top:14px;">WORC alt ölçekleri
+      <span style="font-weight:400;color:var(--muted);">(100 = sorun yok)</span></div>
+    ${bar}`;
+  document.getElementById('rcDetailCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 </script>
