@@ -863,7 +863,7 @@ function bodyFor(q){
     case 'ident': return `<div class="body"><input class="field" id="f_name"
       placeholder="${t('Adınız ve soyadınız')}" autocomplete="name"></div>`;
     case 'num': return `<div class="body"><input class="field" id="${q.id}" type="number"
-      inputmode="numeric" min="0" max="${q.max||120}" placeholder="${q.ph||''}"></div>`;
+      inputmode="numeric" min="0" max="${q.max||120}" placeholder="${t(q.ph||'')}"></div>`;
     case 'date': return `<div class="body"><input class="field" id="f_date" type="date"></div>
       <div class="readout" id="dateOut"></div>`;
     case 'hw': return `<div class="body"><div class="pair">
@@ -879,7 +879,7 @@ function bodyFor(q){
         inputmode="numeric" min="0" max="${q.b.max||99}" placeholder="${q.b.ph||''}"></div></div>
       <div class="readout" id="pairOut"></div></div>`;
     case 'text': return `<div class="body"><input class="field" id="f_txt"
-      placeholder="${q.ph||''}" autocomplete="off"></div>`;
+      placeholder="${t(q.ph||'')}" autocomplete="off"></div>`;
     case 'pos': return `<div class="body" style="margin-top:20px">
       <div class="pos-grid">${POSITIONS.map((p, n) => `
         <button type="button" class="pos" data-v="${p.id}">
