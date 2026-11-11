@@ -1260,8 +1260,13 @@ function saveRcRow(data) {
 
   // Bu hastalar uyku çalışmasının tam da hedef kitlesi. Aynı yanıtlardan
   // uyku sayfasına da bir satır yazıyoruz ki çalışma bu kayıtlardan beslensin.
-  // Yalnızca YENİ satırda aynalanır — tekrar gönderimde uyku kaydı çoğalmasın.
-  if (yeniKayit) { try { aynalaUyku_(data); } catch (err) {} }
+  // DİKKAT: akış hekimle başladığı için hasta anketi HER ZAMAN mevcut satıra
+  // birleşir; eski "yalnız yeni satırda aynala" koşulu bu yüzden hiç çalışmıyordu.
+  // Artık ölçüt uyku sayfasında o vakanın bulunup bulunmadığı — tekrar
+  // gönderimde kayıt çoğalmaz, hekim vakayı önce açmışsa da kaybedilmez.
+  if (data.sleepPos && !uykuVarMi_(data.patientId, data.side)) {
+    try { aynalaUyku_(data); } catch (err) {}
+  }
 
   colorSure(sheet, row, 16, data.durationMonths);
   colorEnj(sheet, row, 27, data.injections, data.injectionTiming);
@@ -1372,6 +1377,27 @@ function uykuSure_(ay) {
   if (!a && a !== 0) return '';
   return a < 1 ? '1 aydan az' : a < 3 ? '1 – 3 ay' : a < 6 ? '3 – 6 ay'
        : a < 12 ? '6 – 12 ay' : a < 24 ? '1 – 2 yıl' : '2 yıldan uzun';
+}
+
+// Uyku sayfasında bu vakanın ilk değerlendirme satırı var mı?
+// Anahtar: protokol no + ağrılı omuz + kaynak. Karşı omuz ayrı vakadır.
+function uykuVarMi_(prot, taraf) {
+  if (!prot) return false;
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(UYKU_SHEET);
+  if (!sh) return false;
+  const last = sh.getLastRow();
+  if (last < 2) return false;
+  const v = sh.getRange(2, 1, last - 1, UYKU_HEADERS.length).getValues();
+  const p = String(prot).trim().toUpperCase();
+  const t = String(taraf || '').trim().toLowerCase();
+  for (let i = 0; i < v.length; i++) {
+    if (String(v[i][2] || '').trim().toUpperCase() !== p) continue;
+    if (String(v[i][30] || '') !== 'Omuz ilk değerlendirme') continue;
+    const rt = String(v[i][19] || '').trim().toLowerCase();
+    if (rt && t && rt !== t) continue;
+    return true;
+  }
+  return false;
 }
 
 function aynalaUyku_(d) {
