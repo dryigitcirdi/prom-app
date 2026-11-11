@@ -51,19 +51,24 @@ function fail(msg, retry) {
 }
 
 function go(d) {
+  // Omuz takibi ilk değerlendirmeyle aynı modülde ama ayrı formda:
+  // pre-op form-rc.html, sonraki dönemler omuz setinde (form.html).
+  const rcTakip = d.module === 'rc' && d.fu && d.fu !== 'preop';
   const page = d.module === 'hip'  ? '../form-hip.html'
              : d.module === 'uyku' ? '../form-uyku.html'
              : d.module === 'acl'  ? '../form-acl.html'
-             : d.module === 'rc'   ? '../form-rc.html'
+             : (d.module === 'rc' && !rcTakip) ? '../form-rc.html'
              : '../form.html';
   const p = new URLSearchParams({ name: d.name || '', id: d.id || '' });
-  if (d.module === 'uyku' || d.module === 'acl' || d.module === 'rc') {
+  if (d.module === 'uyku' || (d.module === 'acl') || (d.module === 'rc' && !rcTakip)) {
     if (d.procedure) p.set('dx', d.procedure);
+    if (d.leg) p.set('side', d.leg);
     if (qs.get('src')) p.set('src', qs.get('src'));   // hangi oda/hekim yönlendirdi
   } else {
     p.set('surgery', d.surgery || ''); p.set('leg', d.leg || ''); p.set('fu', d.fu || '');
-    if (d.module !== 'hip') p.set('procedure', d.procedure || 'Kalsifik Tendinit');
+    if (d.module !== 'hip') p.set('procedure', d.procedure || '');
   }
+  if (d.lang === 'en') p.set('lang', 'en');
   location.replace(page + '?' + p.toString());
 }
 

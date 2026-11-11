@@ -93,6 +93,7 @@ main{padding:16px 16px calc(var(--safe-b) + 28px);max-width:620px;margin:0 auto}
 .qr-b{flex:1;padding:12px;border-radius:12px;border:none;background:#0f172a;color:#fff;
   font-size:14.5px;font-weight:650;cursor:pointer}
 .qr-b.alt{background:#eef2f7;color:#0f172a}
+.qr-b.wa{background:#25d366;color:#07321a}
 .qr-b:active{transform:scale(.97)}
 .newbtn{width:100%;padding:12px;border-radius:13px;border:1px dashed var(--line);
   background:transparent;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px}
@@ -201,6 +202,8 @@ textarea.inp{min-height:76px;resize:vertical}
       <input class="inp" id="nProt" placeholder="hastane dosya / protokol numarası"></div>
     <div class="f"><div class="f-t">Ad Soyad</div>
       <input class="inp" id="nName" placeholder="Hasta adı"></div>
+    <div class="f"><div class="f-t">Telefon</div>
+      <input class="inp" id="nTel" type="tel" inputmode="tel" placeholder="05XX XXX XX XX"></div>
     <div class="f"><div class="f-t">Taraf</div><div class="chips" id="nSide">
       <button class="chip" onclick="nPick('Sağ',this)">Sağ</button>
       <button class="chip" onclick="nPick('Sol',this)">Sol</button></div></div>
@@ -455,7 +458,7 @@ const ACL_HCOL = {
 
 // Sayfadaki sütun adı → form anahtarı (kayıtlı veriyi geri yüklemek için)
 const ACL_COL = {
-  doctor:'Hekim', extDeficit:'Ekstansiyon Defisiti', flexion:'Fleksiyon (°)', effusion:'Efüzyon',
+  doctor:'Hekim', phone:'Telefon', extDeficit:'Ekstansiyon Defisiti', flexion:'Fleksiyon (°)', effusion:'Efüzyon',
   lachman:'Lachman', pivot:'Pivot Shift', atrophy:'Uyluk Atrofisi (cm)', mcl:'MCL', pcl:'PCL / PLK',
   examNote:'Muayene Not', mmTear:'MM Yırtık', mmSite:'MM Yeri', mmType:'MM Tipi',
   lmTear:'LM Yırtık', lmSite:'LM Yeri', lmType:'LM Tipi', cartSite:'Kıkırdak Bölge',
@@ -500,7 +503,7 @@ const RC_FORM = [
   ]},
 ];
 const RC_COL = {
-  doctor:'Hekim', diag:'Tanı', tearType:'Yırtık Tipi',
+  doctor:'Hekim', phone:'Telefon', diag:'Tanı', tearType:'Yırtık Tipi',
   tendons:'Tutulan Tendonlar', tearSize:'Yırtık Boyutu (mm)', patte:'Retraksiyon (Patte)',
   goutallier:'Goutallier', acromion:'Akromion Tipi', biceps:'Biseps', acJoint:'AC Eklem',
   mrNote:'MR Not', surgDate:'Ameliyat Tarihi', technique:'Teknik', anchors:'Ankraj Sayısı',
@@ -640,12 +643,58 @@ function qrKutu(d) {
     <canvas id="qrC"></canvas>
     <div class="qr-c">Kamerayla okutsun — yanıtlar bu hastaya bağlanır.</div>
     <div class="qr-act">
-      <button class="qr-b" onclick="paylas()">Gönder</button>
+      <button class="qr-b wa" onclick="waGonder(this)">
+        ${d['Telefon'] ? 'WhatsApp · ' + esc(d['Telefon']) : 'WhatsApp'}</button>
+    </div>
+    <div class="qr-act">
+      <button class="qr-b alt" onclick="paylas()">Paylaş</button>
       <button class="qr-b alt" onclick="kopyala()">Linki kopyala</button>
     </div>
+    ${d['Telefon'] ? '' : '<div class="qr-c" style="color:#b45309">Telefon girilmemiş — WhatsApp kişi seçmenizi isteyecek. Numarayı aşağıdaki “Hasta telefonu” alanına yazıp kaydedin.</div>'}
     <div class="qr-u" id="qrU"></div>
   </div>`;
 }
+const KISA = BASE + 'q/';
+const DONEM_ADI = { preop:['ameliyat öncesi değerlendirme','pre-operative assessment'],
+                    '6w':['6. hafta kontrolü','6-week follow-up'],
+                    '6m':['6. ay kontrolü','6-month follow-up'] };
+
+/* Türk numaraları 0 ile yazılıyor, wa.me ülke kodu istiyor. Yabancı numara
+   + ile girilirse rakamları olduğu gibi kullanılır.                       */
+function telNormal(t) {
+  let d = String(t || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.slice(0, 2) === '00') d = d.slice(2);
+  if (d.length === 10 && d[0] === '5') d = '90' + d;
+  else if (d.length === 11 && d[0] === '0') d = '90' + d.slice(1);
+  return d;
+}
+
+/* Takip anketini hastanın numarasına WhatsApp'tan gönder. Link her seferinde
+   yeniden kısaltılır: dönem ve dil koda gömülü, telefonda okunaklı duruyor. */
+async function waGonder(btn) {
+  const d = detay || {};
+  const eski = btn.textContent;
+  btn.textContent = 'Link üretiliyor…'; btn.disabled = true;
+  let url = anketUrl(d);
+  try {
+    const j = await api({ action: 'newlink', module: brk,
+      name: d['Ad Soyad'] || '', pid: d['Hasta ID'] || '', leg: d['Taraf'] || '',
+      fu: qrDonem, procedure: d['Tanı'] || '', lang: qrLang });
+    if (j && j.code) url = KISA + '?k=' + j.code;
+  } catch (e) { /* kısaltma olmazsa tam link gider */ }
+  btn.textContent = eski; btn.disabled = false;
+
+  const en = qrLang === 'en';
+  const ad = d['Ad Soyad'] || '';
+  const donem = (DONEM_ADI[qrDonem] || DONEM_ADI.preop)[en ? 1 : 0];
+  const msg = en
+    ? `Hello ${ad},\n\nPlease complete this short questionnaire for your ${donem}. It takes a few minutes and your answers go straight to your doctor.\n\n${url}\n\nThank you.`
+    : `Merhaba ${ad},\n\nOmzunuzun ${donem} için lütfen aşağıdaki kısa anketi doldurur musunuz? Birkaç dakika sürüyor, yanıtlarınız doğrudan doktorunuza ulaşıyor.\n\n${url}\n\nTeşekkürler.`;
+  const tel = telNormal(d['Telefon']);
+  window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
 /* Hekim hastayı göremeyecekse linki asistana gönderir, hasta ona ulaşır.
    Cihazda paylaşım varsa onu kullan; yoksa WhatsApp'a düş.               */
 function paylas() {
@@ -743,6 +792,7 @@ function nPick(v, btn) {
 async function createCase() {
   const prot = el('nProt').value.trim().toUpperCase();
   const ad   = el('nName').value.trim();
+  const tel  = el('nTel').value.trim();
   if (prot.length < 4) { toast('Protokol no gerekli', true); return; }
   if (!ad) { toast('Hasta adı gerekli', true); return; }
   const doctor = localStorage.getItem(DOC_KEY) || '';
@@ -752,9 +802,10 @@ async function createCase() {
   try {
     const j = await api({ action: B().act.doc,
       data: JSON.stringify({ vaka, name: ad, patientId: prot, side: nSide,
-                             diag: nDiag, doctor, done: false }) });
+                             diag: nDiag, phone: tel, doctor, done: false }) });
     if (!j || j.status !== 'ok') throw new Error('olmadı');
-    el('nName').value = ''; el('nProt').value = ''; nSide = ''; nDiag = ''; el('newBox').hidden = true;
+    el('nName').value = ''; el('nProt').value = ''; el('nTel').value = '';
+    nSide = ''; nDiag = ''; el('newBox').hidden = true;
     await loadCases();
     toast('Vaka açıldı');
     openCase(vaka);
@@ -795,6 +846,9 @@ function renderFields() {
     <div class="f"><div class="f-t">Dolduran hekim</div>
       <input class="inp" id="f_doctor" placeholder="Adınız" value="${esc(A.doctor || '')}"
              oninput="A.doctor=this.value;localStorage.setItem(DOC_KEY,this.value)"></div>
+    <div class="f"><div class="f-t">Hasta telefonu</div>
+      <input class="inp" id="f_phone" type="tel" inputmode="tel" placeholder="05XX XXX XX XX"
+             value="${esc(A.phone || '')}" oninput="A.phone=this.value"></div>
     <div class="hint">Vakayı istediğiniz zaman yeniden açıp tamamlayabilirsiniz —
       ameliyat tarihi, teknik, ankraj sayısı ve tamir derecesi genellikle sonradan girilir.</div></div>`;
   el('fields').innerHTML = hekim + B().form.map(s =>

@@ -715,7 +715,7 @@ function getSheetData() {
 // ═══════════════════════════════════════════════════════════════════════════
 const LINK_SHEET = 'Kisa_Linkler';
 const LINK_HEADERS = ['Kod', 'Modül', 'Ad Soyad', 'Hasta ID', 'Girişim Tarihi',
-                      'Taraf', 'Dönem', 'Tanı', 'Oluşturma', 'İlk Açılma', 'Açılma Sayısı'];
+                      'Taraf', 'Dönem', 'Tanı', 'Oluşturma', 'İlk Açılma', 'Açılma Sayısı', 'Dil'];
 // Karışabilen karakterler (I, O, 0, 1) alfabede yok — telefonda okunaklı olsun
 const LINK_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -743,7 +743,7 @@ function makeShortLink(p) {
     if (used.indexOf(code) === -1) break;
   }
   sh.appendRow([code, p.module || 'omuz', p.name || '', p.pid || '', p.surgery || '',
-                p.leg || '', p.fu || '', p.procedure || '', new Date(), '', 0]);
+                p.leg || '', p.fu || '', p.procedure || '', new Date(), '', 0, p.lang || '']);
   // Kod ve Hasta ID metin kalsın (Sheets sayıya çevirmesin)
   sh.getRange(sh.getLastRow(), 1).setNumberFormat('@').setValue(code);
   sh.getRange(sh.getLastRow(), 4).setNumberFormat('@').setValue(String(p.pid || ''));
@@ -769,7 +769,8 @@ function resolveShortLink(code) {
       surgery: fmtDate_(d[i][4]),
       leg: String(d[i][5] || ''),
       fu: String(d[i][6] || ''),
-      procedure: String(d[i][7] || '')
+      procedure: String(d[i][7] || ''),
+      lang: String(d[i][11] || '')
     };
   }
   return { status: 'error', message: 'bulunamadı' };
@@ -904,7 +905,9 @@ const ACL_HEADERS = [
   'İntra-op Not', 'Komplikasyon', 'Hekim Tamamlandı',
   // ─── Düzenleme izi ───
   'Veri Düzenleyen', 'Düzenleme Zamanı', 'Düzenlenen Alanlar',
+  'Telefon',
 ];
+const ACL_TEL_COL = 85;
 
 // Vaka No hasta satırı yazılırken üretilir; hekim girişi bu anahtarla aynı satırı bulur.
 const ACL_VAKA_COL = 47;            // 'Vaka No' sütunu (1 tabanlı)
@@ -1041,6 +1044,7 @@ function saveAclDoctorRow(data) {
   sheet.getRange(row, ACL_DOC_COL, 1, ACL_DOC_LEN).setValues([vals]);
   sheet.getRange(row, ACL_DOC_COL + ACL_DOC_LEN - 1)
        .setBackground(data.done ? '#dcfce7' : '#fef9c3');
+  if ('phone' in data) sheet.getRange(row, ACL_TEL_COL).setNumberFormat('@').setValue(data.phone || '');
   return String(sheet.getRange(row, ACL_VAKA_COL).getValue() || '');
 }
 
@@ -1130,6 +1134,7 @@ function aclCaseList() {
         ? Utilities.formatDate(r[ACL_DOC_COL + 22], 'Europe/Istanbul', 'yyyy-MM-dd')
         : String(r[ACL_DOC_COL + 22] || ''),
       tamam: String(r[ACL_DOC_COL + ACL_DOC_LEN - 2] || '') === 'Evet',
+      tel: String(r[ACL_TEL_COL - 1] || ''),
     });
   }
   return out.reverse();   // en yeni başa
@@ -1188,7 +1193,9 @@ const RC_HEADERS = [
   'Goutallier', 'Akromion Tipi', 'Biseps', 'AC Eklem', 'MR Not',
   'Ameliyat Tarihi', 'Teknik', 'Ankraj Sayısı', 'Ek İşlem', 'Tamir Derecesi',
   'İntra-op Not', 'Komplikasyon', 'Hekim Tamamlandı',
+  'Telefon',
 ];
+const RC_TEL_COL = 88;
 const RC_DOC_COL = 68;   // 'Hekim' … 'Hekim Tamamlandı'
 const RC_DOC_LEN = 20;
 const RC_VAKA_COL = 44;
@@ -1303,6 +1310,7 @@ function saveRcDoctorRow(data) {
   }
   sheet.getRange(row, RC_DOC_COL, 1, RC_DOC_LEN).setValues([vals]);
   sheet.getRange(row, RC_DOC_COL + RC_DOC_LEN - 1).setBackground(data.done ? '#dcfce7' : '#fef9c3');
+  if ('phone' in data) sheet.getRange(row, RC_TEL_COL).setNumberFormat('@').setValue(data.phone || '');
   return String(sheet.getRange(row, RC_VAKA_COL).getValue() || '');
 }
 
@@ -1332,6 +1340,7 @@ function rcCaseList() {
         ? Utilities.formatDate(r[RC_DOC_COL + 11], 'Europe/Istanbul', 'yyyy-MM-dd')
         : String(r[RC_DOC_COL + 11] || ''),
       tamam: String(r[RC_DOC_COL + RC_DOC_LEN - 2] || '') === 'Evet',
+      tel: String(r[RC_TEL_COL - 1] || ''),
     });
   }
   return out.reverse();
